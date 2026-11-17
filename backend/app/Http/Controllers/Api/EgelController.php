@@ -137,22 +137,35 @@ class EgelController extends Controller
 
         $area = $request->query('area');
         $tipo = $request->query('tipo');
+        $idioma = $request->query('idioma');
         $q = mb_strtolower(trim((string) $request->query('q', '')));
         $soloArchivo = $request->boolean('solo_archivo');
+        $soloOficial = $request->boolean('solo_oficial');
+        $soloGratuito = $request->boolean('solo_gratuito');
+        $orden = $request->query('orden', 'prioridad');
 
-        $filtrados = $recursos->filter(function (Recurso $r) use ($area, $tipo, $q, $soloArchivo) {
+        $filtrados = $recursos->filter(function (Recurso $r) use ($area, $tipo, $idioma, $q, $soloArchivo, $soloOficial, $soloGratuito) {
             if ($area && !in_array($area, $r->areas ?? [], true)) {
                 return false;
             }
             if ($tipo && $r->tipo !== $tipo) {
                 return false;
             }
+            if ($idioma && ($r->idioma ?? '') !== $idioma) {
+                return false;
+            }
             if ($soloArchivo && empty($r->archivo)) {
+                return false;
+            }
+            if ($soloOficial && !$r->oficial) {
+                return false;
+            }
+            if ($soloGratuito && !$r->gratuito) {
                 return false;
             }
             if ($q !== '') {
                 $haystack = mb_strtolower(
-                    ($r->titulo ?? '') . ' ' . ($r->autores ?? '') . ' ' . ($r->nota ?? '')
+                    ($r->titulo ?? '') . ' ' . ($r->autores ?? '') . ' ' . ($r->nota ?? '') . ' ' . implode(' ', $r->subareas ?? [])
                 );
                 if (!str_contains($haystack, $q)) {
                     return false;
@@ -161,9 +174,24 @@ class EgelController extends Controller
             return true;
         })->values();
 
+        if ($orden === 'anio_desc') {
+            $filtrados = $filtrados->sortByDesc(fn (Recurso $r) => $r->anio ?? 0)->values();
+        } elseif ($orden === 'titulo') {
+            $filtrados = $filtrados->sortBy(fn (Recurso $r) => mb_strtolower($r->titulo ?? ''))->values();
+        }
+
+        $porTipo = $recursos->groupBy('tipo')->map->count();
+
         return response()->json([
             'recursos' => $filtrados,
             'total' => $filtrados->count(),
+            'resumen' => [
+                'total_catalogo' => $recursos->count(),
+                'con_archivo' => $recursos->filter(fn (Recurso $r) => !empty($r->archivo))->count(),
+                'oficiales' => $recursos->where('oficial', true)->count(),
+                'gratuitos' => $recursos->where('gratuito', true)->count(),
+                'por_tipo' => $porTipo,
+            ],
         ]);
     }
 
@@ -184,12 +212,14 @@ class EgelController extends Controller
     public function buscar(Request $request): JsonResponse
     {
         $q = mb_strtolower(trim((string) $request->query('q', '')));
+        $tipoFiltro = $request->query('tipo', 'todos');
         if (mb_strlen($q) < 2) {
             return response()->json([
                 'guias' => [],
                 'comandos' => [],
                 'preguntas' => [],
                 'recursos' => [],
+                'total' => 0,
             ]);
         }
 
@@ -197,24 +227,44 @@ class EgelController extends Controller
             ContenidoLoader::importarTodoABaseDeDatos();
         }
 
-        $guias = collect(ContenidoLoader::getGuias())
-            ->filter(fn ($g) => str_contains(mb_strtolower($g['titulo'] . ' ' . $g['contenido']), $q))
-            ->take(8)
-            ->values();
+        $guias = [];
+        if ($tipoFiltro === 'todos' || $tipoFiltro === 'guias') {
+            $guias = collect(ContenidoLoader::getGuias())
+                ->filter(fn ($g) => str_contains(mb_strtolower($g['clave'] . ' ' . $g['titulo'] . ' ' . $g['contenido']), $q))
+                ->take(8)
+                ->map(function ($g) use ($q) {
+                    $plain = preg_replace('/[#*`>_]+/', ' ', $g['contenido']);
+                    $plain = trim(preg_replace('/\s+/', ' ', (string) $plain));
+                    $pos = mb_stripos($plain, $q);
+                    $snippet = $pos !== false
+                        ? mb_substr($plain, max(0, $pos - 45), 140)
+                        : mb_substr($plain, 0, 120);
+                    return [
+                        'clave' => $g['clave'],
+                        'titulo' => $g['titulo'],
+                        'contenido' => $g['contenido'],
+                        'snippet' => $snippet,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
 
         $comandos = [];
-        foreach (ContenidoLoader::getComandos() as $rama) {
-            foreach ($rama['comandos'] ?? [] as $cmd) {
-                $hay = mb_strtolower(($cmd['comando'] ?? '') . ' ' . ($cmd['descripcion'] ?? '') . ' ' . ($rama['nombre'] ?? ''));
-                if (str_contains($hay, $q)) {
-                    $comandos[] = [
-                        'rama' => $rama['nombre'],
-                        'icono' => $rama['icono'] ?? '',
-                        'comando' => $cmd['comando'],
-                        'descripcion' => $cmd['descripcion'],
-                    ];
-                    if (count($comandos) >= 10) {
-                        break 2;
+        if ($tipoFiltro === 'todos' || $tipoFiltro === 'comandos') {
+            foreach (ContenidoLoader::getComandos() as $rama) {
+                foreach ($rama['comandos'] ?? [] as $cmd) {
+                    $hay = mb_strtolower(($cmd['comando'] ?? '') . ' ' . ($cmd['descripcion'] ?? '') . ' ' . ($rama['nombre'] ?? ''));
+                    if (str_contains($hay, $q)) {
+                        $comandos[] = [
+                            'rama' => $rama['nombre'],
+                            'icono' => $rama['icono'] ?? '',
+                            'comando' => $cmd['comando'],
+                            'descripcion' => $cmd['descripcion'],
+                        ];
+                        if (count($comandos) >= 12) {
+                            break 2;
+                        }
                     }
                 }
             }
@@ -222,31 +272,43 @@ class EgelController extends Controller
 
         $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
 
-        $preguntas = Pregunta::query()
-            ->select(['id', 'area', 'subarea', 'pregunta'])
-            ->where(function ($query) use ($like) {
-                $query->whereRaw('LOWER(id) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(COALESCE(base, "")) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(pregunta) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(COALESCE(conceptos, "")) LIKE ?', [$like]);
-            })
-            ->limit(8)
-            ->get();
+        $preguntas = [];
+        if ($tipoFiltro === 'todos' || $tipoFiltro === 'preguntas') {
+            $preguntas = Pregunta::query()
+                ->select(['id', 'area', 'subarea', 'pregunta'])
+                ->where(function ($query) use ($like) {
+                    $query->whereRaw('LOWER(id) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(area) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(subarea) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(COALESCE(base, "")) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(pregunta) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(COALESCE(conceptos, "")) LIKE ?', [$like]);
+                })
+                ->limit(10)
+                ->get()
+                ->all();
+        }
 
-        $recursos = Recurso::query()
-            ->where(function ($query) use ($like) {
-                $query->whereRaw('LOWER(titulo) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(COALESCE(autores, "")) LIKE ?', [$like])
-                    ->orWhereRaw('LOWER(COALESCE(nota, "")) LIKE ?', [$like]);
-            })
-            ->limit(8)
-            ->get();
+        $recursos = [];
+        if ($tipoFiltro === 'todos' || $tipoFiltro === 'recursos') {
+            $recursos = Recurso::query()
+                ->where(function ($query) use ($like) {
+                    $query->whereRaw('LOWER(titulo) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(COALESCE(autores, "")) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(COALESCE(nota, "")) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(COALESCE(subareas, "")) LIKE ?', [$like]);
+                })
+                ->limit(10)
+                ->get()
+                ->all();
+        }
 
         return response()->json([
             'guias' => $guias,
             'comandos' => $comandos,
             'preguntas' => $preguntas,
             'recursos' => $recursos,
+            'total' => count($guias) + count($comandos) + count($preguntas) + count($recursos),
         ]);
     }
 }

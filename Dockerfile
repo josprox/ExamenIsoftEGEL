@@ -42,6 +42,11 @@ COPY --from=backend-vendor /app/backend/vendor /var/www/html/backend/vendor
 # Copiar frontend compilado dentro de backend/public (index.html -> app.html para no pisar index.php)
 COPY --from=frontend-builder /app/frontend/dist/assets /var/www/html/backend/public/assets
 COPY --from=frontend-builder /app/frontend/dist/index.html /var/www/html/backend/public/app.html
+COPY --from=frontend-builder /app/frontend/dist/favicon.svg /var/www/html/backend/public/favicon.svg
+COPY --from=frontend-builder /app/frontend/dist/og-cover.svg /var/www/html/backend/public/og-cover.svg
+COPY --from=frontend-builder /app/frontend/dist/site.webmanifest /var/www/html/backend/public/site.webmanifest
+COPY --from=frontend-builder /app/frontend/dist/sitemap.xml /var/www/html/backend/public/sitemap.xml
+COPY --from=frontend-builder /app/frontend/dist/robots.txt /var/www/html/backend/public/robots.txt
 
 # Configuración Nginx y Entrypoint
 COPY docker/nginx.conf /etc/nginx/sites-available/default

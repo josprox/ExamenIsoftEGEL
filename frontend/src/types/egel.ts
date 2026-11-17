@@ -118,6 +118,15 @@ export interface Guia {
   clave: string;
   titulo: string;
   contenido: string;
+  snippet?: string;
+}
+
+export interface BibliotecaResumen {
+  total_catalogo: number;
+  con_archivo: number;
+  oficiales: number;
+  gratuitos: number;
+  por_tipo: Record<string, number>;
 }
 
 export interface ComandoItem {
@@ -139,5 +148,6 @@ export interface ResultadoBusqueda {
   comandos: Array<{ rama: string; icono: string; comando: string; descripcion: string }>;
   preguntas: Pregunta[];
   recursos: Recurso[];
+  total?: number;
 }
 

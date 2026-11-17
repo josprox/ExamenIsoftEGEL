@@ -48,7 +48,7 @@ export function Comandos() {
               Chuletario de Comandos Técnicos
             </h1>
             <p className="mt-1 text-sm text-stone-600">
-              Comandos esenciales de SQL, Git, Docker, Linux, MongoDB, Python, Java y Node para repaso rápido.
+              Comandos esenciales de SQL, Git, HTTP/REST, Pruebas/CI, Docker, Linux, MongoDB, Python, Java y Node para repaso rápido.
             </p>
           </div>
         </div>

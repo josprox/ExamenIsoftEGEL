@@ -1,0 +1,19 @@
+{
+  "id": "pruebas-calidad",
+  "nombre": "Pruebas, Linting y CI/CD",
+  "icono": "✅",
+  "subareas": ["3.3", "4.2"],
+  "descripcion": "Comandos clave de pruebas unitarias, cobertura, análisis estático y depuración en proyectos reales.",
+  "comandos": [
+    { "comando": "php artisan test --filter=EgelApiTest", "descripcion": "Ejecuta únicamente la suite o método indicado en Laravel/PHPUnit." },
+    { "comando": "pytest -v --cov=src", "descripcion": "Ejecuta pruebas en Python mostrando detalle y porcentaje de cobertura." },
+    { "comando": "bun test / npm test", "descripcion": "Corre la suite de pruebas unitarias en proyectos JavaScript/TypeScript." },
+    { "comando": "mvn test / gradle test", "descripcion": "Ejecuta pruebas automatizadas (JUnit) en proyectos Java." },
+    { "comando": "npx oxlint . / npx eslint .", "descripcion": "Análisis estático (linting) para detectar errores y malas prácticas antes de ejecutar." },
+    { "comando": "git bisect start && git bisect bad && git bisect good <tag>", "descripcion": "Búsqueda binaria en el historial de Git para encontrar el commit exacto que introdujo un fallo." },
+    { "comando": "git diff --stat main...HEAD", "descripcion": "Muestra el resumen de archivos modificados en la rama actual frente a main." },
+    { "comando": "docker compose up -d --build", "descripcion": "Reconstruye imágenes y levanta servicios definidos en compose en segundo plano." },
+    { "comando": "docker logs -f --tail=100 <contenedor>", "descripcion": "Sigue en tiempo real las últimas 100 líneas de log de un contenedor." },
+    { "comando": "ab -n 500 -c 25 https://ejemplo.com/api/health", "descripcion": "Prueba básica de carga HTTP: 500 peticiones con concurrencia de 25." }
+  ]
+}

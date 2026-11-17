@@ -7,9 +7,13 @@ import {
   Filter,
   FolderOpen,
   Star,
+  Eye,
+  X,
+  Download,
+  RotateCcw,
 } from 'lucide-react';
 import { api } from '../lib/api';
-import type { Recurso, Temario } from '../types/egel';
+import type { BibliotecaResumen, Recurso, Temario } from '../types/egel';
 
 interface BibliotecaProps {
   temario: Temario | null;
@@ -17,32 +21,77 @@ interface BibliotecaProps {
 
 export function Biblioteca({ temario }: BibliotecaProps) {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [resumen, setResumen] = useState<BibliotecaResumen | null>(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [area, setArea] = useState('todas');
   const [tipo, setTipo] = useState('todos');
+  const [idioma, setIdioma] = useState('todos');
+  const [orden, setOrden] = useState<'prioridad' | 'anio_desc' | 'titulo'>('prioridad');
   const [soloArchivo, setSoloArchivo] = useState(false);
+  const [soloOficial, setSoloOficial] = useState(false);
+  const [soloGratuito, setSoloGratuito] = useState(false);
+  const [previewRecurso, setPreviewRecurso] = useState<Recurso | null>(null);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    api
-      .getBiblioteca({ area, tipo, q, soloArchivo })
-      .then((res) => {
-        if (active) setRecursos(res.recursos);
-      })
-      .catch(() => {
-        if (active) setRecursos([]);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const timer = setTimeout(() => {
+      api
+        .getBiblioteca({
+          area,
+          tipo,
+          idioma,
+          q,
+          soloArchivo,
+          soloOficial,
+          soloGratuito,
+          orden,
+        })
+        .then((res) => {
+          if (active) {
+            setRecursos(res.recursos);
+            if (res.resumen) setResumen(res.resumen);
+          }
+        })
+        .catch(() => {
+          if (active) setRecursos([]);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+    }, 150);
+
     return () => {
       active = false;
+      clearTimeout(timer);
     };
-  }, [area, tipo, q, soloArchivo]);
+  }, [area, tipo, idioma, q, soloArchivo, soloOficial, soloGratuito, orden]);
 
   const areas = temario?.secciones.flatMap((s) => s.areas) ?? [];
+
+  const limpiarFiltros = () => {
+    setQ('');
+    setArea('todas');
+    setTipo('todos');
+    setIdioma('todos');
+    setOrden('prioridad');
+    setSoloArchivo(false);
+    setSoloOficial(false);
+    setSoloGratuito(false);
+  };
+
+  const fileUrl = (archivo: string) =>
+    `/biblioteca-files/${archivo.replace(/^biblioteca\//, '')}`;
+
+  const hayFiltrosActivos =
+    q !== '' ||
+    area !== 'todas' ||
+    tipo !== 'todos' ||
+    idioma !== 'todos' ||
+    soloArchivo ||
+    soloOficial ||
+    soloGratuito;
 
   return (
     <div className="space-y-6">
@@ -54,23 +103,30 @@ export function Biblioteca({ temario }: BibliotecaProps) {
               Biblioteca EGEL ISOFT
             </h1>
             <p className="mt-1 text-sm text-stone-600">
-              Guías oficiales, libros recomendados, normas ISO y documentos descargables organizados por área.
+              Guías oficiales, libros recomendados, normas ISO y documentos con vista previa por área.
             </p>
           </div>
-          <span className="rounded-xl bg-stone-100 border border-stone-200 px-3.5 py-2 text-xs font-semibold text-stone-700">
-            {recursos.length} recursos encontrados
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {resumen && (
+              <span className="rounded-xl bg-teal-50 border border-teal-700/15 px-3 py-1.5 text-xs font-semibold text-teal-800">
+                {resumen.con_archivo} PDFs locales
+              </span>
+            )}
+            <span className="rounded-xl bg-stone-100 border border-stone-200 px-3.5 py-1.5 text-xs font-semibold text-stone-700">
+              {recursos.length} mostrados
+            </span>
+          </div>
         </div>
 
-        {/* Filtros */}
-        <div className="mt-5 grid gap-3 sm:grid-cols-4">
-          <div className="relative sm:col-span-2">
+        {/* Filtros principales */}
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="relative lg:col-span-2">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por título, autor o tema..."
+              placeholder="Buscar por título, autor, tema o subárea (ej. 2.2)..."
               className="w-full rounded-xl border border-stone-300 bg-stone-50 pl-10 pr-4 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
             />
           </div>
@@ -103,18 +159,71 @@ export function Biblioteca({ temario }: BibliotecaProps) {
             <option value="web">Sitios web</option>
             <option value="video">Videos</option>
           </select>
+
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              value={idioma}
+              onChange={(e) => setIdioma(e.target.value)}
+              className="rounded-xl border border-stone-300 bg-stone-50 px-2.5 py-2.5 text-xs font-medium text-stone-900 focus:border-teal-600 focus:bg-white focus:outline-none"
+            >
+              <option value="todos">Idioma: Todos</option>
+              <option value="es">Español</option>
+              <option value="en">Inglés</option>
+            </select>
+            <select
+              value={orden}
+              onChange={(e) => setOrden(e.target.value as 'prioridad' | 'anio_desc' | 'titulo')}
+              className="rounded-xl border border-stone-300 bg-stone-50 px-2.5 py-2.5 text-xs font-medium text-stone-900 focus:border-teal-600 focus:bg-white focus:outline-none"
+            >
+              <option value="prioridad">Relevancia</option>
+              <option value="anio_desc">Más recientes</option>
+              <option value="titulo">A–Z</option>
+            </select>
+          </div>
         </div>
 
-        <label className="mt-3 inline-flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={soloArchivo}
-            onChange={(e) => setSoloArchivo(e.target.checked)}
-            className="rounded border-stone-300 text-teal-700 focus:ring-teal-600"
-          />
-          <Filter className="h-3.5 w-3.5 text-teal-700" />
-          Mostrar solo documentos descargables en biblioteca/
-        </label>
+        {/* Toggles rápidos */}
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-stone-700">
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={soloArchivo}
+              onChange={(e) => setSoloArchivo(e.target.checked)}
+              className="rounded border-stone-300 text-teal-700 focus:ring-teal-600"
+            />
+            <Filter className="h-3.5 w-3.5 text-teal-700" />
+            Solo descargables locales
+          </label>
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={soloOficial}
+              onChange={(e) => setSoloOficial(e.target.checked)}
+              className="rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+            />
+            <Star className="h-3.5 w-3.5 text-amber-500" />
+            Solo oficiales
+          </label>
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={soloGratuito}
+              onChange={(e) => setSoloGratuito(e.target.checked)}
+              className="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
+            />
+            Solo gratuitos
+          </label>
+
+          {hayFiltrosActivos && (
+            <button
+              type="button"
+              onClick={limpiarFiltros}
+              className="inline-flex items-center gap-1 rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-200 cursor-pointer"
+            >
+              <RotateCcw className="h-3 w-3" /> Limpiar filtros
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -126,79 +235,161 @@ export function Biblioteca({ temario }: BibliotecaProps) {
             />
           ))}
         </div>
+      ) : recursos.length === 0 ? (
+        <div className="rounded-2xl border border-stone-200 bg-white p-10 text-center">
+          <p className="text-sm text-stone-600">
+            No se encontraron recursos con los filtros seleccionados.
+          </p>
+          {hayFiltrosActivos && (
+            <button
+              type="button"
+              onClick={limpiarFiltros}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-800 cursor-pointer"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Restablecer filtros
+            </button>
+          )}
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recursos.map((r) => (
-            <div
-              key={r.id}
-              className="flex flex-col justify-between rounded-2xl border border-stone-200 bg-white p-5 hover:border-teal-600/50 hover:shadow-md transition"
-            >
-              <div>
-                <div className="flex flex-wrap items-center gap-1.5 text-[11px] mb-2.5">
-                  <span className="rounded-md bg-teal-50 px-2 py-0.5 font-semibold text-teal-800 uppercase">
-                    {r.tipo}
-                  </span>
-                  {r.oficial && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 font-semibold text-amber-800">
-                      <Star className="h-3 w-3" /> Oficial
+          {recursos.map((r) => {
+            const esPdf = Boolean(r.archivo && r.archivo.toLowerCase().endsWith('.pdf'));
+            return (
+              <div
+                key={r.id}
+                className="flex flex-col justify-between rounded-2xl border border-stone-200 bg-white p-5 hover:border-teal-600/50 hover:shadow-md transition"
+              >
+                <div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] mb-2.5">
+                    <span className="rounded-md bg-teal-50 px-2 py-0.5 font-semibold text-teal-800 uppercase">
+                      {r.tipo}
                     </span>
+                    {r.oficial && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 font-semibold text-amber-800">
+                        <Star className="h-3 w-3" /> Oficial
+                      </span>
+                    )}
+                    {r.gratuito && (
+                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
+                        Gratis
+                      </span>
+                    )}
+                    {r.idioma && (
+                      <span className="rounded-md bg-stone-100 px-1.5 py-0.5 uppercase text-stone-500">
+                        {r.idioma}
+                      </span>
+                    )}
+                    {r.areas.map((a) => (
+                      <span key={a} className="rounded-md bg-stone-100 px-1.5 py-0.5 text-stone-600">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+
+                  <h3 className="text-sm font-bold text-stone-900 leading-snug">{r.titulo}</h3>
+                  {(r.autores || r.anio) && (
+                    <p className="mt-1 text-xs text-stone-500">
+                      {r.autores}
+                      {r.anio ? ` (${r.anio})` : ''}
+                    </p>
                   )}
-                  {r.gratuito && (
-                    <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
-                      Gratis
-                    </span>
+                  {r.nota && (
+                    <p className="mt-2 text-xs text-stone-600 line-clamp-3">{r.nota}</p>
                   )}
-                  {r.areas.map((a) => (
-                    <span key={a} className="rounded-md bg-stone-100 px-1.5 py-0.5 text-stone-600">
-                      {a}
-                    </span>
-                  ))}
                 </div>
 
-                <h3 className="text-sm font-bold text-stone-900 leading-snug">{r.titulo}</h3>
-                {(r.autores || r.anio) && (
-                  <p className="mt-1 text-xs text-stone-500">
-                    {r.autores}
-                    {r.anio ? ` (${r.anio})` : ''}
-                  </p>
-                )}
-                {r.nota && (
-                  <p className="mt-2 text-xs text-stone-600 line-clamp-3">{r.nota}</p>
-                )}
+                <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-stone-100">
+                  {r.archivo && esPdf && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewRecurso(r)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800 transition cursor-pointer"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      Vista previa
+                    </button>
+                  )}
+                  {r.archivo && (
+                    <a
+                      href={fileUrl(r.archivo)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      {esPdf ? 'Abrir' : 'Descargar'}
+                    </a>
+                  )}
+                  {r.url && (
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Enlace
+                    </a>
+                  )}
+                  {!r.archivo && !r.url && (
+                    <span className="inline-flex items-center gap-1 text-xs text-stone-400">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Referencia bibliográfica
+                    </span>
+                  )}
+                </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-stone-100">
-                {r.archivo && (
-                  <a
-                    href={`/biblioteca-files/${r.archivo.replace(/^biblioteca\//, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800 transition"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    Abrir documento
-                  </a>
-                )}
-                {r.url && (
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    Enlace externo
-                  </a>
-                )}
-                {!r.archivo && !r.url && (
-                  <span className="inline-flex items-center gap-1 text-xs text-stone-400">
-                    <BookOpen className="h-3.5 w-3.5" />
-                    Referencia bibliográfica
-                  </span>
-                )}
+      {/* Modal de vista previa PDF */}
+      {previewRecurso && previewRecurso.archivo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 backdrop-blur-sm p-3 sm:p-6">
+          <div className="flex h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-3.5">
+              <div className="min-w-0">
+                <h4 className="truncate text-sm font-bold text-stone-900">
+                  {previewRecurso.titulo}
+                </h4>
+                <p className="text-xs text-stone-500">
+                  {previewRecurso.autores || 'Documento de biblioteca EGEL'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={fileUrl(previewRecurso.archivo)}
+                  download
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Descargar</span>
+                </a>
+                <a
+                  href={fileUrl(previewRecurso.archivo)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Nueva pestaña</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRecurso(null)}
+                  className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
             </div>
-          ))}
+            <iframe
+              src={fileUrl(previewRecurso.archivo)}
+              title={previewRecurso.titulo}
+              className="h-full w-full flex-1 bg-stone-100"
+            />
+          </div>
         </div>
       )}
     </div>

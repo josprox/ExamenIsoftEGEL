@@ -1,5 +1,6 @@
 import type {
   AuthResponse,
+  BibliotecaResumen,
   EstadisticasUsuario,
   Guia,
   Intento,
@@ -105,14 +106,27 @@ export const api = {
     );
   },
 
-  getBiblioteca: (params?: { area?: string; tipo?: string; q?: string; soloArchivo?: boolean }) => {
+  getBiblioteca: (params?: {
+    area?: string;
+    tipo?: string;
+    idioma?: string;
+    q?: string;
+    soloArchivo?: boolean;
+    soloOficial?: boolean;
+    soloGratuito?: boolean;
+    orden?: 'prioridad' | 'anio_desc' | 'titulo';
+  }) => {
     const qs = new URLSearchParams();
     if (params?.area && params.area !== 'todas') qs.set('area', params.area);
     if (params?.tipo && params.tipo !== 'todos') qs.set('tipo', params.tipo);
+    if (params?.idioma && params.idioma !== 'todos') qs.set('idioma', params.idioma);
     if (params?.q) qs.set('q', params.q);
     if (params?.soloArchivo) qs.set('solo_archivo', '1');
+    if (params?.soloOficial) qs.set('solo_oficial', '1');
+    if (params?.soloGratuito) qs.set('solo_gratuito', '1');
+    if (params?.orden) qs.set('orden', params.orden);
     const query = qs.toString();
-    return request<{ recursos: Recurso[]; total: number }>(
+    return request<{ recursos: Recurso[]; total: number; resumen?: BibliotecaResumen }>(
       `/biblioteca${query ? `?${query}` : ''}`
     );
   },
@@ -121,8 +135,10 @@ export const api = {
 
   getComandos: () => request<{ ramas: RamaComandos[] }>('/comandos'),
 
-  buscar: (q: string) =>
-    request<ResultadoBusqueda>(`/buscar?q=${encodeURIComponent(q)}`),
+  buscar: (q: string, tipo: 'todos' | 'guias' | 'preguntas' | 'comandos' | 'recursos' = 'todos') =>
+    request<ResultadoBusqueda>(
+      `/buscar?q=${encodeURIComponent(q)}&tipo=${encodeURIComponent(tipo)}`
+    ),
 
   // Intentos y progreso (requiere login)
   getIntentos: () =>

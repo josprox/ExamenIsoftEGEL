@@ -1,5 +1,15 @@
-import { ArrowRight, BookOpen, Clock3, Play, Target } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  Clock3,
+  Highlighter,
+  Play,
+  Sparkles,
+  Target,
+  Terminal,
+} from 'lucide-react';
 import type { Temario } from '../types/egel';
+import { BrandLogo } from './BrandLogo';
 
 interface InicioProps {
   temario: Temario | null;
@@ -12,47 +22,150 @@ interface InicioProps {
 export function Inicio({ temario, onNavigate }: InicioProps) {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <section className="rounded-3xl border border-stone-200 bg-white p-6 sm:p-10 shadow-sm">
-        <div className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">Guía del sustentante · Julio 2026</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 sm:text-5xl">Prepárate para el EGEL Plus ISOFT</h1>
-          <p className="mt-4 text-base leading-relaxed text-stone-600">Practica con la distribución de la guía, revisa tus errores y vuelve al tema que necesitas reforzar.</p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button type="button" onClick={() => onNavigate('simulador')}
-              className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-800">
-              <Play className="h-4 w-4" /> Comenzar práctica
-            </button>
-            <button type="button" onClick={() => onNavigate('progreso')}
-              className="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-800 hover:bg-stone-50">
-              <Target className="h-4 w-4" /> Ver mi avance
-            </button>
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-3xl border border-stone-200 bg-gradient-to-br from-white via-white to-teal-50/60 p-6 sm:p-10 shadow-sm">
+        <div className="grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/20 bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-teal-800">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              Guía del sustentante · Julio 2026
+            </div>
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-stone-900 sm:text-5xl">
+              Prepárate para el{' '}
+              <span className="text-teal-700">EGEL Plus ISOFT</span>
+            </h1>
+            <p className="mt-4 text-base leading-relaxed text-stone-600 max-w-2xl">
+              Simulador alineado a las 19 subáreas oficiales, método DCPDV con herramienta
+              de <strong>subrayado de pistas</strong>, guías por tema y seguimiento real de tu
+              avance.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => onNavigate('simulador')}
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-800 transition cursor-pointer"
+              >
+                <Play className="h-4 w-4" /> Comenzar práctica
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('progreso')}
+                className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 hover:bg-stone-50 transition cursor-pointer"
+              >
+                <Target className="h-4 w-4 text-teal-700" /> Ver mi avance
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('guias', { guiaClave: 'estrategias' })}
+                className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-100 transition cursor-pointer"
+              >
+                <BookOpen className="h-4 w-4 text-amber-600" /> Método DCPDV
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden lg:flex flex-col items-center justify-center rounded-2xl border border-teal-900/10 bg-white/90 p-6 shadow-sm text-center">
+            <BrandLogo className="h-20 w-20 drop-shadow-sm" />
+            <div className="mt-4 text-sm font-bold text-stone-900">
+              Banco de 382 reactivos
+            </div>
+            <p className="mt-1 text-xs text-stone-500 leading-relaxed">
+              Incluye casos prácticos, código, ordenamiento y multirreactivos de lectura.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-1.5 text-[11px] font-semibold">
+              <span className="rounded-lg bg-teal-50 px-2.5 py-1 text-teal-800">203 examen</span>
+              <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-amber-800">Subrayado</span>
+              <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-stone-700">19 subáreas</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section aria-label="Estructura del examen" className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-stone-200 bg-white p-5"><div className="text-3xl font-bold text-stone-900">203</div><div className="mt-1 text-sm font-semibold text-stone-800">Reactivos en el examen</div><p className="mt-1 text-xs text-stone-600">143 disciplinares y 60 de Lenguaje y Comunicación.</p></div>
-        <div className="rounded-2xl border border-stone-200 bg-white p-5"><div className="flex items-center gap-2 text-3xl font-bold text-stone-900"><Clock3 className="h-6 w-6 text-teal-700" />9 h</div><div className="mt-1 text-sm font-semibold text-stone-800">Dos sesiones</div><p className="mt-1 text-xs text-stone-600">4 h 30 min por sesión, según la guía.</p></div>
-        <div className="rounded-2xl border border-stone-200 bg-white p-5"><div className="text-3xl font-bold text-stone-900">3</div><div className="mt-1 text-sm font-semibold text-stone-800">Opciones por reactivo</div><p className="mt-1 text-xs text-stone-600">El simulador usa preguntas originales de práctica.</p></div>
+      {/* Estructura del examen + accesos rápidos */}
+      <section aria-label="Estructura del examen" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl border border-stone-200 bg-white p-5">
+          <div className="text-3xl font-bold text-stone-900">203</div>
+          <div className="mt-1 text-sm font-semibold text-stone-800">Reactivos en el examen</div>
+          <p className="mt-1 text-xs text-stone-600">143 disciplinares y 60 de Lenguaje y Comunicación.</p>
+        </div>
+        <div className="rounded-2xl border border-stone-200 bg-white p-5">
+          <div className="flex items-center gap-2 text-3xl font-bold text-stone-900">
+            <Clock3 className="h-6 w-6 text-teal-700" />9 h
+          </div>
+          <div className="mt-1 text-sm font-semibold text-stone-800">Dos sesiones</div>
+          <p className="mt-1 text-xs text-stone-600">Temporizador integrado en Modo Examen Real.</p>
+        </div>
+        <div className="rounded-2xl border border-stone-200 bg-white p-5">
+          <div className="flex items-center gap-2 text-3xl font-bold text-stone-900">
+            <Highlighter className="h-6 w-6 text-amber-500" />DCPDV
+          </div>
+          <div className="mt-1 text-sm font-semibold text-stone-800">Subrayar y marcar</div>
+          <p className="mt-1 text-xs text-stone-600">Resalta pistas clave y marca reactivos para revisar.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate('comandos')}
+          className="rounded-2xl border border-stone-200 bg-white p-5 text-left hover:border-teal-600 hover:bg-teal-50/30 transition cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-3xl font-bold text-stone-900">
+              <Terminal className="h-6 w-6 text-teal-700" />130
+            </div>
+            <ArrowRight className="h-4 w-4 text-stone-400" />
+          </div>
+          <div className="mt-1 text-sm font-semibold text-stone-800">Comandos rápidos</div>
+          <p className="mt-1 text-xs text-stone-600">Git, SQL, MongoDB, Docker, Linux y más.</p>
+        </button>
       </section>
 
+      {/* Mapa de estudio */}
       <section className="space-y-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">Mapa de estudio</p><h2 className="mt-1 text-2xl font-bold text-stone-900">Elige qué practicar</h2></div>
-          <button type="button" onClick={() => onNavigate('guias')} className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-800 hover:underline"><BookOpen className="h-4 w-4" /> Abrir guías <ArrowRight className="h-4 w-4" /></button>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">Mapa de estudio</p>
+            <h2 className="mt-1 text-2xl font-bold text-stone-900">Elige qué practicar</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('guias')}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-800 hover:underline cursor-pointer"
+          >
+            <BookOpen className="h-4 w-4" /> Abrir guías <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
+
         {temario?.secciones.map((seccion) => (
           <div key={seccion.id} className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-4"><h3 className="text-lg font-bold text-stone-900">{seccion.nombre}</h3><span className="text-sm font-medium text-stone-500">{seccion.reactivos} reactivos</span></div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-4">
+              <h3 className="text-lg font-bold text-stone-900">{seccion.nombre}</h3>
+              <span className="text-sm font-medium text-stone-500">{seccion.reactivos} reactivos</span>
+            </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {seccion.areas.map((area) => (
                 <div key={area.id} className="rounded-xl bg-stone-50 p-4">
-                  <div className="flex items-start justify-between gap-3"><div><div className="text-xs font-bold text-teal-700">{area.id}</div><h4 className="mt-1 text-sm font-bold text-stone-900">{area.nombre}</h4></div><span className="shrink-0 text-xs font-semibold text-stone-500">{area.reactivos}</span></div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-teal-700">{area.id}</div>
+                      <h4 className="mt-1 text-sm font-bold text-stone-900">{area.nombre}</h4>
+                    </div>
+                    <span className="shrink-0 text-xs font-semibold text-stone-500">
+                      {area.reactivos}
+                    </span>
+                  </div>
                   <div className="mt-3 space-y-1">
                     {area.subareas.map((sub) => (
-                      <button key={sub.id} type="button" onClick={() => onNavigate('simulador', { area: area.id, subarea: sub.id })}
-                        className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-stone-700 hover:bg-white hover:text-teal-800">
-                        <span><strong>{sub.id}</strong> · {sub.nombre}</span><span className="shrink-0 font-semibold">{sub.reactivos} <ArrowRight className="ml-1 inline h-3 w-3" /></span>
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => onNavigate('simulador', { area: area.id, subarea: sub.id })}
+                        className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-stone-700 hover:bg-white hover:text-teal-800 transition cursor-pointer"
+                      >
+                        <span>
+                          <strong>{sub.id}</strong> · {sub.nombre}
+                        </span>
+                        <span className="shrink-0 font-semibold">
+                          {sub.reactivos} <ArrowRight className="ml-1 inline h-3 w-3" />
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -61,9 +174,17 @@ export function Inicio({ temario, onNavigate }: InicioProps) {
             </div>
           </div>
         ))}
-        {!temario && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">No se pudo cargar el temario. Revisa que la API de Laravel esté iniciada.</p>}
+        {!temario && (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            No se pudo cargar el temario. Revisa que la API de Laravel esté iniciada.
+          </p>
+        )}
       </section>
-      <p className="text-xs leading-relaxed text-stone-500">La guía incluye 15 % de reactivos piloto. La puntuación de esta plataforma es un resultado de práctica; Ceneval determina el ICNE oficial mediante su propio proceso de calificación.</p>
+
+      <p className="text-xs leading-relaxed text-stone-500">
+        La guía incluye 15 % de reactivos piloto. La puntuación de esta plataforma es un resultado
+        de práctica; Ceneval determina el ICNE oficial mediante su propio proceso de calificación.
+      </p>
     </div>
   );
 }

@@ -1,0 +1,18 @@
+{
+  "name": "EGEL Plus ISOFT — Portal de Estudio",
+  "short_name": "EGEL ISOFT",
+  "description": "Simulador y guía de estudio para el examen CENEVAL EGEL Plus Ingeniería de Software (Guía Julio 2026).",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#0f766e",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

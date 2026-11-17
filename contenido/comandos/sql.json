@@ -23,6 +23,11 @@
     { "comando": "BEGIN; ... COMMIT; / ROLLBACK;", "descripcion": "TCL: agrupa operaciones en una transacción atómica, confirmándola o deshaciéndola." },
     { "comando": "GRANT SELECT ON ventas TO analista; / REVOKE ...", "descripcion": "DCL: otorga o revoca permisos." },
     { "comando": "SELECT * FROM t UNION SELECT * FROM t2;", "descripcion": "Combina resultados de consultas compatibles, sin duplicados (UNION ALL los conserva)." },
-    { "comando": "CREATE TRIGGER ... BEFORE INSERT ON tabla ...", "descripcion": "Trigger: lógica que se ejecuta automáticamente ante un evento de la tabla." }
+    { "comando": "CREATE TRIGGER ... BEFORE INSERT ON tabla ...", "descripcion": "Trigger: lógica que se ejecuta automáticamente ante un evento de la tabla." },
+    { "comando": "WITH resumen AS (SELECT cliente_id, SUM(total) AS gasto FROM pedido GROUP BY cliente_id) SELECT * FROM resumen WHERE gasto > 5000;", "descripcion": "CTE (Common Table Expression): consulta temporal legible reutilizable dentro de la misma sentencia." },
+    { "comando": "SELECT nombre, depto, ROW_NUMBER() OVER (PARTITION BY depto ORDER BY salario DESC) AS pos FROM empleado;", "descripcion": "Función de ventana: numera filas dentro de cada partición sin colapsarlas como GROUP BY." },
+    { "comando": "SELECT COALESCE(telefono, 'Sin registro') FROM cliente;", "descripcion": "Devuelve el primer valor no NULL de la lista." },
+    { "comando": "EXPLAIN ANALYZE SELECT * FROM factura WHERE folio = 'A123';", "descripcion": "Muestra el plan de ejecución real (Seq Scan vs Index Scan) y tiempos para optimizar consultas." },
+    { "comando": "TRUNCATE TABLE logs_temp;", "descripcion": "DDL: vacía todas las filas de una tabla de forma rápida sin registrar borrado fila por fila como DELETE." }
   ]
 }

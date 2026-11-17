@@ -1,21 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  GraduationCap,
   Home,
   PlayCircle,
   BookOpen,
   Library,
   BarChart3,
+  Terminal,
   Search,
   LogIn,
   LogOut,
   User as UserIcon,
+  ArrowUp,
 } from 'lucide-react';
 import { api, getStoredToken, setStoredToken } from './lib/api';
 import { getLocalProgress } from './lib/localProgress';
 import type { EstadisticasUsuario, Intento, Temario, User } from './types/egel';
 import { AuthModal } from './components/AuthModal';
 import { SearchModal } from './components/SearchModal';
+import { BrandLogo } from './components/BrandLogo';
 import { Inicio } from './components/Inicio';
 import { Simulator } from './components/Simulator';
 import { Guias } from './components/Guias';
@@ -38,6 +40,25 @@ export function App() {
   const [simSubarea, setSimSubarea] = useState<string>('todas');
   const [guiaClave, setGuiaClave] = useState<string | undefined>(undefined);
   const [resumeIntentoId, setResumeIntentoId] = useState<number | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const titles: Record<Tab, string> = {
+      inicio: 'EGEL Plus ISOFT 2026 — Simulador, Guías y Banco de Reactivos',
+      simulador: 'Simulador de Examen — EGEL Plus ISOFT 2026',
+      guias: 'Guías de Estudio — EGEL Plus ISOFT 2026',
+      progreso: 'Mi Progreso — EGEL Plus ISOFT 2026',
+      biblioteca: 'Biblioteca de Recursos — EGEL Plus ISOFT 2026',
+      comandos: 'Comandos Técnicos — EGEL Plus ISOFT 2026',
+    };
+    document.title = titles[tab];
+  }, [tab]);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 360);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const cargarProgreso = useCallback(async () => {
     if (getStoredToken()) {
@@ -127,6 +148,7 @@ export function App() {
     { id: 'guias', label: 'Guías', icon: <BookOpen className="h-4 w-4" /> },
     { id: 'progreso', label: 'Progreso', icon: <BarChart3 className="h-4 w-4" /> },
     { id: 'biblioteca', label: 'Biblioteca', icon: <Library className="h-4 w-4" /> },
+    { id: 'comandos', label: 'Comandos', icon: <Terminal className="h-4 w-4" /> },
   ];
 
   return (
@@ -137,11 +159,9 @@ export function App() {
           <button
             type="button"
             onClick={() => handleNavigate('inicio')}
-            className="flex items-center gap-2.5 text-left cursor-pointer"
+            className="flex items-center gap-2.5 text-left cursor-pointer group"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-sm">
-              <GraduationCap className="h-5 w-5" />
-            </div>
+            <BrandLogo className="h-9 w-9 transition-transform group-hover:scale-105" />
             <div className="hidden sm:block">
               <div className="text-sm font-bold text-stone-900 leading-tight">
                 EGEL Plus ISOFT
@@ -180,6 +200,9 @@ export function App() {
             >
               <Search className="h-3.5 w-3.5" />
               <span className="hidden lg:inline">Buscar</span>
+              <kbd className="hidden xl:inline-block rounded border border-stone-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-stone-400">
+                Ctrl K
+              </kbd>
             </button>
 
             {user ? (
@@ -255,6 +278,18 @@ export function App() {
           />
         )}
       </main>
+
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+          title="Volver arriba"
+          className="fixed bottom-5 right-5 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-lg hover:bg-teal-50 hover:text-teal-800 transition cursor-pointer"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </button>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-stone-200 bg-white">

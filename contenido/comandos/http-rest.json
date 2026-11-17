@@ -1,0 +1,19 @@
+{
+  "id": "http-rest",
+  "nombre": "HTTP, REST y Seguridad Web",
+  "icono": "🌐",
+  "subareas": ["2.1", "3.5"],
+  "descripcion": "Métodos HTTP, códigos de estado, cabeceras CORS/JWT y pruebas rápidas de APIs con curl.",
+  "comandos": [
+    { "comando": "curl -i https://api.ejemplo.com/recurso", "descripcion": "Muestra cabeceras HTTP de respuesta junto con el cuerpo." },
+    { "comando": "curl -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer TOKEN' -d '{\"nombre\":\"Ana\"}' https://api.ejemplo.com/usuarios", "descripcion": "Envía una petición POST con JSON y token Bearer." },
+    { "comando": "curl -X PATCH -H 'Content-Type: application/json' -d '{\"activo\":false}' https://api.ejemplo.com/usuarios/42", "descripcion": "Actualización parcial de un recurso (PATCH frente a PUT completo)." },
+    { "comando": "200 OK / 201 Created / 204 No Content", "descripcion": "Códigos 2xx: éxito general, recurso creado y éxito sin cuerpo (típico en DELETE)." },
+    { "comando": "400 Bad Request / 401 Unauthorized / 403 Forbidden / 404 Not Found / 409 Conflict / 422 Unprocessable", "descripcion": "Códigos 4xx: sintaxis inválida, no autenticado, sin permisos, no existe, conflicto de estado y validación fallida." },
+    { "comando": "500 Internal Server Error / 502 Bad Gateway / 503 Service Unavailable", "descripcion": "Códigos 5xx: fallo interno, respuesta inválida de upstream y servicio temporalmente saturado o en mantenimiento." },
+    { "comando": "Access-Control-Allow-Origin / Access-Control-Allow-Methods", "descripcion": "Cabeceras CORS necesarias para permitir peticiones desde otro origen en navegadores." },
+    { "comando": "Set-Cookie: session=xyz; HttpOnly; Secure; SameSite=Lax", "descripcion": "Protege cookies de sesión contra robo por XSS (HttpOnly) y CSRF básico (SameSite)." },
+    { "comando": "Content-Security-Policy: default-src 'self'", "descripcion": "Cabecera CSP que mitiga ataques XSS restringiendo orígenes permitidos de scripts." },
+    { "comando": "openssl rand -base64 32", "descripcion": "Genera una clave aleatoria criptográficamente segura de 256 bits." }
+  ]
+}

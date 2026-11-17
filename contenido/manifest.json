@@ -60,6 +60,7 @@
     "comandos/node-npm.json",
     "comandos/python.json",
     "comandos/java-maven.json",
-    "comandos/proyecto.json"
+    "comandos/http-rest.json",
+    "comandos/pruebas-calidad.json"
   ]
 }
