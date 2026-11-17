@@ -133,6 +133,7 @@ class ContenidoLoader
         Cache::forget('egel_guias_v1');
         Cache::forget('egel_comandos_v1');
         Cache::forget('egel_recursos_v1');
+        Cache::forget('egel_recursos_v2');
 
         return [
             'preguntas' => count($preguntas),

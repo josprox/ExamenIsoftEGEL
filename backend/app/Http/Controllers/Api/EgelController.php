@@ -129,15 +129,18 @@ class EgelController extends Controller
 
     public function biblioteca(Request $request): JsonResponse
     {
-        $recursos = Cache::remember('egel_recursos_v1', 3600, function () {
+        $recursosRaw = Cache::remember('egel_recursos_v2', 3600, function () {
             if (Recurso::count() === 0) {
                 ContenidoLoader::importarTodoABaseDeDatos();
             }
 
             return Recurso::orderByRaw('COALESCE(prioridad, 99) ASC')
                 ->orderBy('titulo')
-                ->get();
+                ->get()
+                ->toArray();
         });
+
+        $recursos = collect($recursosRaw)->map(fn ($r) => (object) $r);
 
         $area = $request->query('area');
         $tipo = $request->query('tipo');
@@ -148,7 +151,7 @@ class EgelController extends Controller
         $soloGratuito = $request->boolean('solo_gratuito');
         $orden = $request->query('orden', 'prioridad');
 
-        $filtrados = $recursos->filter(function (Recurso $r) use ($area, $tipo, $idioma, $q, $soloArchivo, $soloOficial, $soloGratuito) {
+        $filtrados = $recursos->filter(function (object $r) use ($area, $tipo, $idioma, $q, $soloArchivo, $soloOficial, $soloGratuito) {
             if ($area && !in_array($area, $r->areas ?? [], true)) {
                 return false;
             }
@@ -179,9 +182,9 @@ class EgelController extends Controller
         })->values();
 
         if ($orden === 'anio_desc') {
-            $filtrados = $filtrados->sortByDesc(fn (Recurso $r) => $r->anio ?? 0)->values();
+            $filtrados = $filtrados->sortByDesc(fn (object $r) => $r->anio ?? 0)->values();
         } elseif ($orden === 'titulo') {
-            $filtrados = $filtrados->sortBy(fn (Recurso $r) => mb_strtolower($r->titulo ?? ''))->values();
+            $filtrados = $filtrados->sortBy(fn (object $r) => mb_strtolower($r->titulo ?? ''))->values();
         }
 
         $porTipo = $recursos->groupBy('tipo')->map->count();
@@ -191,7 +194,7 @@ class EgelController extends Controller
             'total' => $filtrados->count(),
             'resumen' => [
                 'total_catalogo' => $recursos->count(),
-                'con_archivo' => $recursos->filter(fn (Recurso $r) => !empty($r->archivo))->count(),
+                'con_archivo' => $recursos->filter(fn (object $r) => !empty($r->archivo))->count(),
                 'oficiales' => $recursos->where('oficial', true)->count(),
                 'gratuitos' => $recursos->where('gratuito', true)->count(),
                 'por_tipo' => $porTipo,
