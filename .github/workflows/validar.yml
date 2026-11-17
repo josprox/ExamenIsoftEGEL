@@ -1,4 +1,4 @@
-name: Validar contenido
+name: Validar aplicación y contenido
 
 on:
   pull_request:
@@ -15,5 +15,15 @@ jobs:
           node-version: 22
       - name: Validar temario, preguntas, guías y recursos
         run: node scripts/validar.mjs
-      - name: Revisar sintaxis de la app
-        run: for f in app/js/*.js scripts/*.mjs; do node --check "$f"; done
+      - name: Compilar React
+        run: npm --prefix frontend install --ignore-scripts && npm run build
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, sqlite3, pdo_sqlite
+      - name: Instalar Laravel
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist
+      - name: Probar API
+        working-directory: backend
+        run: php artisan test

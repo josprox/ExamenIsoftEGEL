@@ -1,7 +1,7 @@
 {
   "id": "egel-plus-isoft-2026",
-  "nombre": "EGEL Plus ISOFT — Diciembre 2026",
-  "fuente": "GUIAS/OFICIAL/guia-sustentante-egel-plus-isoft-2026-12.pdf",
+  "nombre": "EGEL Plus ISOFT — Julio 2026",
+  "fuente": "biblioteca/general/guia-sustentante-egel-plus-isoft-julio-2026.pdf",
   "guiaInteractiva": "https://guias-egel.ceneval.edu.mx/",
   "formato": {
     "totalReactivos": 203,
@@ -231,23 +231,23 @@
         {
           "id": "L1",
           "nombre": "Comprensión lectora",
-          "definicion": "Identificar, interpretar y evaluar la forma y el contenido de textos de los ámbitos de estudio (reseña académica, artículo de investigación), literario (cuento, ensayo) y de participación social (convocatoria, nota informativa).",
+          "definicion": "Identificar, interpretar y evaluar la forma y el contenido de textos de los ámbitos de estudio, literario y de participación social.",
           "satisfactorio": "Identifica información con un criterio de búsqueda, interpreta frases o pasajes cortos y selecciona la explicación adecuada de una idea expuesta en el texto.",
           "sobresaliente": "Identifica información con distintos criterios pese a distractores, interpreta el sentido global del texto y valora ideas más allá del texto.",
           "subareas": [
             {
               "id": "L1.1",
-              "nombre": "Identificación de información",
+              "nombre": "Ámbito de estudio",
               "reactivos": 12
             },
             {
               "id": "L1.2",
-              "nombre": "Interpretación",
+              "nombre": "Ámbito literario",
               "reactivos": 12
             },
             {
               "id": "L1.3",
-              "nombre": "Evaluación de la forma y el contenido",
+              "nombre": "Ámbito de participación social",
               "reactivos": 6
             }
           ]
@@ -258,22 +258,17 @@
           "definicion": "Seleccionar textos coherentes, cohesionados y que cumplan las convenciones de la lengua a partir de un propósito comunicativo (no se redacta: se elige).",
           "satisfactorio": "Identifica algunas características del tipo de texto requerido; tiene dificultades con cohesión, coherencia y norma ortográfica completa.",
           "sobresaliente": "Identifica las características del género textual, distingue pasajes cohesionados y coherentes y selecciona textos que cumplen la norma ortográfica.",
-          "nota": "La guía publica 15 reactivos por ámbito (estudio / participación social), no por dimensión; la distribución por dimensión aquí es aproximada.",
+          "nota": "La guía distribuye los reactivos por ámbito; las dimensiones comunicativa, gramatical y ortográfica se practican dentro de ambos ámbitos.",
           "subareas": [
             {
               "id": "L2.1",
-              "nombre": "Dimensión comunicativa",
-              "reactivos": 10
+              "nombre": "Ámbito de estudio",
+              "reactivos": 15
             },
             {
               "id": "L2.2",
-              "nombre": "Dimensión gramatical y semántica",
-              "reactivos": 10
-            },
-            {
-              "id": "L2.3",
-              "nombre": "Dimensión ortográfica",
-              "reactivos": 10
+              "nombre": "Ámbito de participación social",
+              "reactivos": 15
             }
           ]
         }

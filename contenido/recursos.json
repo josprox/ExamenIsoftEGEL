@@ -13,7 +13,7 @@
   "recursos": [
     {
       "id": "guia-oficial-2026",
-      "titulo": "Guía para el sustentante EGEL Plus ISOFT (diciembre 2026)",
+      "titulo": "Guía para el sustentante EGEL Plus ISOFT (julio 2026)",
       "autores": "Ceneval",
       "anio": 2026,
       "tipo": "guia",
@@ -26,7 +26,7 @@
         "L2"
       ],
       "oficial": true,
-      "archivo": "GUIAS/OFICIAL/guia-sustentante-egel-plus-isoft-2026-12.pdf",
+      "archivo": "biblioteca/general/guia-sustentante-egel-plus-isoft-julio-2026.pdf",
       "url": "https://www.ceneval.edu.mx/",
       "prioridad": 1,
       "nota": "Documento rector: estructura, áreas, subáreas, formato de reactivos y bibliografía.",
@@ -1467,7 +1467,7 @@
         "2.2"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/ISWII-Patrones de Dise§o (4).pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/ISWII-Patrones de Dise§o (4).pdf"
     },
     {
       "id": "weitzenfeld-intro",
@@ -1481,7 +1481,7 @@
         "4.3"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/3_ProcesoSW.pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/3_ProcesoSW.pdf"
     },
     {
       "id": "weitzenfeld-objetos",
@@ -1497,7 +1497,7 @@
         "3.2"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/4_Objetos.pdf"
+      "archivo": "biblioteca/guias-3/4_Objetos.pdf"
     },
     {
       "id": "weitzenfeld-java",
@@ -1511,7 +1511,7 @@
         "3.1"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/5_Lenguaje.pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/5_Lenguaje.pdf"
     },
     {
       "id": "weitzenfeld-requisitos",
@@ -1526,7 +1526,7 @@
         "1.3"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/gestiondeprouectosdetecnologiadeinformaicon/6_Requisitos.pdf"
+      "archivo": "biblioteca/guias-3/gestiondeprouectosdetecnologiadeinformaicon/6_Requisitos.pdf"
     },
     {
       "id": "weitzenfeld-analisis",
@@ -1538,7 +1538,7 @@
         "A2"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/7_Analisis.pdf"
+      "archivo": "biblioteca/guias-3/7_Analisis.pdf"
     },
     {
       "id": "weitzenfeld-diseno",
@@ -1552,7 +1552,7 @@
         "2.2"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/8_Disenio.pdf"
+      "archivo": "biblioteca/guias-3/8_Disenio.pdf"
     },
     {
       "id": "weitzenfeld-impl",
@@ -1563,7 +1563,7 @@
         "A3"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/gestiondeprouectosdetecnologiadeinformaicon/9_Impl.pdf"
+      "archivo": "biblioteca/guias-3/gestiondeprouectosdetecnologiadeinformaicon/9_Impl.pdf"
     },
     {
       "id": "weitzenfeld-pruebas",
@@ -1579,7 +1579,7 @@
         "4.2"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/10_Pruebas.pdf"
+      "archivo": "biblioteca/guias-3/10_Pruebas.pdf"
     },
     {
       "id": "prog-ing-software",
@@ -1591,7 +1591,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/F - Ingenieria.pdf",
+      "archivo": "biblioteca/guias-3/F - Ingenieria.pdf",
       "nota": "Mismo contenido que gestiondeprouectos.../GUIAINGDESOFTWARE.pdf."
     },
     {
@@ -1608,7 +1608,7 @@
         "3.4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/G - TRatamiento.pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/G - TRatamiento.pdf"
     },
     {
       "id": "bd-principios",
@@ -1622,7 +1622,7 @@
         "3.4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/Bases de Datos.doc"
+      "archivo": "biblioteca/guias-3/Bases de Datos.doc"
     },
     {
       "id": "prog-ing-sw-tomo",
@@ -1635,7 +1635,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/Programaci¢n e Ingenieria de Software.pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/Programaci¢n e Ingenieria de Software.pdf"
     },
     {
       "id": "intro-ing-sw-granollers",
@@ -1646,7 +1646,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/implementacionderedeassoylenguajes/introduccion a la ingenieria del software.pdf"
+      "archivo": "biblioteca/guias-3/implementacionderedeassoylenguajes/introduccion a la ingenieria del software.pdf"
     },
     {
       "id": "codigo-etica",
@@ -1657,7 +1657,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "CODIGODEETICA.pdf"
+      "archivo": "biblioteca/general/CODIGODEETICA.pdf"
     },
     {
       "id": "guia-comunidad-2024",
@@ -1673,7 +1673,7 @@
       ],
       "oficial": false,
       "prioridad": 1,
-      "archivo": "Guia EGEL ISOFT 2024.pdf",
+      "archivo": "biblioteca/general/Guia EGEL ISOFT 2024.pdf",
       "nota": "Temas observados en la aplicación de 2023, con la misma estructura de 4 áreas."
     },
     {
@@ -1689,7 +1689,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-2/REACTIVOSOFTWARE2022ORO.pdf",
+      "archivo": "biblioteca/general/REACTIVOSOFTWARE2022ORO.pdf",
       "nota": "Usa 4 opciones (formato anterior); el examen actual usa 3."
     },
     {
@@ -1702,7 +1702,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "EJEMPLOS/Preguntas de Examen.pdf"
+      "archivo": "biblioteca/general/Preguntas de Examen.pdf"
     },
     {
       "id": "guia-practica-uml",
@@ -1714,7 +1714,7 @@
         "A2"
       ],
       "oficial": false,
-      "archivo": "GUIAPRACTICA.pdf",
+      "archivo": "biblioteca/general/GUIAPRACTICA.pdf",
       "nota": "El PDF tiene la fuente incrustada dañada; puede verse con caracteres extraños."
     },
     {
@@ -1727,7 +1727,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/extras/preguntas2.pdf"
+      "archivo": "biblioteca/guias-3/extras/preguntas2.pdf"
     },
     {
       "id": "examen-muestra-doc",
@@ -1739,7 +1739,7 @@
         "A4"
       ],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/extras/examenmuestra.doc"
+      "archivo": "biblioteca/guias-3/extras/examenmuestra.doc"
     },
     {
       "id": "tecnicas-estudio",
@@ -1748,7 +1748,7 @@
       "tipo": "guia",
       "areas": [],
       "oficial": false,
-      "archivo": "GUIAS/GUIA-3/extras/tecnicasdeestudio(2).pdf"
+      "archivo": "biblioteca/guias-3/extras/tecnicasdeestudio(2).pdf"
     },
     {
       "id": "video-normalizacion",

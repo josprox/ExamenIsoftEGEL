@@ -13,7 +13,7 @@
   "preguntas": [
     {
       "id": "LYC-001",
-      "subarea": "L1.1",
+      "subarea": "L1.3",
       "formato": "multirreactivo",
       "estimulo": "LYC-E1",
       "nivel": "satisfactorio",
@@ -33,7 +33,7 @@
     },
     {
       "id": "LYC-002",
-      "subarea": "L1.2",
+      "subarea": "L1.3",
       "formato": "multirreactivo",
       "estimulo": "LYC-E1",
       "nivel": "satisfactorio",
@@ -92,10 +92,10 @@
     },
     {
       "id": "LYC-005",
-      "subarea": "L2.2",
+      "subarea": "L2.1",
       "formato": "cuestionamiento-directo",
       "nivel": "satisfactorio",
-      "base": "Elija la oración que presenta una concordancia correcta.",
+      "base": "En un texto del ámbito de estudio: Elija la oración que presenta una concordancia correcta.",
       "pregunta": "¿Cuál oración está redactada correctamente?",
       "opciones": [
         { "texto": "Los resultados de la encuesta aplicada a los usuarios demuestra que la aplicación es lenta.", "explicacion": "Incorrecta. El núcleo del sujeto es «resultados» (plural), así que el verbo debe ir en plural: «demuestran». El sustantivo cercano «encuesta» confunde." },
@@ -114,7 +114,7 @@
       "subarea": "L2.2",
       "formato": "completamiento",
       "nivel": "satisfactorio",
-      "base": "El servidor principal dejó de responder durante dos horas; ________, los clientes no pudieron completar sus pagos en línea.",
+      "base": "En un texto de participación social: El servidor principal dejó de responder durante dos horas; ________, los clientes no pudieron completar sus pagos en línea.",
       "pregunta": "¿Qué marcador textual completa el enunciado de forma coherente?",
       "opciones": [
         { "texto": "por consiguiente", "explicacion": "Correcta. Es un marcador consecutivo: introduce la consecuencia (no se completaron los pagos) de lo dicho antes (el servidor dejó de responder)." },
@@ -130,10 +130,10 @@
     },
     {
       "id": "LYC-007",
-      "subarea": "L2.3",
+      "subarea": "L2.1",
       "formato": "cuestionamiento-directo",
       "nivel": "satisfactorio",
-      "base": "Elija la oración que cumple con la norma ortográfica.",
+      "base": "En un texto del ámbito de estudio: Elija la oración que cumple con la norma ortográfica.",
       "pregunta": "¿Cuál oración está escrita correctamente?",
       "opciones": [
         { "texto": "Aun no se si el vendrá, pero te avisare.", "explicacion": "Incorrecta. Faltan las tildes en «Aún» (equivale a «todavía»), «sé» (del verbo saber), «él» (pronombre) y «avisaré» (aguda terminada en vocal)." },
@@ -149,10 +149,10 @@
     },
     {
       "id": "LYC-008",
-      "subarea": "L2.3",
+      "subarea": "L2.2",
       "formato": "cuestionamiento-directo",
       "nivel": "satisfactorio",
-      "base": "Elija la instrucción con la puntuación correcta.",
+      "base": "En un texto de participación social: Elija la instrucción con la puntuación correcta.",
       "pregunta": "¿Cuál enunciado está puntuado correctamente?",
       "opciones": [
         { "texto": "Para instalar el programa descargue, el archivo ejecútelo y siga las instrucciones.", "explicacion": "Incorrecta. La coma separa el verbo «descargue» de su complemento directo «el archivo», y falta la coma entre los elementos de la enumeración." },

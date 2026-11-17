@@ -5,9 +5,11 @@
   "description": "Guía, simulador y biblioteca para el EGEL Plus ISOFT (Ceneval)",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/servir.mjs",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "php backend/artisan serve",
+    "build": "npm --prefix frontend run build",
     "validar": "node scripts/validar.mjs",
-    "test": "node scripts/validar.mjs"
+    "test": "node scripts/validar.mjs && npm --prefix frontend run build"
   },
   "engines": {
     "node": ">=18"

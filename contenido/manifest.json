@@ -1,7 +1,7 @@
 {
   "version": 1,
   "proyecto": "ExamenIsoftEGEL",
-  "repositorio": "https://github.com/DDDkubota/ExamenIsoftEGEL",
+  "repositorio": "https://github.com/josprox/ExamenIsoftEGEL",
   "ramaPrincipal": "master",
   "temarioActivo": "egel-plus-isoft-2026",
   "temarios": [
@@ -19,6 +19,7 @@
         "preguntas/extendido/a3-desarrollo.json",
         "preguntas/extendido/a4-gestion.json",
         "preguntas/extendido/lyc-lenguaje.json",
+        "preguntas/refuerzo-julio-2026.json",
         "preguntas/reto/reto.json"
       ],
       "guias": {

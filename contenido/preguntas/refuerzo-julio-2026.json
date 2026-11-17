@@ -1,0 +1,716 @@
+{
+  "temario": "egel-plus-isoft-2026",
+  "area": "GENERAL",
+  "banco": "refuerzo",
+  "estimulos": [
+    {
+      "id": "J26-E1",
+      "texto": "En un estudio con 48 equipos de desarrollo, se comparó la revisión de código individual con la revisión por pares. Durante ocho semanas, ambos grupos trabajaron con tareas de complejidad semejante. Los equipos con revisión por pares detectaron más defectos antes del despliegue, pero tardaron más en integrar cada cambio. Los autores advierten que el estudio se realizó en una sola empresa y que no permite concluir que el resultado se repita en organizaciones de otro tamaño."
+    },
+    {
+      "id": "J26-E2",
+      "texto": "Cada tarde, Inés apagaba el letrero de la tienda antes de cerrar. Una noche lo dejó encendido. Al volver por la mañana encontró bajo la puerta una nota: «Gracias por dejar una luz en esta calle». Desde entonces, cerraba la caja, guardaba la llave y dejaba el letrero brillando hasta el amanecer."
+    }
+  ],
+  "preguntas": [
+    {
+      "id": "J26-001",
+      "area": "A1",
+      "subarea": "1.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una aplicación debe permitir que un usuario restablezca su contraseña mediante un enlace enviado a su correo.",
+      "pregunta": "¿Qué tipo de requerimiento describe principalmente la frase?",
+      "opciones": [
+        {
+          "texto": "Funcional",
+          "explicacion": "Correcta. Describe una función observable que el sistema debe ofrecer al usuario."
+        },
+        {
+          "texto": "De desempeño",
+          "explicacion": "Incorrecta. No fija un tiempo de respuesta ni una capacidad medible."
+        },
+        {
+          "texto": "Organizacional",
+          "explicacion": "Incorrecta. No impone una política del proceso de desarrollo."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Identifica si la frase dice qué hace el sistema o bajo qué restricción debe hacerlo.",
+      "conceptos": [
+        "Requerimiento funcional"
+      ],
+      "fuentes": [
+        {
+          "recurso": "sommerville-2016",
+          "detalle": "Requerimientos funcionales y no funcionales"
+        }
+      ]
+    },
+    {
+      "id": "J26-002",
+      "area": "A1",
+      "subarea": "1.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Dos grupos de usuarios proponen funciones incompatibles para la misma pantalla. El equipo necesita conocer las razones de cada grupo y acordar una prioridad.",
+      "pregunta": "¿Qué técnica resulta más adecuada para resolver el conflicto?",
+      "opciones": [
+        {
+          "texto": "Una inspección del código fuente",
+          "explicacion": "Incorrecta. El código no revela por sí mismo la prioridad de los interesados."
+        },
+        {
+          "texto": "Un taller de negociación con representantes de ambos grupos",
+          "explicacion": "Correcta. Permite contrastar necesidades y acordar una prioridad de forma conjunta."
+        },
+        {
+          "texto": "Una prueba de carga del servidor",
+          "explicacion": "Incorrecta. Mide rendimiento, no resuelve intereses en conflicto."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Relaciona la técnica con el problema: aquí se necesita consenso entre interesados.",
+      "conceptos": [
+        "Negociación de requerimientos",
+        "Priorización"
+      ],
+      "fuentes": [
+        {
+          "recurso": "wiegers-2023",
+          "detalle": "Priorización y negociación de requerimientos"
+        }
+      ]
+    },
+    {
+      "id": "J26-003",
+      "area": "A1",
+      "subarea": "1.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una historia de usuario dice: «Como cliente quiero ver mis pedidos». El equipo necesita verificar cuándo la función está terminada.",
+      "pregunta": "¿Qué documento complementa mejor la historia para poder comprobarla?",
+      "opciones": [
+        {
+          "texto": "Una lista de nombres de desarrolladores",
+          "explicacion": "Incorrecta. La asignación del equipo no define el comportamiento esperado."
+        },
+        {
+          "texto": "Un inventario de computadoras",
+          "explicacion": "Incorrecta. El hardware disponible no precisa la conducta de la función."
+        },
+        {
+          "texto": "Criterios de aceptación con ejemplos observables",
+          "explicacion": "Correcta. Establecen condiciones verificables para aceptar la función."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Busca evidencia que permita decidir objetivamente si el requerimiento se cumple.",
+      "conceptos": [
+        "Criterios de aceptación",
+        "Documentación de requerimientos"
+      ],
+      "fuentes": [
+        {
+          "recurso": "wiegers-2023",
+          "detalle": "Especificación y validación de requerimientos"
+        }
+      ]
+    },
+    {
+      "id": "J26-004",
+      "area": "A2",
+      "subarea": "2.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una tienda en línea separa catálogo, pagos y envíos en servicios que se comunican mediante interfaces definidas.",
+      "pregunta": "¿Qué decisión corresponde al diseño arquitectónico?",
+      "opciones": [
+        {
+          "texto": "Definir los servicios y sus relaciones",
+          "explicacion": "Correcta. La arquitectura establece componentes principales y cómo interactúan."
+        },
+        {
+          "texto": "Elegir el color del botón de compra",
+          "explicacion": "Incorrecta. Es una decisión de interfaz visual."
+        },
+        {
+          "texto": "Nombrar una variable local del cálculo de impuestos",
+          "explicacion": "Incorrecta. Es un detalle de implementación."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Distingue decisiones globales de estructura de los detalles de pantalla o código.",
+      "conceptos": [
+        "Arquitectura de software"
+      ],
+      "fuentes": [
+        {
+          "recurso": "sommerville-2016",
+          "detalle": "Diseño arquitectónico"
+        }
+      ]
+    },
+    {
+      "id": "J26-005",
+      "area": "A2",
+      "subarea": "2.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En un sistema escolar, una inscripción pertenece a un estudiante y a un curso. Un estudiante puede tener varias inscripciones y un curso puede recibir varias.",
+      "pregunta": "¿Dónde debe colocarse la referencia al estudiante y al curso en un modelo relacional?",
+      "opciones": [
+        {
+          "texto": "En Estudiante, como una lista de todos los cursos",
+          "explicacion": "Incorrecta. Una lista multivaluada rompe el diseño relacional básico."
+        },
+        {
+          "texto": "En la tabla Inscripción, como dos claves foráneas",
+          "explicacion": "Correcta. La tabla asociativa representa cada inscripción y referencia ambas entidades."
+        },
+        {
+          "texto": "En Curso, como una columna por cada estudiante",
+          "explicacion": "Incorrecta. El número de columnas no debe crecer con las inscripciones."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Para una relación muchos a muchos, identifica la entidad que une a las dos tablas.",
+      "conceptos": [
+        "Modelo relacional",
+        "Relación muchos a muchos"
+      ],
+      "fuentes": [
+        {
+          "recurso": "sommerville-2016",
+          "detalle": "Diseño de datos"
+        }
+      ]
+    },
+    {
+      "id": "J26-006",
+      "area": "A2",
+      "subarea": "2.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un formulario exige una fecha de nacimiento. Varias personas escriben fechas en formatos distintos y reciben un mensaje genérico de error.",
+      "pregunta": "¿Qué cambio de interfaz ayuda más a prevenir el problema?",
+      "opciones": [
+        {
+          "texto": "Ocultar el campo hasta que se envíe el formulario",
+          "explicacion": "Incorrecta. Impide introducir el dato requerido."
+        },
+        {
+          "texto": "Cambiar únicamente el color del encabezado",
+          "explicacion": "Incorrecta. No aclara el formato ni el error."
+        },
+        {
+          "texto": "Mostrar el formato esperado y un error específico junto al campo",
+          "explicacion": "Correcta. La guía de entrada y la retroalimentación contextual reducen errores."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Elige la opción que ayuda a reconocer y corregir el error en el lugar donde ocurre.",
+      "conceptos": [
+        "Diseño de interfaces",
+        "Prevención de errores"
+      ],
+      "fuentes": [
+        {
+          "recurso": "pressman-2020",
+          "detalle": "Diseño de interfaz de usuario"
+        }
+      ]
+    },
+    {
+      "id": "J26-007",
+      "area": "A3",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un servicio debe recibir una solicitud HTTP, validar sus campos y devolver una respuesta JSON.",
+      "pregunta": "¿Qué estructura de control permite rechazar una solicitud cuyos campos obligatorios faltan?",
+      "opciones": [
+        {
+          "texto": "Una condición que compruebe los campos antes de procesar",
+          "explicacion": "Correcta. La validación antecede a la lógica de negocio."
+        },
+        {
+          "texto": "Un ciclo infinito que espere nuevos valores",
+          "explicacion": "Incorrecta. Bloquea la respuesta y no informa el error."
+        },
+        {
+          "texto": "Una asignación que ignore el cuerpo de la solicitud",
+          "explicacion": "Incorrecta. No verifica la entrada."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Reconoce el flujo necesario: comprobar, decidir y responder.",
+      "conceptos": [
+        "Validación de entrada",
+        "Condicionales"
+      ],
+      "fuentes": [
+        {
+          "recurso": "pressman-2020",
+          "detalle": "Construcción de software"
+        }
+      ]
+    },
+    {
+      "id": "J26-008",
+      "area": "A3",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un objeto Pedido conserva su estado y ofrece métodos para agregar productos y calcular el total.",
+      "pregunta": "¿Qué principio de la programación orientada a objetos se observa principalmente?",
+      "opciones": [
+        {
+          "texto": "Recursividad",
+          "explicacion": "Incorrecta. No se describe una función que se llame a sí misma."
+        },
+        {
+          "texto": "Encapsulación",
+          "explicacion": "Correcta. Los datos y las operaciones relacionadas se reúnen en el objeto."
+        },
+        {
+          "texto": "Paralelismo",
+          "explicacion": "Incorrecta. No se describen tareas ejecutadas a la vez."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Busca la relación entre el estado del objeto y las operaciones que lo manipulan.",
+      "conceptos": [
+        "Paradigma orientado a objetos",
+        "Encapsulación"
+      ],
+      "fuentes": [
+        {
+          "recurso": "sommerville-2016",
+          "detalle": "Diseño orientado a objetos"
+        }
+      ]
+    },
+    {
+      "id": "J26-009",
+      "area": "A3",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "El equipo desea que cada cambio de código ejecute automáticamente pruebas y avise si alguna falla antes de integrar la rama.",
+      "pregunta": "¿Qué capacidad del entorno de desarrollo necesita?",
+      "opciones": [
+        {
+          "texto": "Un editor que solo cambie el tema de colores",
+          "explicacion": "Incorrecta. No ejecuta pruebas ni controla integraciones."
+        },
+        {
+          "texto": "Una copia manual del repositorio al final del mes",
+          "explicacion": "Incorrecta. No verifica cada cambio a tiempo."
+        },
+        {
+          "texto": "Integración continua con ejecución automática de pruebas",
+          "explicacion": "Correcta. Ejecuta verificaciones por cambio y comunica sus resultados."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Asocia automatización por cada cambio con un flujo de integración continua.",
+      "conceptos": [
+        "Integración continua",
+        "Pruebas automatizadas"
+      ],
+      "fuentes": [
+        {
+          "recurso": "pressman-2020",
+          "detalle": "Herramientas y proceso de desarrollo"
+        }
+      ]
+    },
+    {
+      "id": "J26-010",
+      "area": "A3",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una transferencia bancaria debe descontar saldo de una cuenta y abonarlo a otra. Si falla el abono, tampoco debe conservarse el descuento.",
+      "pregunta": "¿Qué propiedad de una transacción resuelve esta necesidad?",
+      "opciones": [
+        {
+          "texto": "Atomicidad",
+          "explicacion": "Correcta. La operación se confirma completa o se revierte completa."
+        },
+        {
+          "texto": "Durabilidad",
+          "explicacion": "Incorrecta. Trata de conservar cambios ya confirmados."
+        },
+        {
+          "texto": "Aislamiento",
+          "explicacion": "Incorrecta. Trata de la interferencia entre transacciones concurrentes."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "La frase «ambas operaciones o ninguna» apunta a atomicidad.",
+      "conceptos": [
+        "Transacciones",
+        "ACID"
+      ],
+      "fuentes": [
+        {
+          "recurso": "sommerville-2016",
+          "detalle": "Gestión de datos"
+        }
+      ]
+    },
+    {
+      "id": "J26-011",
+      "area": "A3",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una aplicación móvil necesita acceder a la cámara del dispositivo para capturar comprobantes.",
+      "pregunta": "¿Qué elemento de la plataforma debe usar el equipo?",
+      "opciones": [
+        {
+          "texto": "El motor de consultas SQL de un servidor",
+          "explicacion": "Incorrecta. No controla el sensor del dispositivo."
+        },
+        {
+          "texto": "La API de cámara y sus permisos",
+          "explicacion": "Correcta. La plataforma expone la cámara mediante una API controlada por permisos."
+        },
+        {
+          "texto": "El archivo de estilos del sitio web",
+          "explicacion": "Incorrecta. Los estilos no conceden acceso al hardware."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Identifica el servicio propio de la plataforma que da acceso al recurso físico.",
+      "conceptos": [
+        "Plataformas móviles",
+        "API",
+        "Permisos"
+      ],
+      "fuentes": [
+        {
+          "recurso": "pressman-2020",
+          "detalle": "Desarrollo de aplicaciones"
+        }
+      ]
+    },
+    {
+      "id": "J26-012",
+      "area": "A4",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una actividad de integración depende de que terminen tanto la interfaz como el servicio de pagos. La interfaz termina el día 5 y el servicio el día 8.",
+      "pregunta": "¿En qué día puede iniciar más temprano la integración?",
+      "opciones": [
+        {
+          "texto": "Día 5",
+          "explicacion": "Incorrecta. El servicio de pagos aún no termina."
+        },
+        {
+          "texto": "Día 13",
+          "explicacion": "Incorrecta. No se suman fechas de terminación de trabajos paralelos."
+        },
+        {
+          "texto": "Día 8",
+          "explicacion": "Correcta. Debe esperar a la última de sus dos predecesoras."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Cuando hay dependencias paralelas, toma la fecha de terminación más tardía.",
+      "conceptos": [
+        "Dependencias",
+        "Programación de proyectos"
+      ],
+      "fuentes": [
+        {
+          "recurso": "pressman-2020",
+          "detalle": "Planificación de proyectos"
+        }
+      ]
+    },
+    {
+      "id": "J26-013",
+      "area": "A4",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En una aplicación de salud, el equipo mide cuánto tarda la pantalla principal en responder con 1000 usuarios simultáneos.",
+      "pregunta": "¿Qué característica de calidad evalúa principalmente?",
+      "opciones": [
+        {
+          "texto": "Eficiencia de desempeño",
+          "explicacion": "Correcta. Relaciona tiempo de respuesta y carga de trabajo."
+        },
+        {
+          "texto": "Portabilidad",
+          "explicacion": "Incorrecta. Evalúa la adaptación a otros entornos."
+        },
+        {
+          "texto": "Mantenibilidad",
+          "explicacion": "Incorrecta. Evalúa la facilidad para analizar y modificar el software."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Tiempo de respuesta bajo carga es una señal de desempeño.",
+      "conceptos": [
+        "Calidad de software",
+        "Eficiencia de desempeño"
+      ],
+      "fuentes": [
+        {
+          "recurso": "iso-25010-2023",
+          "detalle": "Modelo de calidad del producto"
+        }
+      ]
+    },
+    {
+      "id": "J26-014",
+      "area": "A4",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Durante un Sprint aparece una nueva solicitud. El Product Owner desea incorporarla sin perder de vista el objetivo del Sprint.",
+      "pregunta": "¿Qué acción es congruente con Scrum?",
+      "opciones": [
+        {
+          "texto": "Cambiar unilateralmente el objetivo del Sprint cada día",
+          "explicacion": "Incorrecta. El objetivo ofrece un foco estable durante el Sprint."
+        },
+        {
+          "texto": "Negociar con los Developers el alcance sin poner en riesgo el objetivo del Sprint",
+          "explicacion": "Correcta. El alcance puede aclararse y renegociarse con el Product Owner a medida que se aprende."
+        },
+        {
+          "texto": "Prohibir toda conversación sobre el Product Backlog",
+          "explicacion": "Incorrecta. Scrum permite inspección y adaptación."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Distingue el objetivo del Sprint del alcance negociable del trabajo.",
+      "conceptos": [
+        "Scrum",
+        "Sprint Goal"
+      ],
+      "fuentes": [
+        {
+          "recurso": "scrum-guide-2020",
+          "detalle": "Sprint"
+        }
+      ]
+    },
+    {
+      "id": "J26-015",
+      "area": "L1",
+      "subarea": "L1.1",
+      "formato": "multirreactivo",
+      "estimulo": "J26-E1",
+      "nivel": "satisfactorio",
+      "pregunta": "¿Cuánto tiempo se observó a los equipos del estudio?",
+      "opciones": [
+        {
+          "texto": "Una sola semana",
+          "explicacion": "Incorrecta. El texto dice ocho semanas."
+        },
+        {
+          "texto": "Un año",
+          "explicacion": "Incorrecta. No aparece ese periodo."
+        },
+        {
+          "texto": "Ocho semanas",
+          "explicacion": "Correcta. Es el periodo que indica el texto."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Localiza la cifra junto a la descripción del método.",
+      "conceptos": [
+        "Lectura en ámbito de estudio",
+        "Identificación de información"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de comprensión lectora"
+        }
+      ]
+    },
+    {
+      "id": "J26-016",
+      "area": "L1",
+      "subarea": "L1.1",
+      "formato": "multirreactivo",
+      "estimulo": "J26-E1",
+      "nivel": "sobresaliente",
+      "pregunta": "¿Por qué los autores evitan generalizar el resultado a todas las empresas?",
+      "opciones": [
+        {
+          "texto": "Porque los datos proceden de una sola organización",
+          "explicacion": "Correcta. Esa limitación restringe el alcance de la conclusión."
+        },
+        {
+          "texto": "Porque no compararon dos modalidades de revisión",
+          "explicacion": "Incorrecta. Sí compararon revisión individual y por pares."
+        },
+        {
+          "texto": "Porque no observaron defectos",
+          "explicacion": "Incorrecta. El texto informa sobre defectos detectados."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Relaciona la advertencia de los autores con el diseño del estudio.",
+      "conceptos": [
+        "Lectura en ámbito de estudio",
+        "Evaluación de resultados"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de comprensión lectora"
+        }
+      ]
+    },
+    {
+      "id": "J26-017",
+      "area": "L1",
+      "subarea": "L1.2",
+      "formato": "multirreactivo",
+      "estimulo": "J26-E2",
+      "nivel": "satisfactorio",
+      "pregunta": "¿Qué encontró Inés bajo la puerta?",
+      "opciones": [
+        {
+          "texto": "La llave de la tienda",
+          "explicacion": "Incorrecta. Inés guardaba la llave."
+        },
+        {
+          "texto": "Una nota de agradecimiento",
+          "explicacion": "Correcta. El narrador reproduce su contenido."
+        },
+        {
+          "texto": "Un letrero nuevo",
+          "explicacion": "Incorrecta. El letrero ya pertenecía a la tienda."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Ubica la acción que ocurre al regresar por la mañana.",
+      "conceptos": [
+        "Lectura en ámbito literario",
+        "Identificación de información"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de comprensión lectora"
+        }
+      ]
+    },
+    {
+      "id": "J26-018",
+      "area": "L1",
+      "subarea": "L1.2",
+      "formato": "multirreactivo",
+      "estimulo": "J26-E2",
+      "nivel": "sobresaliente",
+      "pregunta": "¿Qué cambio de sentido adquiere el letrero para Inés?",
+      "opciones": [
+        {
+          "texto": "Demuestra que la tienda permanecerá abierta toda la noche",
+          "explicacion": "Incorrecta. Inés cierra la tienda cada tarde."
+        },
+        {
+          "texto": "Sirve para indicar que la caja sigue encendida",
+          "explicacion": "Incorrecta. La caja se cierra; la luz tiene un valor simbólico."
+        },
+        {
+          "texto": "Se vuelve una señal de compañía para otras personas",
+          "explicacion": "Correcta. La nota revela que su luz importa a alguien de la calle."
+        }
+      ],
+      "correcta": 2,
+      "estrategia": "Interpreta el gesto final a la luz de la nota recibida.",
+      "conceptos": [
+        "Lectura en ámbito literario",
+        "Interpretación"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de comprensión lectora"
+        }
+      ]
+    },
+    {
+      "id": "J26-019",
+      "area": "L2",
+      "subarea": "L2.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En el resumen de un artículo académico se debe presentar el objetivo de un estudio sobre pruebas automatizadas.",
+      "pregunta": "¿Qué oración cumple mejor ese propósito?",
+      "opciones": [
+        {
+          "texto": "Este estudio analiza la relación entre la automatización de pruebas y el tiempo de entrega en 20 equipos.",
+          "explicacion": "Correcta. Expresa el objetivo de forma precisa y con registro académico."
+        },
+        {
+          "texto": "Las pruebas son increíbles y todos deberían usarlas.",
+          "explicacion": "Incorrecta. Es una valoración informal y no precisa el objetivo."
+        },
+        {
+          "texto": "Se entregaron 20 equipos a las pruebas automatizadas.",
+          "explicacion": "Incorrecta. Altera la relación entre equipos y pruebas."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "En un resumen académico, identifica la acción investigativa y el objeto de estudio.",
+      "conceptos": [
+        "Redacción en ámbito de estudio",
+        "Propósito comunicativo"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de redacción indirecta"
+        }
+      ]
+    },
+    {
+      "id": "J26-020",
+      "area": "L2",
+      "subarea": "L2.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "El ayuntamiento publicará un aviso de mantenimiento del agua para sus habitantes.",
+      "pregunta": "¿Qué enunciado comunica la información de manera clara y adecuada?",
+      "opciones": [
+        {
+          "texto": "Por ahí vamos a cortar el agua un rato, aguas.",
+          "explicacion": "Incorrecta. El registro es impreciso e informal para un aviso público."
+        },
+        {
+          "texto": "El servicio se suspenderá el sábado de 6:00 a 12:00; almacene agua con anticipación.",
+          "explicacion": "Correcta. Presenta horario y recomendación en un registro claro para la ciudadanía."
+        },
+        {
+          "texto": "Se suspende el servicio; consulte después cuándo será.",
+          "explicacion": "Incorrecta. Omite el horario y no permite prepararse."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Un aviso público debe ofrecer datos precisos y una acción útil para el lector.",
+      "conceptos": [
+        "Redacción en ámbito de participación social",
+        "Adecuación"
+      ],
+      "fuentes": [
+        {
+          "recurso": "guia-oficial-2026",
+          "detalle": "Sección de redacción indirecta"
+        }
+      ]
+    }
+  ]
+}

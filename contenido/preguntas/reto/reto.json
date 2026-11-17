@@ -547,7 +547,7 @@
       "estrategia": "¿Se agrega algo nuevo (incremental) o se mejora lo existente (iterativo)?",
       "conceptos": ["Iterativo vs. incremental", "Modelos de proceso"],
       "fuentes": [{ "recurso": "garcia-2018" }] },
-    { "id": "LYC-R01", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+    { "id": "LYC-R01", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
       "base": "Elija la oración con la concordancia correcta.",
       "pregunta": "¿Cuál oración está bien escrita?",
       "opciones": [
@@ -573,7 +573,7 @@
       "estrategia": "Sustituye por un pronombre: «los hubo» (complemento directo), no «ellos hubieron».",
       "conceptos": ["Haber impersonal", "Concordancia"],
       "fuentes": [{ "recurso": "rae-dpd", "detalle": "haber" }] },
-    { "id": "LYC-R03", "subarea": "L2.3", "formato": "completamiento", "nivel": "satisfactorio",
+    { "id": "LYC-R03", "subarea": "L2.2", "formato": "completamiento", "nivel": "satisfactorio",
       "base": "Vamos ________ si el servidor responde después del reinicio.",
       "pregunta": "¿Qué opción completa correctamente la oración?",
       "opciones": [

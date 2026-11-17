@@ -52,7 +52,7 @@ for (const t of manifest.temarios) {
       areasValidas.add(area.id);
       for (const s of area.subareas) {
         if (subareas.has(s.id)) err(t.archivo, `subárea duplicada ${s.id}`);
-        subareas.set(s.id, { ...s, area: area.id, seccion: sec.id, preguntas: 0 });
+        subareas.set(s.id, { ...s, area: area.id, seccion: sec.id, preguntas: 0, simulacro: 0 });
         suma += s.reactivos;
       }
     }
@@ -87,7 +87,11 @@ for (const t of manifest.temarios) {
       idsPreguntas.add(p.id);
       const sub = subareas.get(p.subarea);
       if (!sub) err(donde, `subárea «${p.subarea}» no existe en el temario`);
-      else sub.preguntas++;
+      else {
+        sub.preguntas++;
+        if (etiqueta !== "reto") sub.simulacro++;
+        if (p.area && p.area !== sub.area) err(donde, `área «${p.area}» no corresponde a ${p.subarea} (${sub.area})`);
+      }
       if (!FORMATOS.includes(p.formato)) err(donde, `formato «${p.formato}» inválido (${FORMATOS.join(", ")})`);
       if (p.nivel && !NIVELES.includes(p.nivel)) err(donde, `nivel «${p.nivel}» inválido`);
       if (!p.pregunta) err(donde, "falta «pregunta»");
@@ -119,6 +123,7 @@ for (const t of manifest.temarios) {
   console.log(`Bancos: ${Object.entries(porBanco).map(([k, v]) => `${k} (${v})`).join(", ")}`);
   for (const s of subareas.values()) {
     if (s.preguntas === 0) aviso(t.id, `subárea ${s.id} sin preguntas`);
+    if (s.simulacro < s.reactivos) err(t.id, `subárea ${s.id}: ${s.simulacro} preguntas elegibles para ${s.reactivos} lugares del simulacro`);
     resumen.push({ temario: t.id, subarea: s.id, preguntas: s.preguntas, reactivosExamen: s.reactivos });
   }
 }

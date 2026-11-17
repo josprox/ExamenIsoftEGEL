@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+
+cd /var/www/html/backend
+
+# Si no viene APP_KEY en variables de entorno de Coolify, generamos una para evitar fallo 500
+if [ -z "${APP_KEY}" ]; then
+    echo "[entrypoint] APP_KEY no definida, generando clave temporal..."
+    export APP_KEY="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
+fi
+
+# Asegurar permisos de storage y cache
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
+echo "[entrypoint] Limpiando y cacheando configuración Laravel..."
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+
+echo "[entrypoint] Ejecutando migraciones en MySQL (${DB_HOST:-127.0.0.1}:${DB_PORT:-3306}/${DB_DATABASE:-egelsoft})..."
+php artisan migrate --force
+
+echo "[entrypoint] Sincronizando banco de preguntas y biblioteca..."
+php artisan egel:importar
+
+echo "[entrypoint] Iniciando PHP-FPM y Nginx en puerto 80..."
+php-fpm -D
+exec nginx -g "daemon off;"

@@ -1,34 +1,17 @@
-# Cómo contribuir
+# Contribuir al banco EGEL Plus ISOFT
 
-Todo el contenido vive en **`contenido/`** como JSON y Markdown. La app (`app/`) solo lo lee, así que **puedes agregar
-preguntas, guías, recursos o un temario completo sin tocar código**. Cada Pull Request se valida automáticamente
-con `node scripts/validar.mjs`.
+Proyecto mantenido en [github.com/josprox/ExamenIsoftEGEL](https://github.com/josprox/ExamenIsoftEGEL) y publicado en [egelsoft.astriom.org](https://egelsoft.astriom.org).
 
-```
-contenido/
-├── manifest.json                 ← registro central: qué temario está activo y qué archivos cargar
-├── temarios/
-│   └── egel-plus-isoft-2026.json ← secciones → áreas → subáreas (con nº de reactivos)
-├── preguntas/                    ← bancos de reactivos, uno por área
-│   ├── a1-analisis.json … lyc-lenguaje.json   (banco "base")
-│   └── extendido/a1-analisis.json …            (banco "extendido")
-├── comandos/                     ← catálogo de comandos por rama (git.json, sql.json, …)
-├── guias/                        ← una guía Markdown por subárea (1.1.md … 4.3.md, L1.md, L2.md, estrategias.md)
-└── recursos.json                 ← biblioteca clasificada (libros, artículos, normas, videos, PDFs del repo)
-```
+El contenido editable está en `contenido/`; React lo presenta y Laravel lo importa a la base de datos MySQL. Revisa la [guía de julio de 2026](biblioteca/general/guia-sustentante-egel-plus-isoft-julio-2026.pdf) antes de asignar un área o subárea.
 
-Para probar localmente:
+## Preguntas
 
-```bash
-npm run dev        # http://localhost:8080/app/   (o: python3 -m http.server y abre /app/)
-npm run validar    # valida todo el contenido
-```
+1. Agrega preguntas **originales** al banco apropiado de `contenido/preguntas/`. Cada archivo declara `temario`, `area`, `banco`, `estimulos` y `preguntas`.
+2. Usa un ID único y una de las subáreas de `contenido/temarios/egel-plus-isoft-2026.json`.
+3. Incluye tres opciones con explicación individual, el índice `correcta` (0, 1 o 2), `estrategia`, `conceptos` y al menos una fuente cuyo ID exista en `contenido/recursos.json`.
+4. Ejecuta `npm run validar`. Para ver las preguntas nuevas en Laravel, ejecuta `php artisan egel:importar` dentro de `backend/`.
 
----
-
-## 1. Agregar una pregunta
-
-Agrégala al banco del área (`contenido/preguntas/aN-*.json`) con un `id` nuevo y consecutivo:
+Ejemplo mínimo:
 
 ```json
 {
@@ -36,84 +19,26 @@ Agrégala al banco del área (`contenido/preguntas/aN-*.json`) con un `id` nuevo
   "subarea": "2.2",
   "formato": "cuestionamiento-directo",
   "nivel": "satisfactorio",
-  "base": "Caso o contexto realista (una empresa, un equipo, un requerimiento)…",
-  "codigo": "opcional: fragmento de código",
-  "lista": ["opcional, solo para ordenamiento: 1. …", "2. …"],
-  "pregunta": "¿Qué patrón…?",
+  "base": "Un equipo necesita separar responsabilidades de dos módulos.",
+  "pregunta": "¿Qué decisión favorece el bajo acoplamiento?",
   "opciones": [
-    { "texto": "Opción A", "explicacion": "Incorrecta. Por qué no…" },
-    { "texto": "Opción B", "explicacion": "Correcta. Por qué sí…" },
-    { "texto": "Opción C", "explicacion": "Incorrecta. Por qué no…" }
+    { "texto": "Una interfaz pequeña y estable", "explicacion": "Correcta. Reduce dependencias entre módulos." },
+    { "texto": "Compartir todas las variables internas", "explicacion": "Incorrecta. Aumenta las dependencias." },
+    { "texto": "Duplicar la lógica de negocio", "explicacion": "Incorrecta. Introduce inconsistencias y no define una interfaz." }
   ],
-  "correcta": 1,
-  "estrategia": "Cómo razonarla: qué pista del caso lleva a la respuesta.",
-  "conceptos": ["Concepto 1", "Concepto 2"],
-  "fuentes": [{ "recurso": "id-en-recursos-json", "detalle": "cap. o página" }]
+  "correcta": 0,
+  "estrategia": "Identifica qué opción reduce lo que un módulo necesita conocer del otro.",
+  "conceptos": ["Acoplamiento"],
+  "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Diseño de software" }]
 }
 ```
 
-Reglas de calidad (estilo Ceneval):
-- **Exactamente 3 opciones** y una sola correcta. Todas plausibles y de longitud similar.
-- La base plantea un **caso** que requiere aplicar el conocimiento, no solo recordar una definición.
-- **Explica las 3 opciones**: la correcta inicia con «Correcta.» y las demás con «Incorrecta.».
-- Formatos: `cuestionamiento-directo`, `completamiento`, `ordenamiento` (requiere `lista`) y `multirreactivo` (requiere `estimulo`, definido en `estimulos` del mismo banco).
-- `nivel`: `satisfactorio` o `sobresaliente` (ver los descriptores en el temario).
-- Cita al menos una fuente de `recursos.json`.
-- ⚠️ **Escribe preguntas originales.** No copies reactivos reales del examen: Ceneval los protege por derechos de autor y su difusión puede anular el resultado de quien los comparta.
+Los formatos válidos son `cuestionamiento-directo`, `completamiento`, `ordenamiento` (requiere `lista`) y `multirreactivo` (requiere un `estimulo` registrado). El banco `reto` requiere también `trampa`.
 
-**Banco reto.** `contenido/preguntas/reto/reto.json` contiene preguntas de nivel exigente. Cada una **debe** incluir `"trampa"`: qué hace que la pregunta engañe y cómo evitarlo (el validador lo exige).
+Para Lenguaje y Comunicación, usa los **ámbitos** de la guía: `L1.1` estudio, `L1.2` literario, `L1.3` participación social; `L2.1` estudio y `L2.2` participación social. Identificación, interpretación, evaluación y las dimensiones de redacción se pueden registrar en `conceptos`, pero no sustituyen al ámbito.
 
-**Bancos.** Cada archivo declara `"banco": "base"` o `"banco": "extendido"` (puedes crear otro, por ejemplo `"banco": "mi-escuela"`, y registrarlo en `manifest.json → bancos`). El examen completo toma de todos los bancos exactamente los reactivos que tiene cada subárea en el examen real; si agregas más, se eligen al azar. Los estímulos (`LYC-E1`, …) se comparten entre bancos.
+## Recursos y guías
 
-## 2. Agregar o corregir un recurso / URL
+Registra referencias y documentos en `contenido/recursos.json`; guarda los PDF de consulta en `biblioteca/` y usa una ruta relativa al repositorio en `archivo`. Las guías Markdown viven en `contenido/guias/` y se registran en `contenido/manifest.json`.
 
-Edita `contenido/recursos.json`:
-
-```json
-{ "id": "autor-anio", "titulo": "…", "autores": "…", "anio": 2024, "tipo": "libro",
-  "areas": ["A2"], "subareas": ["2.1"], "oficial": false,
-  "url": "https://…", "archivo": "biblioteca/A2-diseno/autor-anio-titulo.pdf",
-  "idioma": "es", "prioridad": 1, "nota": "Por qué es útil" }
-```
-
-- `tipo`: `libro`, `articulo`, `norma`, `web`, `video`, `guia`, `banco-preguntas`, `apuntes`.
-- `oficial: true` solo si aparece en la bibliografía sugerida de la guía Ceneval vigente.
-- `prioridad: 1` marca un recurso «clave» (aparece primero).
-- Sin GitHub: en la app ve a **Biblioteca → ✏️ URL / ➕ Agregar** y luego **«Proponer por Issue»**, que genera el JSON por ti.
-
-## 3. Agregar un PDF al repo
-
-1. Colócalo en `biblioteca/<área>/` (ver [`biblioteca/README.md`](biblioteca/README.md) para nombre y licencias).
-2. Regístralo en `recursos.json` con `"archivo": "biblioteca/…"`.
-3. Para material de temarios anteriores usa `legacy/` (ver [`legacy/README.md`](legacy/README.md)).
-
-## 4. Escribir o mejorar una guía
-
-Edita `contenido/guias/<subárea>.md` (Markdown sencillo: títulos, listas, tablas, código, citas).
-Estructura sugerida: **Qué debes poder hacer → Conceptos clave (tablas) → Trampas frecuentes → Lee**.
-Para una subárea nueva, regístrala en `manifest.json → temarios[].guias`.
-
-## 5. Agregar comandos
-
-Edita o crea `contenido/comandos/<rama>.json` y regístralo en `manifest.json → comandos`:
-
-```json
-{ "id": "kubernetes", "nombre": "Kubernetes", "icono": "☸️", "subareas": ["3.5"],
-  "descripcion": "Orquestación de contenedores.",
-  "comandos": [{ "comando": "kubectl get pods", "descripcion": "Lista los pods del namespace actual.", "ejemplo": "kubectl get pods -n prod" }] }
-```
-Desde la app (Comandos → Agregar → Exportar) obtienes el JSON listo para tu Pull Request.
-
-## 6. Tu propio repositorio con esta herramienta
-
-En **Comandos → Genera tu propio repositorio** se arma un script que copia la herramienta, la apunta a tu cuenta, agrega tus comandos y recursos, la valida y (opcionalmente) la publica en GitHub Pages. El método «desde plantilla» requiere que el mantenedor marque este repo como *Template repository* (Settings → General).
-
-## 7. Agregar un módulo o un temario nuevo (cuando Ceneval actualice el examen)
-
-1. Crea `contenido/temarios/<nuevo-id>.json` con la misma estructura (secciones → áreas → subáreas → reactivos).
-2. Crea sus bancos de preguntas y guías.
-3. Regístralo en `manifest.json → temarios` y cambia `temarioActivo`.
-4. Mueve a `legacy/` el material que ya no aplique y documenta el motivo en `legacy/README.md`.
-
-Agregar una **sección nueva a la app** (por ejemplo, flashcards): crea la vista en `app/js/`, regístrala en `RUTAS`
-de `app/js/main.js` y agrega el enlace en `app/index.html`.
+El simulacro completo selecciona 203 reactivos con los cupos de la guía entre los bancos distintos de `reto`. Si falta contenido en alguna subárea, la API responde con un error en vez de entregar un simulacro incompleto.
