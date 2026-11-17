@@ -30,6 +30,7 @@
       "guias": {
         "estrategias": "guias/estrategias.md",
         "temas-criticos": "guias/temas-criticos.md",
+        "normas-iso": "guias/normas-iso.md",
         "1.1": "guias/1.1.md",
         "1.2": "guias/1.2.md",
         "1.3": "guias/1.3.md",

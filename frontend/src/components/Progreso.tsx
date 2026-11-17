@@ -246,8 +246,8 @@ export function Progreso({
             Aún no tienes simulaciones registradas. ¡Empieza una en el Simulador!
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto -mx-2 px-2">
+            <table className="w-full min-w-[640px] text-left text-xs">
               <thead>
                 <tr className="border-b border-stone-200 text-stone-500">
                   <th className="py-2.5 pr-4">Fecha</th>

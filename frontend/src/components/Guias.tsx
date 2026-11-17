@@ -233,7 +233,7 @@ export function Guias({ initialClave, onPracticeSubarea, onSelectClave }: GuiasP
           />
         </div>
 
-        <div className="space-y-1 max-h-[65vh] overflow-y-auto pr-1">
+        <div className="space-y-1 max-h-52 lg:max-h-[65vh] overflow-y-auto pr-1">
           {filtradas.map((g) => (
             <button
               key={g.clave}

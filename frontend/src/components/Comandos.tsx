@@ -53,7 +53,7 @@ export function Comandos() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
           <button
             type="button"
             onClick={() => setRamaActiva('todas')}
@@ -122,8 +122,8 @@ export function Comandos() {
                     key={idx}
                     className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                   >
-                    <div className="space-y-1 min-w-0">
-                      <code className="block overflow-x-auto rounded-lg bg-stone-900 px-3 py-1.5 font-mono text-xs text-emerald-300">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <code className="block max-w-full overflow-x-auto rounded-lg bg-stone-900 px-3 py-1.5 font-mono text-xs text-emerald-300">
                         {c.comando}
                       </code>
                       <p className="text-xs text-stone-600">{c.descripcion}</p>
