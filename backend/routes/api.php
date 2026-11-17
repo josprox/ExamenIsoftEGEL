@@ -17,16 +17,16 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Catálogos y preguntas públicos
+// Catálogos públicos
 Route::get('/temario', [EgelController::class, 'temario']);
-Route::get('/preguntas', [EgelController::class, 'preguntas']);
 Route::get('/biblioteca', [EgelController::class, 'biblioteca']);
 Route::get('/guias', [EgelController::class, 'guias']);
 Route::get('/comandos', [EgelController::class, 'comandos']);
 Route::get('/buscar', [EgelController::class, 'buscar']);
 
-// Progreso e intentos (requiere login)
+// Simulador, progreso e intentos (requiere login)
 Route::middleware(AuthenticateApiToken::class)->group(function () {
+    Route::get('/preguntas', [EgelController::class, 'preguntas']);
     Route::get('/intentos', [IntentoController::class, 'index']);
     Route::post('/intentos', [IntentoController::class, 'store']);
     Route::post('/intentos/{intento}/respuestas', [IntentoController::class, 'guardarRespuesta']);

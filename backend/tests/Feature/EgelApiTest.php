@@ -38,11 +38,25 @@ class EgelApiTest extends TestCase
             ->assertStatus(200)
             ->assertJsonPath('temario.id', 'egel-plus-isoft-2026');
 
+        // Preguntas requiere autenticación
         $this->getJson('/api/preguntas?area=A1&limit=5')
+            ->assertStatus(401);
+
+        $reg = $this->postJson('/api/auth/register', [
+            'name' => 'Test User',
+            'email' => 'preguntas@example.com',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
+        ]);
+        $token = $reg->json('token');
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/preguntas?area=A1&limit=5')
             ->assertStatus(200)
             ->assertJsonCount(5, 'preguntas');
 
-        $simulacro = $this->getJson('/api/preguntas?preset=egel_completo')
+        $simulacro = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/preguntas?preset=egel_completo')
             ->assertStatus(200)
             ->assertJsonPath('total', 203);
         $preguntas = collect($simulacro->json('preguntas'));
@@ -55,7 +69,8 @@ class EgelApiTest extends TestCase
         $this->assertSame(15, $preguntas->where('subarea', 'L2.2')->count());
         $this->assertFalse($preguntas->contains(fn ($p) => $p['banco'] === 'reto'));
 
-        $rapida = collect($this->getJson('/api/preguntas?preset=practica_rapida')
+        $rapida = collect($this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/preguntas?preset=practica_rapida')
             ->assertStatus(200)
             ->assertJsonPath('total', 20)
             ->json('preguntas'));

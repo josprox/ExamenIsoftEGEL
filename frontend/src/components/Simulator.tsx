@@ -14,6 +14,8 @@ import {
   Zap,
   PauseCircle,
   Trash2,
+  LogIn,
+  Lock,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { saveLocalAttempt } from '../lib/localProgress';
@@ -26,6 +28,7 @@ interface SimulatorProps {
   initialArea?: string;
   initialSubarea?: string;
   onOpenGuia?: (clave: string) => void;
+  onOpenAuth: () => void;
   onAttemptFinished: () => void;
 }
 
@@ -79,6 +82,7 @@ export function Simulator({
   initialArea = 'todas',
   initialSubarea = 'todas',
   onOpenGuia,
+  onOpenAuth,
   onAttemptFinished,
 }: SimulatorProps) {
   const initialSaved = useMemo(() => readSavedSession(), []);
@@ -168,6 +172,10 @@ export function Simulator({
   }, [areasDisponibles]);
 
   const iniciarSimulacion = async (soloErrores = false) => {
+    if (!user) {
+      onOpenAuth();
+      return;
+    }
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -358,6 +366,30 @@ export function Simulator({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [phase, preguntaActual, indice, preguntas.length, respuestas, seleccionarOpcion]);
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-3xl border border-stone-200 bg-white p-8 sm:p-10 text-center shadow-sm">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 border border-teal-700/20">
+          <Lock className="h-7 w-7" />
+        </div>
+        <h2 className="mt-5 text-2xl font-bold text-stone-900">
+          Inicia sesión para usar el simulador
+        </h2>
+        <p className="mt-2.5 text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+          Para realizar simulaciones del EGEL Plus ISOFT, guardar tus intentos y repasar tus errores necesitas entrar con tu cuenta (es gratis y toma un minuto).
+        </p>
+        <button
+          type="button"
+          onClick={onOpenAuth}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-teal-700/20 hover:bg-teal-800 transition cursor-pointer"
+        >
+          <LogIn className="h-4 w-4" />
+          Iniciar sesión o crear cuenta
+        </button>
+      </div>
+    );
+  }
 
   if (phase === 'config') {
     const saved = hasPausedSession ? readSavedSession() : null;

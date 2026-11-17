@@ -224,6 +224,7 @@ export function App() {
             initialArea={simArea}
             initialSubarea={simSubarea}
             onOpenGuia={(clave) => handleNavigate('guias', { guiaClave: clave })}
+            onOpenAuth={() => setAuthOpen(true)}
             onAttemptFinished={cargarProgreso}
           />
         )}

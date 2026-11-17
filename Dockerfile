@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpng-dev \
         unzip \
         curl \
+        wget \
     && docker-php-ext-install pdo_mysql mbstring bcmath opcache zip \
     && rm -rf /var/lib/apt/lists/*
 
