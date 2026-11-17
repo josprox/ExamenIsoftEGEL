@@ -244,6 +244,7 @@ export function App() {
             intentos={intentos}
             estadisticas={estadisticas}
             onOpenAuth={() => setAuthOpen(true)}
+            onAttemptDeleted={cargarProgreso}
           />
         )}
       </main>

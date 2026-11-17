@@ -153,4 +153,43 @@ class EgelApiTest extends TestCase
             ->assertJsonPath('estadisticas.total_intentos', 1)
             ->assertJsonPath('estadisticas.total_aciertos', 1);
     }
+
+    public function test_eliminar_intento_descartado_lo_quita_del_historial(): void
+    {
+        $reg = $this->postJson('/api/auth/register', [
+            'name' => 'Carlos',
+            'email' => 'carlos@example.com',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
+        ]);
+        $token = $reg->json('token');
+
+        $intentoRes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/intentos', [
+                'modo' => 'inmediato',
+                'area_filtro' => null,
+                'banco_filtro' => 'todos',
+                'total_preguntas' => 20,
+            ]);
+
+        $intentoRes->assertStatus(201);
+        $intentoId = $intentoRes->json('intento.id');
+
+        $antes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/intentos');
+        $antes->assertStatus(200)
+            ->assertJsonCount(1, 'intentos')
+            ->assertJsonPath('intentos.0.completado', false)
+            ->assertJsonPath('estadisticas.total_intentos', 0);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->deleteJson("/api/intentos/{$intentoId}")
+            ->assertStatus(200);
+
+        $despues = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/intentos');
+        $despues->assertStatus(200)
+            ->assertJsonCount(0, 'intentos')
+            ->assertJsonPath('estadisticas.total_intentos', 0);
+    }
 }

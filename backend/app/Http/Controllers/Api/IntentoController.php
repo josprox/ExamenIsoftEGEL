@@ -54,7 +54,7 @@ class IntentoController extends Controller
         return response()->json([
             'intentos' => $intentos,
             'estadisticas' => [
-                'total_intentos' => $intentos->count(),
+                'total_intentos' => $intentos->where('completado', true)->count(),
                 'total_respuestas' => $totalRespuestas,
                 'total_aciertos' => $totalAciertos,
                 'precision_global' => $totalRespuestas > 0
@@ -138,6 +138,17 @@ class IntentoController extends Controller
         $intento->save();
 
         return response()->json(['intento' => $intento]);
+    }
+
+    public function destroy(Request $request, Intento $intento): JsonResponse
+    {
+        if ($intento->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $intento->delete();
+
+        return response()->json(['message' => 'Intento eliminado.']);
     }
 
     private function recalcularIntento(Intento $intento): void

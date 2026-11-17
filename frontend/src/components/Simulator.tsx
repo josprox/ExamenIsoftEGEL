@@ -262,12 +262,23 @@ export function Simulator({
     setPhase('running');
   };
 
-  const descartarSimulacion = () => {
+  const descartarSimulacion = async () => {
+    const idToDelete = intentoId ?? readSavedSession()?.intentoId ?? null;
     writeSavedSession(null);
     setHasPausedSession(false);
+    setIntentoId(null);
     setPreguntas([]);
     setRespuestas({});
     setIndice(0);
+
+    if (user && idToDelete) {
+      try {
+        await api.eliminarIntento(idToDelete);
+      } catch {
+        // Ignorar errores de red al descartar
+      }
+      onAttemptFinished();
+    }
   };
 
   const preguntaActual = preguntas[indice];

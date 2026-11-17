@@ -147,4 +147,9 @@ export const api = {
     request<{ intento: Intento }>(`/intentos/${intentoId}/finalizar`, {
       method: 'POST',
     }),
+
+  eliminarIntento: (intentoId: number) =>
+    request<{ message: string }>(`/intentos/${intentoId}`, {
+      method: 'DELETE',
+    }),
 };

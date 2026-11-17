@@ -1,4 +1,6 @@
-import { BarChart3, CheckCircle2, Target, Cloud } from 'lucide-react';
+import { useState } from 'react';
+import { BarChart3, CheckCircle2, Target, Cloud, Trash2 } from 'lucide-react';
+import { api } from '../lib/api';
 import type { EstadisticasUsuario, Intento, User } from '../types/egel';
 
 interface ProgresoProps {
@@ -6,9 +8,23 @@ interface ProgresoProps {
   intentos: Intento[];
   estadisticas: EstadisticasUsuario | null;
   onOpenAuth: () => void;
+  onAttemptDeleted?: () => void;
 }
 
-export function Progreso({ user, intentos, estadisticas, onOpenAuth }: ProgresoProps) {
+export function Progreso({ user, intentos, estadisticas, onOpenAuth, onAttemptDeleted }: ProgresoProps) {
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDelete = async (intentoId: number) => {
+    setDeletingId(intentoId);
+    try {
+      await api.eliminarIntento(intentoId);
+      onAttemptDeleted?.();
+    } catch {
+      // Ignorar error si ya fue eliminado
+    } finally {
+      setDeletingId(null);
+    }
+  };
   return (
     <div className="space-y-6">
       {!user && (
@@ -115,7 +131,9 @@ export function Progreso({ user, intentos, estadisticas, onOpenAuth }: ProgresoP
                   <th className="py-2.5 pr-4">Fecha</th>
                   <th className="py-2.5 pr-4">Modo</th>
                   <th className="py-2.5 pr-4">Filtro</th>
+                  <th className="py-2.5 pr-4">Estado</th>
                   <th className="py-2.5 pr-4">Aciertos</th>
+                  {user && <th className="py-2.5 text-right">Acción</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -131,9 +149,34 @@ export function Progreso({ user, intentos, estadisticas, onOpenAuth }: ProgresoP
                     </td>
                     <td className="py-3 pr-4 capitalize">{i.modo}</td>
                     <td className="py-3 pr-4">{i.area_filtro || 'Todas'}</td>
+                    <td className="py-3 pr-4">
+                      {i.completado ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                          Completado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                          Pendiente
+                        </span>
+                      )}
+                    </td>
                     <td className="py-3 pr-4 font-semibold">
                       {i.aciertos}/{i.total_preguntas} ({i.porcentaje}%)
                     </td>
+                    {user && (
+                      <td className="py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(i.id)}
+                          disabled={deletingId === i.id}
+                          title="Eliminar simulación"
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Eliminar</span>
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

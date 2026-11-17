@@ -31,4 +31,5 @@ Route::middleware(AuthenticateApiToken::class)->group(function () {
     Route::post('/intentos', [IntentoController::class, 'store']);
     Route::post('/intentos/{intento}/respuestas', [IntentoController::class, 'guardarRespuesta']);
     Route::post('/intentos/{intento}/finalizar', [IntentoController::class, 'finalizar']);
+    Route::delete('/intentos/{intento}', [IntentoController::class, 'destroy']);
 });
