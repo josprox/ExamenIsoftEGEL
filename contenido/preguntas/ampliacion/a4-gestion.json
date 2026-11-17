@@ -1,0 +1,482 @@
+{
+  "temario": "egel-plus-isoft-2026",
+  "area": "A4",
+  "banco": "ampliacion",
+  "estimulos": [],
+  "preguntas": [
+    {
+      "id": "A4-301",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un proyecto de migración tiene un presupuesto total al concluir (BAC) de $100,000. Al mes 3, el valor planificado (PV) es $50,000, el valor ganado (EV) es $40,000 y el costo real (AC) es $50,000. Se permite calculadora.",
+      "pregunta": "¿Cuál es el estado actual del proyecto según la Gestión del Valor Ganado (EVM)?",
+      "opciones": [
+        {
+          "texto": "Atrasado en cronograma (SPI = 0.80) y con sobrecosto (CPI = 0.80)",
+          "explicacion": "Correcta. SPI = EV / PV = 40,000 / 50,000 = 0.80 (< 1, atrasado). CPI = EV / AC = 40,000 / 50,000 = 0.80 (< 1, gastando más de lo producido)."
+        },
+        {
+          "texto": "En tiempo (SPI = 1.00) y bajo presupuesto (CPI = 1.25)",
+          "explicacion": "Incorrecta. Confunde PV con EV o invierte el cociente AC / EV."
+        },
+        {
+          "texto": "Adelantado en cronograma (SPI = 1.25) y en presupuesto (CPI = 1.00)",
+          "explicacion": "Incorrecta. EV ($40k) es menor que PV ($50k), por lo que hay retraso, no adelanto."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "EVM: siempre EV arriba. SPI = EV/PV, CPI = EV/AC. Menor a 1 = malo (atraso o sobrecosto).",
+      "conceptos": ["EVM", "CPI", "SPI"],
+      "fuentes": [{ "recurso": "pmbok-7", "detalle": "Medición del desempeño" }]
+    },
+    {
+      "id": "A4-302",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En un proyecto de desarrollo con estimación por tres valores (PERT), una tarea crítica tiene duración optimista (O) de 4 días, más probable (M) de 7 días y pesimista (P) de 16 días.",
+      "pregunta": "¿Cuál es la duración esperada PERT?",
+      "opciones": [
+        {
+          "texto": "9 días",
+          "explicacion": "Incorrecta. 9 días es el promedio aritmético simple (4 + 7 + 16) / 3, que ignora el peso 4 del escenario más probable."
+        },
+        {
+          "texto": "8 días",
+          "explicacion": "Correcta. PERT = (O + 4M + P) / 6 = (4 + 28 + 16) / 6 = 48 / 6 = 8 días."
+        },
+        {
+          "texto": "7 días",
+          "explicacion": "Incorrecta. Toma únicamente el valor más probable sin ponderar el riesgo pesimista."
+        }
+      ],
+      "correcta": 1,
+      "estrategia": "Fórmula PERT = (O + 4M + P) / 6. La trampa clásica es el promedio simple / 3.",
+      "conceptos": ["PERT", "Estimación de tiempos"],
+      "fuentes": [{ "recurso": "pmbok-7" }]
+    },
+    {
+      "id": "A4-303",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un proyecto depende de un proveedor externo para una API de validación biométrica. Como el proveedor tiene historial de retrasos, el líder contrata desde ahora un segundo proveedor de respaldo con un costo fijo anual y define un interruptor automático de respaldo.",
+      "pregunta": "¿Qué estrategia de respuesta al riesgo negativo (amenaza) está aplicando?",
+      "opciones": [
+        {
+          "texto": "Mitigar",
+          "explicacion": "Correcta. Mitigar reduce la probabilidad o el impacto de la amenaza tomando acciones tempranas (tener respaldo listo reduce drásticamente el impacto si el proveedor principal falla)."
+        },
+        {
+          "texto": "Aceptar pasivamente",
+          "explicacion": "Incorrecta. Aceptar pasivamente implica no hacer nada por adelantado y solo lidiar con el problema si ocurre."
+        },
+        {
+          "texto": "Evitar",
+          "explicacion": "Incorrecta. Evitar eliminaría por completo la amenaza (por ejemplo, eliminando el requisito biométrico del alcance)."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Amenazas: Evitar (eliminar causa), Transferir (seguro/tercero asume impacto), Mitigar (reducir prob/impacto), Aceptar (no actuar antes).",
+      "conceptos": ["Gestión de riesgos", "Estrategias de respuesta"],
+      "fuentes": [{ "recurso": "pmbok-7", "detalle": "Incertidumbre" }]
+    },
+    {
+      "id": "A4-304",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Al calcular la ruta crítica (CPM) de un proyecto, la actividad C tiene inicio temprano (ES) en el día 5, duración de 4 días y holgura total de 0 días.",
+      "pregunta": "¿Qué implica que la actividad C tenga holgura total igual a 0?",
+      "opciones": [
+        {
+          "texto": "Que forma parte de la ruta crítica y cualquier retraso en C retrasará la fecha fin del proyecto",
+          "explicacion": "Correcta. Las actividades con holgura cero definen la ruta crítica; no tienen margen de atraso sin afectar la entrega final."
+        },
+        {
+          "texto": "Que puede posponerse hasta 4 días sin afectar al proyecto",
+          "explicacion": "Incorrecta. 4 días es su duración, no su holgura."
+        },
+        {
+          "texto": "Que no tiene predecesoras ni sucesoras",
+          "explicacion": "Incorrecta. Una actividad en ruta crítica normalmente tiene dependencias encadenadas que determinan la duración total."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Holgura = 0 → actividad crítica → cualquier atraso atrasa todo el proyecto.",
+      "conceptos": ["Ruta crítica", "CPM", "Holgura"],
+      "fuentes": [{ "recurso": "kerzner-2022" }]
+    },
+    {
+      "id": "A4-305",
+      "subarea": "4.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un proyecto de software lleva dos meses operando con un equipo de 4 personas y presenta un retraso de tres semanas respecto al plan. El patrocinador propone duplicar el equipo incorporando 4 programadores nuevos de inmediato para terminar en la fecha original.",
+      "pregunta": "¿Qué fenómeno advierte la Ley de Brooks ante esta decisión?",
+      "opciones": [
+        {
+          "texto": "Añadir personal a un proyecto retrasado suele atrasarlo aún más debido al costo de capacitación y comunicación",
+          "explicacion": "Correcta. Los integrantes actuales deben detenerse a capacitar a los nuevos y los canales de comunicación crecen cuadráticamente: n(n-1)/2."
+        },
+        {
+          "texto": "La productividad siempre aumenta de forma lineal con el número de programadores",
+          "explicacion": "Incorrecta. Precisamente eso es lo que refuta la Ley de Brooks."
+        },
+        {
+          "texto": "El costo del proyecto disminuirá al reducir los días de calendario",
+          "explicacion": "Incorrecta. Duplicar el equipo aumenta el costo de nómina y, por la sobrecarga de comunicación, rara vez reduce el calendario en la misma proporción."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Más gente en proyecto atrasado = más retraso por comunicación y onboarding → Ley de Brooks.",
+      "conceptos": ["Ley de Brooks", "Recursos humanos"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 23" }]
+    },
+    {
+      "id": "A4-306",
+      "subarea": "4.1",
+      "formato": "completamiento",
+      "nivel": "satisfactorio",
+      "base": "Antes de aprobar un proyecto de renovación tecnológica, el equipo financiero evalúa si los beneficios económicos descontados a valor presente superan la inversión inicial.",
+      "pregunta": "Si el ________ resulta positivo, el proyecto es financieramente viable.",
+      "opciones": [
+        {
+          "texto": "Valor Presente Neto (VPN / VAN)",
+          "explicacion": "Correcta. El VPN descuenta los flujos de caja futuros y resta la inversión inicial; un VPN > 0 indica creación de valor financiero."
+        },
+        {
+          "texto": "periodo de garantía",
+          "explicacion": "Incorrecta. No es un indicador financiero de evaluación de inversiones."
+        },
+        {
+          "texto": "índice de complejidad ciclomática",
+          "explicacion": "Incorrecta. Es una métrica técnica de código fuente."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Beneficios futuros descontados menos inversión inicial > 0 = VPN positivo.",
+      "conceptos": ["Viabilidad financiera", "VPN"],
+      "fuentes": [{ "recurso": "kerzner-2022" }]
+    },
+    {
+      "id": "A4-307",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un equipo de desarrollo implementó un método cuya complejidad ciclomática de McCabe es 18. El estándar interno de calidad exige un máximo de 10 por función.",
+      "pregunta": "¿Qué indica este valor de complejidad ciclomática y qué acción se recomienda?",
+      "opciones": [
+        {
+          "texto": "Indica 18 caminos linealmente independientes y alto riesgo de defectos; se recomienda dividir el método en funciones más pequeñas",
+          "explicacion": "Correcta. La complejidad ciclomática mide el número mínimo de casos de prueba necesarios para cubrir todas las ramas; valores > 10 dificultan el mantenimiento y las pruebas."
+        },
+        {
+          "texto": "Indica que el método consume 18 MB de memoria RAM por llamada; se recomienda optimizar los índices SQL",
+          "explicacion": "Incorrecta. La complejidad ciclomática mide ramas de control en el código fuente, no uso de memoria."
+        },
+        {
+          "texto": "Indica que 18 clases dependen directamente de ese método; se recomienda aplicar Singleton",
+          "explicacion": "Incorrecta. Eso mediría acoplamiento aferente, no complejidad ciclomática."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Complejidad ciclomática de McCabe = número de caminos independientes (decisiones + 1); >10 sugiere refactorizar.",
+      "conceptos": ["Complejidad ciclomática", "Métricas de calidad"],
+      "fuentes": [{ "recurso": "pressman-2020", "detalle": "Métricas de software" }]
+    },
+    {
+      "id": "A4-308",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una organización de software busca institucionalizar sus procesos de desarrollo y pasar de prácticas reactivas e individuales a procesos definidos y estandarizados en toda la empresa (Nivel 3).",
+      "pregunta": "¿Qué modelo de madurez de procesos proporciona esa escala de evaluación?",
+      "opciones": [
+        {
+          "texto": "CMMI (Capability Maturity Model Integration)",
+          "explicacion": "Correcta. CMMI define 5 niveles de madurez: 1 Inicial, 2 Gestionado, 3 Definido (procesos estándar en toda la organización), 4 Gestionado cuantitativamente y 5 En optimización."
+        },
+        {
+          "texto": "OWASP Top 10",
+          "explicacion": "Incorrecta. Es una lista de las vulnerabilidades de seguridad más críticas en aplicaciones web."
+        },
+        {
+          "texto": "ITIL",
+          "explicacion": "Incorrecta. ITIL es un marco orientado a la gestión de servicios de TI en operación (mesa de ayuda, incidentes, cambios), no de madurez del proceso de ingeniería de software."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Niveles de madurez de procesos (1 Inicial → 3 Definido → 5 Optimización) = CMMI.",
+      "conceptos": ["CMMI", "Madurez de procesos"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 24" }]
+    },
+    {
+      "id": "A4-309",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Al analizar los defectos reportados en producción durante el último trimestre, el líder de QA descubre que de 10 tipos de fallos registrados, 2 tipos («validación de RFC» y «cálculo de redondeo») concentran el 82 % del total de incidencias.",
+      "pregunta": "¿Qué herramienta permite visualizar y priorizar exactamente esos «pocos vitales» frente a los «muchos triviales»?",
+      "opciones": [
+        {
+          "texto": "Diagrama de Pareto",
+          "explicacion": "Correcta. El diagrama de Pareto ordena las causas por frecuencia descendente y traza el porcentaje acumulado para aplicar el principio 80/20."
+        },
+        {
+          "texto": "Diagrama de dispersión",
+          "explicacion": "Incorrecta. Muestra correlación entre dos variables numéricas continuas."
+        },
+        {
+          "texto": "Hoja de verificación (checklist)",
+          "explicacion": "Incorrecta. Sirve para recolectar datos en tiempo real o verificar pasos, no para graficar la concentración 80/20."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "80 % de efectos provienen del 20 % de causas → Diagrama de Pareto.",
+      "conceptos": ["Diagrama de Pareto", "Herramientas de calidad"],
+      "fuentes": [{ "recurso": "pmbok-7" }]
+    },
+    {
+      "id": "A4-310",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un equipo realiza una sesión formal donde un moderador, el autor y revisores con roles asignados inspeccionan el código de un módulo de pagos usando una lista de comprobación para hallar defectos antes de compilar.",
+      "pregunta": "¿Qué actividad de aseguramiento de la calidad se ejecuta?",
+      "opciones": [
+        {
+          "texto": "Inspección formal (revisión técnica estática)",
+          "explicacion": "Correcta. La inspección de Fagan es una técnica estática estructurada con roles definidos (moderador, autor, lector, revisores) y listas de verificación."
+        },
+        {
+          "texto": "Prueba de humo (smoke testing)",
+          "explicacion": "Incorrecta. Es una prueba dinámica rápida sobre una compilación para verificar que las funciones básicas arrancan."
+        },
+        {
+          "texto": "Prueba de regresión automatizada",
+          "explicacion": "Incorrecta. Ejecuta suites dinámicas tras cambios para asegurar que nada previo se rompió."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Sin ejecutar el código + roles formales + lista de comprobación = Inspección formal (estática).",
+      "conceptos": ["Inspección formal", "QA", "Pruebas estáticas"],
+      "fuentes": [{ "recurso": "pressman-2020" }]
+    },
+    {
+      "id": "A4-311",
+      "subarea": "4.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un proyecto distingue dos actividades: por un lado, ejecutar pruebas unitarias e integración para comprobar si el software cumple la especificación técnica; por otro, realizar pruebas con usuarios reales para confirmar que el producto resuelve su necesidad de negocio.",
+      "pregunta": "¿Cómo se denominan respectivamente estas dos actividades según ISO/IEEE?",
+      "opciones": [
+        {
+          "texto": "Verificación y Validación",
+          "explicacion": "Correcta. Verificación responde «¿estamos construyendo el producto correctamente?» (contra la especificación); Validación responde «¿estamos construyendo el producto correcto?» (contra las necesidades del usuario)."
+        },
+        {
+          "texto": "Auditoría y Refactorización",
+          "explicacion": "Incorrecta. La refactorización mejora la estructura interna del código, no comprueba necesidades de usuario."
+        },
+        {
+          "texto": "Control de cambios y Despliegue",
+          "explicacion": "Incorrecta. Corresponden a gestión de configuración y liberación."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Verificación = contra especificación («producto correctamente»). Validación = contra necesidad real («producto correcto»).",
+      "conceptos": ["Verificación", "Validación"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 8" }]
+    },
+    {
+      "id": "A4-312",
+      "subarea": "4.2",
+      "formato": "completamiento",
+      "nivel": "satisfactorio",
+      "base": "Al evaluar la calidad en uso de una aplicación móvil de emergencias, un equipo mide el porcentaje de tareas completadas sin asistencia, el tiempo promedio por tarea y la satisfacción reportada por los usuarios.",
+      "pregunta": "Estas mediciones corresponden al enfoque de ________ definido en la norma ISO/IEC 25010.",
+      "opciones": [
+        {
+          "texto": "calidad en uso (quality in use)",
+          "explicacion": "Correcta. La calidad en uso evalúa efectividad, eficiencia, satisfacción, ausencia de riesgo y cobertura de contexto desde la perspectiva del usuario real en su entorno."
+        },
+        {
+          "texto": "calidad de proceso de desarrollo",
+          "explicacion": "Incorrecta. Los procesos de desarrollo se evalúan con marcos como ISO/IEC 12207 o CMMI."
+        },
+        {
+          "texto": "calidad sintáctica del compilador",
+          "explicacion": "Incorrecta. No es un modelo de calidad de ISO/IEC 25010."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Efectividad + eficiencia + satisfacción del usuario operando en contexto real = Calidad en uso.",
+      "conceptos": ["ISO/IEC 25010", "Calidad en uso"],
+      "fuentes": [{ "recurso": "iso-25010-2023" }]
+    },
+    {
+      "id": "A4-313",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En un equipo Scrum, durante el Sprint Review el Product Owner detecta que la prioridad del mercado cambió y decide reordenar el Product Backlog. Al mismo tiempo, un gerente pide agregar tres funcionalidades nuevas al Sprint actual que termina en dos días.",
+      "pregunta": "¿Qué decisión es correcta de acuerdo con la Guía de Scrum?",
+      "opciones": [
+        {
+          "texto": "El Product Owner puede reordenar el Product Backlog, pero no se debe alterar el objetivo del Sprint en curso sin consenso ni extender su duración",
+          "explicacion": "Correcta. Los Sprints tienen duración fija (time-box) y protegen el Sprint Goal; los nuevos elementos entran al Product Backlog para próximos Sprints."
+        },
+        {
+          "texto": "Extender el Sprint actual una semana más para incluir las tres funcionalidades",
+          "explicacion": "Incorrecta. Los Sprints son de duración fija y nunca se alargan para acomodar trabajo nuevo."
+        },
+        {
+          "texto": "El Scrum Master debe aprobar las tres funcionalidades sin consultar al equipo de desarrolladores",
+          "explicacion": "Incorrecta. El Scrum Master no gestiona el alcance del Backlog ni impone trabajo al equipo."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "En Scrum: Sprint = time-box fijo, no se alarga; cambios de prioridad van al Product Backlog.",
+      "conceptos": ["Scrum", "Sprint", "Product Owner"],
+      "fuentes": [{ "recurso": "scrum-guide-2020" }]
+    },
+    {
+      "id": "A4-314",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un equipo de soporte y mantenimiento recibe incidencias urgentes todos los días con prioridades cambiantes, por lo que planificar iteraciones cerradas de dos semanas resulta poco práctico. Necesitan limitar la sobrecarga de tareas simultáneas y medir el tiempo promedio desde que entra un ticket hasta que se resuelve.",
+      "pregunta": "¿Qué método ágil y métricas se ajustan mejor a este contexto?",
+      "opciones": [
+        {
+          "texto": "Kanban, limitando el trabajo en progreso (WIP) y midiendo Lead Time / Cycle Time",
+          "explicacion": "Correcta. Kanban usa flujo continuo (sin Sprints fijos), controla cuellos de botella con límites WIP y optimiza Lead Time y Cycle Time."
+        },
+        {
+          "texto": "Modelo en Cascada, congelando el alcance anual de incidencias",
+          "explicacion": "Incorrecta. En soporte urgente no se pueden congelar incidencias por un año."
+        },
+        {
+          "texto": "RUP, ejecutando cuatro fases completas por cada ticket de soporte",
+          "explicacion": "Incorrecta. RUP es demasiado pesado para tickets diarios de mantenimiento."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Flujo continuo + prioridades cambiantes + límites WIP + Lead/Cycle Time = Kanban.",
+      "conceptos": ["Kanban", "WIP", "Lead Time"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 3" }]
+    },
+    {
+      "id": "A4-315",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "En una empresa financiera se desarrolla software de misión crítica con requisitos de seguridad muy estrictos y alto riesgo tecnológico en los módulos iniciales, por lo que la dirección exige evaluar riesgos formalmente al cierre de cada ciclo iterativo antes de comprometer más presupuesto.",
+      "pregunta": "¿Qué modelo de ciclo de vida incorpora explícitamente el análisis de riesgos como eje de cada iteración?",
+      "opciones": [
+        {
+          "texto": "Modelo en Espiral (Boehm)",
+          "explicacion": "Correcta. Cada vuelta de la espiral pasa por cuatro cuadrantes: determinar objetivos, identificar y resolver riesgos, desarrollar/probar y planificar la siguiente iteración."
+        },
+        {
+          "texto": "Modelo en Cascada clásico",
+          "explicacion": "Incorrecta. Es secuencial y carece de ciclos iterativos centrados en análisis de riesgos."
+        },
+        {
+          "texto": "Programación Extrema (XP)",
+          "explicacion": "Incorrecta. XP se enfoca en prácticas ágiles de ingeniería (TDD, pair programming, refactorización), no en compuertas formales de riesgo por cuadrantes."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Ciclos iterativos guiados por análisis y mitigación formal de riesgos = Modelo en Espiral.",
+      "conceptos": ["Modelo en Espiral", "Gestión de riesgos"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 2.1" }]
+    },
+    {
+      "id": "A4-316",
+      "subarea": "4.3",
+      "formato": "ordenamiento",
+      "nivel": "satisfactorio",
+      "base": "Ordene cronológicamente las cuatro fases del Proceso Unificado (RUP).",
+      "lista": [
+        "1. Transición",
+        "2. Elaboración",
+        "3. Inicio (Incepción)",
+        "4. Construcción"
+      ],
+      "pregunta": "¿Cuál es el orden correcto de las fases en RUP?",
+      "opciones": [
+        {
+          "texto": "3, 2, 4, 1",
+          "explicacion": "Correcta. RUP avanza secuencialmente por Inicio (visión y alcance), Elaboración (arquitectura ejecutable y riesgos), Construcción (implementación completa) y Transición (despliegue al usuario)."
+        },
+        {
+          "texto": "2, 3, 4, 1",
+          "explicacion": "Incorrecta. No se elabora la arquitectura antes de definir la visión y viabilidad en Inicio."
+        },
+        {
+          "texto": "3, 4, 2, 1",
+          "explicacion": "Incorrecta. En RUP la arquitectura base se estabiliza en Elaboración antes de la Construcción masiva."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Acrónimo IEC-T: Inicio → Elaboración → Construcción → Transición.",
+      "conceptos": ["RUP", "Fases del ciclo de vida"],
+      "fuentes": [{ "recurso": "pressman-2020" }]
+    },
+    {
+      "id": "A4-317",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Al término de un Sprint, el equipo Scrum se reúne de forma interna (sin clientes externos) para analizar cómo trabajaron juntos, qué herramientas les frenaron y definir al menos una acción concreta de mejora para el siguiente Sprint.",
+      "pregunta": "¿A qué evento de Scrum corresponde esta reunión?",
+      "opciones": [
+        {
+          "texto": "Sprint Retrospective",
+          "explicacion": "Correcta. La Retrospectiva inspecciona personas, interacciones, procesos y herramientas del equipo para planificar mejoras de calidad y efectividad."
+        },
+        {
+          "texto": "Sprint Review",
+          "explicacion": "Incorrecta. La Sprint Review inspecciona el Incremento del producto junto con los stakeholders."
+        },
+        {
+          "texto": "Daily Scrum",
+          "explicacion": "Incorrecta. Es la reunión diaria de 15 minutos de los desarrolladores para sincronizar el avance hacia el Sprint Goal."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Inspeccionar el producto con stakeholders = Sprint Review. Inspeccionar cómo trabajó el equipo = Sprint Retrospective.",
+      "conceptos": ["Scrum", "Retrospectiva", "Eventos Scrum"],
+      "fuentes": [{ "recurso": "scrum-guide-2020" }]
+    },
+    {
+      "id": "A4-318",
+      "subarea": "4.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un equipo que sigue Programación Extrema (XP) nota que el código nuevo introduce regresiones frecuentes y que solo un desarrollador conoce cómo funciona el módulo de facturación.",
+      "pregunta": "¿Qué par de prácticas de XP atacan directamente ambos problemas?",
+      "opciones": [
+        {
+          "texto": "Desarrollo guiado por pruebas (TDD) e integración continua, junto con programación en parejas (pair programming) y propiedad colectiva del código",
+          "explicacion": "Correcta. TDD + integración continua previenen regresiones tempranas, mientras que pair programming y propiedad colectiva eliminan los silos de conocimiento."
+        },
+        {
+          "texto": "Congelar el código durante tres meses y asignar un dueño exclusivo por módulo",
+          "explicacion": "Incorrecta. Asignar un dueño exclusivo agrava el silo de conocimiento."
+        },
+        {
+          "texto": "Eliminar pruebas automatizadas para duplicar la velocidad de entrega",
+          "explicacion": "Incorrecta. Sin pruebas automatizadas aumentan las regresiones."
+        }
+      ],
+      "correcta": 0,
+      "estrategia": "Regresiones → TDD + CI. Silo de conocimiento (bus factor = 1) → Pair programming + propiedad colectiva.",
+      "conceptos": ["XP", "TDD", "Pair Programming"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 3.2" }]
+    }
+  ]
+}

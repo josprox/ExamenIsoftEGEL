@@ -1,0 +1,431 @@
+{
+  "temario": "egel-plus-isoft-2026",
+  "area": "LYC",
+  "banco": "ampliacion",
+  "estimulos": [
+    {
+      "id": "LYC-E10",
+      "titulo": "Deuda técnica y mantenimiento en sistemas heredados",
+      "nota": "Artículo divulgativo original de práctica (ámbito de estudio).",
+      "texto": "En 1992, Ward Cunningham acuñó la metáfora de la «deuda técnica» para explicar a directivos no técnicos por qué lanzar rápido un programa con atajos internos tiene un costo posterior. Igual que un préstamo financiero, un atajo de diseño permite obtener un beneficio inmediato —llegar antes al mercado—, pero genera «intereses» en cada nueva modificación: el código se vuelve más frágil, las pruebas tardan más y cada cambio pequeño exige revisar módulos que no deberían estar acoplados.\n\nSin embargo, la metáfora suele malinterpretarse de dos maneras opuestas. Algunos equipos la usan como excusa para no refactorizar nunca, acumulando parches hasta paralizar el producto. Otros, en el extremo contrario, exigen código perfecto desde el primer día y retrasan entregas críticas por evitar cualquier imperfección.\n\nLos estudios empíricos sobre mantenimiento de software muestran un punto intermedio: la deuda técnica deliberada y documentada puede ser una decisión estratégica válida cuando se planifica su pago en iteraciones posteriores. El problema real no es pedir un préstamo, sino olvidarse de registrarlo y dejar que los intereses consuman por completo la capacidad del equipo."
+    },
+    {
+      "id": "LYC-E11",
+      "titulo": "Resumen de investigación: Revisión por pares frente a programación en parejas",
+      "nota": "Texto académico original de práctica (ámbito de estudio).",
+      "texto": "Objetivo. Comparar la eficacia en detección de defectos entre la revisión asíncrona por pares (pull requests) y la programación en parejas (pair programming) en equipos remotos de desarrollo web.\n\nMétodo. Durante doce semanas se observó a 64 desarrolladores distribuidos en 16 equipos de cuatro integrantes que trabajaban en módulos equivalentes de una plataforma educativa. Ocho equipos emplearon revisión asíncrona por pares antes de integrar cada cambio; los otros ocho trabajaron en parejas rotativas durante las tareas complejas.\n\nResultados. Los equipos con programación en parejas presentaron 28 % menos defectos en pruebas de integración, pero consumieron 19 % más horas-persona en tareas rutinarias de maquetación. En contraste, la revisión asíncrona mantuvo mayor velocidad en tareas simples, aunque su eficacia cayó drásticamente cuando los cambios superaban las 400 líneas de código, pues los revisores tendían a aprobarlos superficialmente.\n\nConclusión. Ninguna técnica domina en todos los escenarios: la programación en parejas aporta mayor valor en lógica crítica o ambigua, mientras que la revisión asíncrona funciona mejor en cambios pequeños y bien acotados."
+    },
+    {
+      "id": "LYC-E12",
+      "titulo": "El reloj del servidor",
+      "nota": "Microrrelato original de práctica (ámbito literario).",
+      "texto": "Cada viernes a las seis de la tarde, cuando la oficina quedaba en silencio, Mateo abría la terminal del servidor antiguo que nadie se atrevía a apagar. No tenía documentación ni pruebas automatizadas; apenas un archivo llamado `notas_1999.txt` escrito por alguien que ya no trabajaba en la empresa.\n\nMateo no entraba para cambiar nada. Entraba solo a verificar que el reloj interno siguiera marcando la hora exacta y que el proceso nocturno de respaldo hubiera terminado sin advertencias. Sus compañeros más jóvenes se reían: decían que aquel servidor era un fósil que cabría en una sola función moderna en la nube.\n\nUn lunes de lluvia falló el proveedor principal de facturación y los sistemas nuevos quedaron paralizados durante cuatro horas. Nadie recordaba cómo emitir comprobantes de contingencia hasta que Mateo abrió el servidor antiguo, tecleó dos comandos aprendidos de memoria y devolvió la operación a la sucursal. Cuando los demás aplaudieron, Mateo apenas sonrió: sabía que cuidar lo que otros desprecian también es una forma de ingeniería."
+    },
+    {
+      "id": "LYC-E13",
+      "titulo": "Sobre el error y el oficio",
+      "nota": "Fragmento de ensayo original de práctica (ámbito literario).",
+      "texto": "Quien empieza a programar suele creer que el buen profesional es aquel cuyo código compila a la primera. Con los años descubre lo contrario: el verdadero oficio consiste en saber leer el propio error sin desesperarse.\n\nLa pantalla que devuelve una línea roja no está castigando al autor; simplemente señala dónde la idea que teníamos en la cabeza no coincide todavía con la realidad de la máquina. En ese desacuerdo habita el aprendizaje. Borrar con prisa y probar combinaciones al azar puede hacer que el programa funcione por accidente, pero deja intacta la ignorancia que produjo el fallo.\n\nPor eso, detenerse a formular una hipótesis antes de tocar una sola línea transforma la depuración en pensamiento. No corregimos errores para acabar pronto; los corregimos para entender mejor."
+    },
+    {
+      "id": "LYC-E14",
+      "titulo": "Aviso de mantenimiento programado en la Red Universitaria",
+      "nota": "Comunicado institucional original de práctica (ámbito de participación social).",
+      "texto": "La Dirección de Tecnologías de la Información informa a la comunidad estudiantil y docente que, debido a la actualización de los equipos centrales de conmutación, el domingo 24 de mayo de 00:00 a 06:00 horas se interrumpirá el acceso al portal de calificaciones, al correo institucional y a la red inalámbrica en los tres campus.\n\nDurante ese periodo permanecerá disponible únicamente la página informativa principal alojada en un servidor externo de respaldo. Se solicita a los docentes que tengan programadas entregas de tareas para la medianoche del sábado recorrer el cierre hasta el lunes 25 de mayo a las 12:00 horas.\n\nUna vez concluida la ventana de mantenimiento, no será necesario reconfigurar contraseñas ni certificados en los dispositivos personales. Para reportar incidencias posteriores a las 06:00 horas, estará habilitada la mesa de ayuda en el correo soporte@universidad.ejemplo o en la extensión 4400."
+    }
+  ],
+  "preguntas": [
+    {
+      "id": "LYC-301", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E10", "nivel": "satisfactorio",
+      "base": "Lea el texto sobre deuda técnica y responda.",
+      "pregunta": "¿Con qué propósito acuñó Ward Cunningham la metáfora de la deuda técnica en 1992?",
+      "opciones": [
+        { "texto": "Para calcular los impuestos contables de las empresas de software", "explicacion": "Incorrecta. Es una metáfora de comunicación, no un cálculo fiscal." },
+        { "texto": "Para explicar a directivos no técnicos el costo futuro de tomar atajos rápidos en el diseño", "explicacion": "Correcta. El primer párrafo señala explícitamente que la metáfora buscaba explicar a directivos no técnicos el efecto de lanzar rápido con atajos." },
+        { "texto": "Para prohibir cualquier entrega rápida en proyectos comerciales", "explicacion": "Incorrecta. El texto aclara que la deuda deliberada puede ser válida estratégicamente." }
+      ],
+      "correcta": 1,
+      "estrategia": "Busca el dato explícito en el primer párrafo («para explicar a…»).",
+      "conceptos": ["Identificación de información"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-302", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E10", "nivel": "sobresaliente",
+      "base": "Lea el texto sobre deuda técnica y responda.",
+      "pregunta": "¿Cuál es la postura central del autor respecto a la deuda técnica?",
+      "opciones": [
+        { "texto": "Debe evitarse por completo desde el primer día aunque retrase las entregas", "explicacion": "Incorrecta. El autor critica ese extremo por retrasar entregas críticas." },
+        { "texto": "Solo afecta a sistemas financieros y bancos", "explicacion": "Incorrecta. El préstamo financiero es solo una analogía." },
+        { "texto": "Puede ser válida si se asume de forma consciente, se documenta y se planifica su pago", "explicacion": "Correcta. El último párrafo resume que la deuda deliberada y documentada es válida si no se olvida pagar sus intereses." }
+      ],
+      "correcta": 2,
+      "estrategia": "La tesis o postura del autor en artículos argumentativos suele sintetizarse en el párrafo de cierre.",
+      "conceptos": ["Sentido global", "Postura del autor"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-303", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E10", "nivel": "satisfactorio",
+      "base": "Lea el texto sobre deuda técnica y responda.",
+      "pregunta": "En el contexto del texto, ¿qué representan los «intereses» de la deuda técnica?",
+      "opciones": [
+        { "texto": "El esfuerzo extra y la fragilidad al modificar módulos acoplados en el futuro", "explicacion": "Correcta. El primer párrafo explica que los intereses aparecen en cada nueva modificación: pruebas más lentas y código frágil." },
+        { "texto": "El salario de los directivos que aprueban el presupuesto", "explicacion": "Incorrecta. No se menciona remuneración de directivos." },
+        { "texto": "Las ganancias adicionales obtenidas al llegar antes al mercado", "explicacion": "Incorrecta. Llegar antes al mercado es el beneficio inmediato del «préstamo», no los intereses." }
+      ],
+      "correcta": 0,
+      "estrategia": "Observa los dos puntos tras la palabra «intereses» en el texto: ahí se explica el significado metafórico.",
+      "conceptos": ["Interpretación en contexto"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-304", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E11", "nivel": "satisfactorio",
+      "base": "Lea el resumen de investigación y responda.",
+      "pregunta": "¿Qué ocurrió en la revisión asíncrona por pares cuando los cambios superaron las 400 líneas de código?",
+      "opciones": [
+        { "texto": "Se redujeron los defectos en 28 % frente a la programación en parejas", "explicacion": "Incorrecta. El 28 % menos defectos fue el resultado de la programación en parejas." },
+        { "texto": "Los revisores tendieron a aprobar los cambios de manera superficial", "explicacion": "Correcta. La sección Resultados indica que su eficacia cayó drásticamente porque los revisores aprobaban superficialmente." },
+        { "texto": "Se prohibió usar pull requests en los ocho equipos", "explicacion": "Incorrecta. El estudio no menciona prohibiciones." }
+      ],
+      "correcta": 1,
+      "estrategia": "Localiza la cifra «400 líneas» en la sección Resultados.",
+      "conceptos": ["Identificación de información", "Texto científico"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-305", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E11", "nivel": "sobresaliente",
+      "base": "Lea el resumen de investigación y responda.",
+      "pregunta": "De acuerdo con las conclusiones del estudio, ¿qué práctica recomienda aplicar para tareas de lógica crítica y ambigua?",
+      "opciones": [
+        { "texto": "Programación en parejas", "explicacion": "Correcta. La conclusión indica que la programación en parejas aporta mayor valor en lógica crítica o ambigua." },
+        { "texto": "Revisión asíncrona de cambios mayores a 400 líneas", "explicacion": "Incorrecta. Justamente ese escenario mostró baja eficacia en la revisión asíncrona." },
+        { "texto": "Maquetación individual sin revisiones", "explicacion": "Incorrecta. No se propone eliminar las revisiones." }
+      ],
+      "correcta": 0,
+      "estrategia": "Contrasta las dos recomendaciones finales del apartado Conclusión.",
+      "conceptos": ["Inferencia", "Comprensión lectora"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-306", "subarea": "L1.1", "formato": "multirreactivo", "estimulo": "LYC-E11", "nivel": "sobresaliente",
+      "base": "Lea el resumen de investigación y responda.",
+      "pregunta": "¿Cuál fue una desventaja observada de la programación en parejas durante el experimento?",
+      "opciones": [
+        { "texto": "Consumió 19 % más horas-persona en tareas rutinarias de maquetación", "explicacion": "Correcta. En Resultados se reporta ese incremento de horas-persona en tareas rutinarias." },
+        { "texto": "Incrementó en 28 % los defectos de integración", "explicacion": "Incorrecta. Los redujo en 28 %, no los incrementó." },
+        { "texto": "Impidió que los equipos trabajaran de manera remota", "explicacion": "Incorrecta. Todos los equipos del estudio trabajaban en modalidad remota." }
+      ],
+      "correcta": 0,
+      "estrategia": "Distingue las cifras: 28 % menos defectos (ventaja) vs. 19 % más horas en tareas simples (desventaja).",
+      "conceptos": ["Interpretación de resultados"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-307", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E12", "nivel": "satisfactorio",
+      "base": "Lea el relato «El reloj del servidor» y responda.",
+      "pregunta": "¿Por qué se burlaban los compañeros más jóvenes de Mateo los viernes por la tarde?",
+      "opciones": [
+        { "texto": "Porque consideraban obsoleto el servidor antiguo que Mateo seguía revisando", "explicacion": "Correcta. Lo llamaban «un fósil» que cabría en una sola función moderna en la nube." },
+        { "texto": "Porque Mateo no sabía usar comandos de terminal", "explicacion": "Incorrecta. Al contrario, Mateo resolvió la falla tecleando comandos aprendidos de memoria." },
+        { "texto": "Porque el servidor antiguo consumía toda la electricidad de la oficina", "explicacion": "Incorrecta. El texto no menciona consumo eléctrico." }
+      ],
+      "correcta": 0,
+      "estrategia": "Identifica la razón de la burla en el segundo párrafo.",
+      "conceptos": ["Comprensión literal", "Texto narrativo"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-308", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E12", "nivel": "sobresaliente",
+      "base": "Lea el relato «El reloj del servidor» y responda.",
+      "pregunta": "¿Qué valor o enseñanza destaca el desenlace del cuento?",
+      "opciones": [
+        { "texto": "Que la tecnología antigua siempre es superior a la nube moderna", "explicacion": "Incorrecta. No rechaza la nube; valora la prevención y el respeto al legado que aún sostiene operaciones críticas." },
+        { "texto": "Que el cuidado silencioso y preventivo de sistemas heredados puede salvar una operación crítica", "explicacion": "Correcta. La frase final («cuidar lo que otros desprecian también es una forma de ingeniería») resume el sentido global del relato." },
+        { "texto": "Que no debe escribirse documentación en los proyectos de software", "explicacion": "Incorrecta. La falta de documentación se menciona como una limitación del servidor antiguo, no como virtud." }
+      ],
+      "correcta": 1,
+      "estrategia": "En textos literarios, la última frase suele condensar el tema o reflexión central.",
+      "conceptos": ["Sentido global", "Inferencia literaria"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-309", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E12", "nivel": "satisfactorio",
+      "base": "Lea el relato «El reloj del servidor» y responda.",
+      "pregunta": "¿Qué evento obligó a recurrir al servidor antiguo?",
+      "opciones": [
+        { "texto": "Una caída de cuatro horas en el proveedor principal de facturación", "explicacion": "Correcta. El tercer párrafo narra que un lunes de lluvia falló el proveedor principal de facturación." },
+        { "texto": "La renuncia del autor de `notas_1999.txt`", "explicacion": "Incorrecta. Esa persona ya no trabajaba en la empresa desde antes." },
+        { "texto": "Una auditoría externa de respaldos", "explicacion": "Incorrecta. No se menciona auditoría externa." }
+      ],
+      "correcta": 0,
+      "estrategia": "Ubica el conflicto o punto de giro en el tercer párrafo.",
+      "conceptos": ["Estructura narrativa"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-310", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E13", "nivel": "sobresaliente",
+      "base": "Lea el fragmento de ensayo «Sobre el error y el oficio» y responda.",
+      "pregunta": "Según el autor, ¿qué ocurre cuando alguien corrige un fallo probando combinaciones al azar?",
+      "opciones": [
+        { "texto": "Puede hacer que el programa funcione por accidente, pero mantiene la ignorancia que causó el error", "explicacion": "Correcta. El segundo párrafo lo expresa casi literalmente: deja intacta la ignorancia que produjo el fallo." },
+        { "texto": "Demuestra haber alcanzado el dominio completo del lenguaje", "explicacion": "Incorrecta. El autor sostiene lo opuesto: el oficio requiere formular hipótesis y entender." },
+        { "texto": "Elimina definitivamente la posibilidad de futuros errores similares", "explicacion": "Incorrecta. Sin comprender la causa, el error volverá a presentarse." }
+      ],
+      "correcta": 0,
+      "estrategia": "Busca el contraste entre «funcionar por accidente» y «formular una hipótesis».",
+      "conceptos": ["Comprensión de ensayo"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-311", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E13", "nivel": "sobresaliente",
+      "base": "Lea el fragmento de ensayo «Sobre el error y el oficio» y responda.",
+      "pregunta": "¿Qué función cumple la metáfora «La pantalla que devuelve una línea roja no está castigando al autor»?",
+      "opciones": [
+        { "texto": "Criticar el diseño visual de los editores de código actuales", "explicacion": "Incorrecta. No habla de estética de editores." },
+        { "texto": "Reinterpretar los mensajes de error como información útil para aprender, no como un fracaso personal", "explicacion": "Correcta. El ensayo personifica la pantalla para quitarle la carga de castigo y presentarla como guía entre la idea y la realidad." },
+        { "texto": "Sugerir que los compiladores cometen fallos injustos", "explicacion": "Incorrecta. La máquina solo señala el desacuerdo con la idea del programador." }
+      ],
+      "correcta": 1,
+      "estrategia": "Preguntas sobre recursos literarios piden para qué usa el autor esa imagen dentro de su argumento.",
+      "conceptos": ["Interpretación metafórica", "Ensayo"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-312", "subarea": "L1.2", "formato": "multirreactivo", "estimulo": "LYC-E13", "nivel": "satisfactorio",
+      "base": "Lea el fragmento de ensayo «Sobre el error y el oficio» y responda.",
+      "pregunta": "¿Cuál es la idea principal del último párrafo?",
+      "opciones": [
+        { "texto": "Depurar formulando hipótesis convierte la corrección en comprensión profunda", "explicacion": "Correcta. Concluye que no corregimos errores para acabar pronto, sino para entender mejor." },
+        { "texto": "Hay que terminar las correcciones lo más rápido posible", "explicacion": "Incorrecta. Contradice explícitamente «No corregimos errores para acabar pronto»." },
+        { "texto": "Quien empieza a programar nunca debe cometer errores de compilación", "explicacion": "Incorrecta. El primer párrafo señala que creer eso es un error de principiante." }
+      ],
+      "correcta": 0,
+      "estrategia": "Lee la oración final como síntesis de la tesis.",
+      "conceptos": ["Idea principal"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-313", "subarea": "L1.3", "formato": "multirreactivo", "estimulo": "LYC-E14", "nivel": "satisfactorio",
+      "base": "Lea el aviso de mantenimiento y responda.",
+      "pregunta": "¿Qué servicio permanecerá disponible durante la ventana de mantenimiento del domingo?",
+      "opciones": [
+        { "texto": "El correo institucional", "explicacion": "Incorrecta. El correo institucional sí se interrumpirá de 00:00 a 06:00 horas." },
+        { "texto": "La página informativa principal alojada en un servidor externo", "explicacion": "Correcta. El segundo párrafo indica que únicamente permanecerá disponible la página informativa principal." },
+        { "texto": "La red inalámbrica en los tres campus", "explicacion": "Incorrecta. También se suspenderá durante las 6 horas de mantenimiento." }
+      ],
+      "correcta": 1,
+      "estrategia": "Atiende palabras restrictivas como «únicamente» en avisos institucionales.",
+      "conceptos": ["Textos funcionales", "Lectura de detalles"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-314", "subarea": "L1.3", "formato": "multirreactivo", "estimulo": "LYC-E14", "nivel": "satisfactorio",
+      "base": "Lea el aviso de mantenimiento y responda.",
+      "pregunta": "¿Qué deben hacer los docentes que tenían tareas programadas para la medianoche del sábado?",
+      "opciones": [
+        { "texto": "Recorrer la fecha de cierre hasta el lunes 25 de mayo a las 12:00 horas", "explicacion": "Correcta. El comunicado pide explícitamente recorrer el cierre a ese día y hora." },
+        { "texto": "Cancelar definitivamente las entregas del semestre", "explicacion": "Incorrecta. Solo pide recorrer el horario de entrega." },
+        { "texto": "Reconfigurar los certificados de seguridad de los alumnos", "explicacion": "Incorrecta. El aviso aclara que no será necesario reconfigurar contraseñas ni certificados." }
+      ],
+      "correcta": 0,
+      "estrategia": "Localiza al destinatario («docentes») dentro del comunicado.",
+      "conceptos": ["Identificación de instrucciones"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-315", "subarea": "L1.3", "formato": "multirreactivo", "estimulo": "LYC-E14", "nivel": "sobresaliente",
+      "base": "Lea el aviso de mantenimiento y responda.",
+      "pregunta": "¿A partir de qué hora podrá la comunidad reportar incidencias si el servicio no se restablece?",
+      "opciones": [
+        { "texto": "Desde las 00:00 horas del domingo", "explicacion": "Incorrecta. De 00:00 a 06:00 es la ventana programada de suspensión." },
+        { "texto": "Después de las 06:00 horas del domingo 24 de mayo", "explicacion": "Correcta. El tercer párrafo indica que para incidencias posteriores a las 06:00 horas estará habilitada la mesa de ayuda." },
+        { "texto": "Hasta el lunes 25 de mayo a las 12:00 horas", "explicacion": "Incorrecta. Esa hora corresponde al nuevo límite de entregas académicas, no a soporte técnico." }
+      ],
+      "correcta": 1,
+      "estrategia": "No mezcles horarios de distintos eventos dentro de un mismo aviso.",
+      "conceptos": ["Comprensión de avisos"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-316", "subarea": "L1.3", "formato": "multirreactivo", "estimulo": "LYC-E14", "nivel": "sobresaliente",
+      "base": "Lea el aviso de mantenimiento y responda.",
+      "pregunta": "¿Cuál es la intención comunicativa principal del texto?",
+      "opciones": [
+        { "texto": "Prevenir a la comunidad sobre una suspensión temporal de servicios y orientar medidas de contingencia", "explicacion": "Correcta. Informa fechas, servicios afectados, acciones para docentes y canales de soporte." },
+        { "texto": "Convencer a los estudiantes de contratar un proveedor de internet privado", "explicacion": "Incorrecta. No tiene intención persuasiva ni comercial." },
+        { "texto": "Explicar técnicamente la arquitectura de los conmutadores universitarios", "explicacion": "Incorrecta. Solo menciona la actualización como motivo breve." }
+      ],
+      "correcta": 0,
+      "estrategia": "Un aviso institucional tiene función informativa y preventiva.",
+      "conceptos": ["Propósito comunicativo"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-317", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Un estudiante redacta el informe técnico de su residencia profesional y necesita incluir un conector adecuado para introducir una consecuencia lógica.",
+      "pregunta": "¿Cuál opción presenta el uso correcto de conectores y puntuación?",
+      "opciones": [
+        { "texto": "La base de datos carecía de índices; por consiguiente, las consultas tardaban más de diez segundos.", "explicacion": "Correcta. «Por consiguiente» introduce una consecuencia y va precedido de punto y coma (o punto) y seguido de coma." },
+        { "texto": "La base de datos carecía de índices; sin embargo, las consultas tardaban más de diez segundos.", "explicacion": "Incorrecta. «Sin embargo» expresa oposición o contraste, no consecuencia." },
+        { "texto": "La base de datos carecía de índices, aunque, las consultas tardaban más de diez segundos.", "explicacion": "Incorrecta. «Aunque» es concesivo y la coma posterior a «aunque» es incorrecta." }
+      ],
+      "correcta": 0,
+      "estrategia": "Causa → consecuencia = «por consiguiente / por lo tanto». Contraste = «sin embargo / no obstante».",
+      "conceptos": ["Cohesión", "Conectores lógicos"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-318", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "En un artículo científico se requiere mantener concordancia gramatical entre el sujeto colectivo/compuesto y el verbo.",
+      "pregunta": "¿Cuál enunciado es gramaticalmente correcto?",
+      "opciones": [
+        { "texto": "Hubieron muchos errores de compilación durante la primera prueba.", "explicacion": "Incorrecta. El verbo «haber» impersonal siempre se conjuga en singular: «Hubo muchos errores»." },
+        { "texto": "La mayoría de los participantes entregaron o entregó el prototipo a tiempo, pero hubo varios retrasos en la documentación.", "explicacion": "Correcta. Con sustantivo cuantificador + complemento plural («la mayoría de los participantes») se admite singular o plural, y «hubo» impersonal va correctamente en singular." },
+        { "texto": "Se realizan diariamente copias de seguridad y se verifica que no hayan fallos críticos.", "explicacion": "Incorrecta. «Hayan» es incorrecto en uso impersonal; debe ser «no haya fallos críticos»." }
+      ],
+      "correcta": 1,
+      "estrategia": "«Haber» impersonal indicando existencia SIEMPRE va en singular: hubo, habrá, haya (nunca «hubieron» ni «habían»).",
+      "conceptos": ["Concordancia", "Verbo haber impersonal"], "fuentes": [{ "recurso": "rae-ortografia" }]
+    },
+    {
+      "id": "LYC-319", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Un tesista debe elegir la oración que respeta las reglas actuales de acentuación de la RAE (incluidos monosílabos y palabras con tilde diacrítica).",
+      "pregunta": "¿Cuál opción está escrita sin faltas de ortografía?",
+      "opciones": [
+        { "texto": "Aún no sabemos si él dio el visto bueno para el despliegue de este módulo.", "explicacion": "Correcta. «Aún» (= todavía) lleva tilde; «él» pronombre lleva tilde; «dio» y «este» (determinante) no llevan tilde." },
+        { "texto": "Aun no sabemos si el dió el visto bueno para el despliegue de éste módulo.", "explicacion": "Incorrecta. Falla en «aun» (aquí equivale a todavía), «el» (pronombre), «dió» (monosílabo sin tilde) y «éste»." },
+        { "texto": "Aún no sabemos si él dió el visto bueno para el despliegue de este módulo.", "explicacion": "Incorrecta. «Dio» y «fue» son monosílabos y nunca llevan tilde." }
+      ],
+      "correcta": 0,
+      "estrategia": "Monosílabos como `dio`, `fue`, `vio`, `ti` NUNCA se tildan. `Aún` = todavía; `aun` = incluso.",
+      "conceptos": ["Ortografía", "Tilde diacrítica"], "fuentes": [{ "recurso": "rae-ortografia" }]
+    },
+    {
+      "id": "LYC-320", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "En la sección de metodología de una tesis de ingeniería se busca evitar el dequeísmo y el queísmo.",
+      "pregunta": "¿Cuál oración está redactada correctamente?",
+      "opciones": [
+        { "texto": "El equipo comprobó de que el algoritmo reducía el consumo de memoria.", "explicacion": "Incorrecta. Es dequeísmo: se comprueba *algo*, no *de algo*." },
+        { "texto": "Estamos seguros que la arquitectura soportará la carga esperada.", "explicacion": "Incorrecta. Es queísmo: uno está seguro *de algo*, por lo que requiere «de que»." },
+        { "texto": "El equipo se aseguró de que las pruebas cubrieran todos los casos límite.", "explicacion": "Correcta. «Asegurarse de algo» exige la preposición «de» antes de «que»." }
+      ],
+      "correcta": 2,
+      "estrategia": "Truco rápido: sustituye toda la oración subordinada por «eso». «Comprobó ESO» (sin de); «Seguro DE ESO» (con de).",
+      "conceptos": ["Dequeísmo", "Queísmo", "Norma gramatical"], "fuentes": [{ "recurso": "rae-dpd" }]
+    },
+    {
+      "id": "LYC-321", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Para publicar un resumen en una revista académica de software, el autor necesita un registro formal, preciso e impersonal.",
+      "pregunta": "¿Qué redacción cumple con el registro adecuado para un texto académico?",
+      "opciones": [
+        { "texto": "En este trabajo le metimos mano al código viejo para que jalara más rápido en la nube.", "explicacion": "Incorrecta. Utiliza expresiones coloquiales inadecuadas para un artículo académico." },
+        { "texto": "El presente estudio evalúa la refactorización de un sistema heredado orientada a su despliegue en la nube.", "explicacion": "Correcta. Emplea vocabulario técnico preciso, tercera persona impersonal y tono objetivo." },
+        { "texto": "Como verán en nuestro padre proyecto, optimizamos súper bien el servidor.", "explicacion": "Incorrecta. Usa coloquialismos y tono subjetivo." }
+      ],
+      "correcta": 1,
+      "estrategia": "Registro académico = tercera persona/impersonal + léxico técnico preciso + cero coloquialismos.",
+      "conceptos": ["Adecuación", "Registro académico"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-322", "subarea": "L2.1", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "Un estudiante revisa la puntuación de un párrafo técnico que incluye una aclaración incidental y una enumeración compleja.",
+      "pregunta": "¿Cuál opción utiliza correctamente los signos de puntuación?",
+      "opciones": [
+        { "texto": "El sistema de autenticación, que fue auditado en marzo, incluye tres factores: contraseña, código temporal y llave física.", "explicacion": "Correcta. La oración explicativa va entre comas y los dos puntos preceden adecuadamente a la enumeración anunciada." },
+        { "texto": "El sistema de autenticación que fue auditado en marzo, incluye tres factores, contraseña, código temporal y llave física.", "explicacion": "Incorrecta. Falta la coma de apertura de la explicativa (o sobra la de cierre antes del verbo) y separa sujeto y verbo con coma." },
+        { "texto": "El sistema de autenticación, que fue auditado en marzo incluye tres factores: contraseña, código temporal, y llave física.", "explicacion": "Incorrecta. Falta cerrar el inciso explicativo con coma antes del verbo «incluye»." }
+      ],
+      "correcta": 0,
+      "estrategia": "Nunca separes sujeto de verbo con una sola coma; los incisos explicativos siempre van entre DOS comas.",
+      "conceptos": ["Puntuación", "Incisos explicativos"], "fuentes": [{ "recurso": "rae-ortografia" }]
+    },
+    {
+      "id": "LYC-323", "subarea": "L2.1", "formato": "completamiento",
+      "nivel": "sobresaliente",
+      "base": "En un ensayo académico sobre ética de la inteligencia artificial, el autor desea expresar una objeción sin invalidar por completo la idea previa.",
+      "pregunta": "La frase «________ los modelos automatizados agilizan el diagnóstico, requieren supervisión humana constante» se completa adecuadamente con ________.",
+      "opciones": [
+        { "texto": "Por lo tanto", "explicacion": "Incorrecta. Introduce una conclusión o consecuencia, no una concesión." },
+        { "texto": "Aunque", "explicacion": "Correcta. «Aunque» es un nexo concesivo que reconoce un hecho cierto antes de introducir la restricción o matiz." },
+        { "texto": "Es decir", "explicacion": "Incorrecta. Introduce una aclaración o reformulación." }
+      ],
+      "correcta": 1,
+      "estrategia": "Reconocer una ventaja pero añadir un límite/condición = conector concesivo («Aunque», «Si bien», «A pesar de que»).",
+      "conceptos": ["Conectores concesivos", "Cohesión"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-324", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Una coordinadora de proyectos debe enviar un correo formal a un cliente externo para informarle que la entrega se pospondrá tres días hábiles y ofrecerle una solución.",
+      "pregunta": "¿Cuál redacción es la más adecuada por tono, claridad y cortesía profesional?",
+      "opciones": [
+        { "texto": "Hola, no vamos a acabar el viernes porque hubo broncas técnicas, ahí luego te avisamos.", "explicacion": "Incorrecta. Es informal, vago y no propone fecha concreta." },
+        { "texto": "Estimado cliente: le informamos que, debido a pruebas adicionales de seguridad, la entrega se reprogramará para el miércoles 20 de mayo. Quedamos atentos a cualquier duda.", "explicacion": "Correcta. Mantiene trato respetuoso, explica el motivo de forma profesional y fija una fecha exacta." },
+        { "texto": "Por medio de la presente le notifico tajantemente que su entrega queda pospuesta sin fecha definida por causas ajenas.", "explicacion": "Incorrecta. Resulta hostil e imprecisa al omitir la nueva fecha." }
+      ],
+      "correcta": 1,
+      "estrategia": "Comunicación formal con clientes: saludo cortés + motivo claro + fecha/acción concreta + despedida.",
+      "conceptos": ["Comunicación profesional", "Adecuación"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-325", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "En una convocatoria pública para una beca de posgrado se detectan errores comunes en el uso de «por qué / porque / porqué / por que».",
+      "pregunta": "¿Cuál enunciado emplea correctamente estas formas?",
+      "opciones": [
+        { "texto": "Explique el porque de su interés en la maestría y porqué eligió esta institución.", "explicacion": "Incorrecta. Invierte ambos usos: el sustantivo lleva tilde y va junto («el porqué»), y la pregunta indirecta va separada («por qué»)." },
+        { "texto": "Explique el porqué de su interés en la maestría y por qué eligió esta institución, porque esa información será evaluada.", "explicacion": "Correcta. «El porqué» es sustantivo (= motivo), «por qué» introduce pregunta indirecta y «porque» introduce causa." },
+        { "texto": "Explique el por qué de su interés en la maestría y porque eligió esta institución.", "explicacion": "Incorrecta. Precedido de artículo «el» debe ir junto («el porqué»)." }
+      ],
+      "correcta": 1,
+      "estrategia": "el porqué (sustantivo = motivo), por qué (pregunta directa o indirecta), porque (respuesta/causa).",
+      "conceptos": ["Ortografía", "Porqué / porque / por qué"], "fuentes": [{ "recurso": "rae-dpd" }]
+    },
+    {
+      "id": "LYC-326", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Un comité ciudadano redacta una carta de petición dirigida al ayuntamiento para solicitar iluminación en un parque público.",
+      "pregunta": "¿Cuál opción presenta el uso correcto de homófonos (`haber/a ver`, `hecho/echo`, `vaya/valla`)?",
+      "opciones": [
+        { "texto": "Esperamos que vaya pronto una cuadrilla, ya que hemos hecho varios reportes sin haber recibido respuesta.", "explicacion": "Correcta. «Vaya» (verbo ir), «hecho» (participio de hacer) y «haber» (auxiliar) están correctamente escritos." },
+        { "texto": "Esperamos que valla pronto una cuadrilla, ya que hemos echo varios reportes sin a ver recibido respuesta.", "explicacion": "Incorrecta. «Valla» es cerca/anuncio, «echo» es de echar y «a ver» es de mirar." },
+        { "texto": "Esperamos que vaya pronto una cuadrilla, ya que hemos echo varios reportes sin haber recibido respuesta.", "explicacion": "Incorrecta. «Hemos echo» carece de h; el participio de hacer es «hecho»." }
+      ],
+      "correcta": 0,
+      "estrategia": "hizo/hecho (con h = hacer); vaya (ir) vs valla (cerca) vs baya (fruto); haber (existir/auxiliar) vs a ver (mirar).",
+      "conceptos": ["Homófonos", "Ortografía"], "fuentes": [{ "recurso": "rae-ortografia" }]
+    },
+    {
+      "id": "LYC-327", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "En un reglamento interno de uso de laboratorio de cómputo, se busca mantener consistencia en el uso del modo verbal para expresar obligaciones.",
+      "pregunta": "¿Qué redacción mantiene coherencia gramatical en sus incisos?",
+      "opciones": [
+        { "texto": "1. Registrar su entrada en recepción. 2. Mantendrá apagado el celular. 3. No introducir alimentos.", "explicacion": "Incorrecta. Mezcla infinitivo («Registrar», «No introducir») con futuro («Mantendrá»)." },
+        { "texto": "1. Registrar su entrada en recepción. 2. Mantener en silencio el teléfono celular. 3. Evitar el ingreso con alimentos o bebidas.", "explicacion": "Correcta. Todos los incisos mantienen paralelismo sintáctico usando verbos en infinitivo." },
+        { "texto": "1. Registra tu entrada. 2. Se deberá mantener silencio. 3. No introduzcan alimentos.", "explicacion": "Incorrecta. Mezcla segunda persona singular, impersonal y tercera plural." }
+      ],
+      "correcta": 1,
+      "estrategia": "En reglamentos y listas de instrucciones, mantén el mismo modo/persona verbal en todos los puntos (paralelismo).",
+      "conceptos": ["Paralelismo", "Coherencia textual"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-328", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "satisfactorio",
+      "base": "Un periodista corrige una nota informativa antes de enviarla a imprenta para verificar el uso correcto de mayúsculas.",
+      "pregunta": "¿Cuál oración aplica correctamente las reglas de mayúsculas de la RAE?",
+      "opciones": [
+        { "texto": "El Viernes 15 de Mayo se inauguró el Congreso de Ingeniería en el Estado de Jalisco.", "explicacion": "Incorrecta. Los días de la semana («viernes»), meses («mayo») y el sustantivo genérico «estado» se escriben con minúscula." },
+        { "texto": "El viernes 15 de mayo se inauguró el Congreso de Ingeniería en el estado de Jalisco.", "explicacion": "Correcta. Días, meses y «estado» van en minúscula; el nombre propio del evento («Congreso de Ingeniería») y el topónimo («Jalisco») van en mayúscula." },
+        { "texto": "El viernes 15 de Mayo se inauguró el congreso de ingeniería en el Estado de jalisco.", "explicacion": "Incorrecta. «Mayo» va en minúscula y «Jalisco» es nombre propio y debe llevar mayúscula." }
+      ],
+      "correcta": 1,
+      "estrategia": "En español: días, meses, estaciones e idiomas van SIEMPRE con minúscula inicial (salvo inicio de oración).",
+      "conceptos": ["Uso de mayúsculas", "Ortografía"], "fuentes": [{ "recurso": "rae-ortografia" }]
+    },
+    {
+      "id": "LYC-329", "subarea": "L2.2", "formato": "cuestionamiento-directo", "nivel": "sobresaliente",
+      "base": "Una organización civil publica un comunicado breve y detecta ambigüedad sintáctica en una oración.",
+      "pregunta": "¿Cuál opción evita la ambigüedad y expresa la idea con claridad?",
+      "opciones": [
+        { "texto": "La comisión entregó el informe al director en su oficina cuando terminó su jornada.", "explicacion": "Incorrecta. «Su oficina» y «su jornada» resultan ambiguos: no queda claro si pertenecen al director o a algún miembro de la comisión." },
+        { "texto": "Al concluir la jornada laboral del director, la comisión le entregó el informe en la oficina de la dirección.", "explicacion": "Correcta. Precisa a quién pertenece la jornada y la oficina, eliminando la anfibología." },
+        { "texto": "El informe fue entregado por la comisión al director en su respectiva oficina suya.", "explicacion": "Incorrecta. Presenta pleonasmo («su… suya») y mantiene ambigüedad." }
+      ],
+      "correcta": 1,
+      "estrategia": "Evita abusar de «su/sus» cuando hay dos posibles poseedores; nombra explícitamente al referente.",
+      "conceptos": ["Anfibología", "Claridad", "Coherencia"], "fuentes": [{ "recurso": "guia-oficial-2026" }]
+    },
+    {
+      "id": "LYC-330", "subarea": "L2.2", "formato": "completamiento",
+      "nivel": "satisfactorio",
+      "base": "En un oficio de respuesta administrativa se utiliza el gerundio. Para evitar el uso incorrecto conocido como «gerundio de posterioridad», debe elegirse la construcción válida.",
+      "pregunta": "La opción correcta es: «________».",
+      "opciones": [
+        { "texto": "El usuario presentó la solicitud, recibiendo el folio tres días después", "explicacion": "Incorrecta. Es gerundio de posterioridad: recibir el folio ocurre después de presentar la solicitud, no simultáneamente." },
+        { "texto": "El usuario presentó la solicitud y recibió el folio tres días después", "explicacion": "Correcta. Al usar dos verbos conjugados coordinados («presentó… y recibió…»), se expresa claramente la secuencia temporal." },
+        { "texto": "Se envió un paquete conteniendo los manuales impresos el lunes pasado", "explicacion": "Incorrecta. «Paquete conteniendo» es uso incorrecto del gerundio con valor especificativo de sustantivo (debe ser «que contenía»)." }
+      ],
+      "correcta": 1,
+      "estrategia": "El gerundio indica acción simultánea o inmediatamente anterior, nunca posterior («llegó sentándose» → incorrecto) ni cualidad fija («caja conteniendo» → incorrecto).",
+      "conceptos": ["Uso del gerundio", "Norma gramatical"], "fuentes": [{ "recurso": "rae-dpd" }]
+    }
+  ]
+}

@@ -1,0 +1,522 @@
+{
+  "temario": "egel-plus-isoft-2026",
+  "area": "A3",
+  "banco": "ampliacion",
+  "estimulos": [],
+  "preguntas": [
+    {
+      "id": "A3-301",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Analice el siguiente fragmento en Python:",
+      "codigo": "def agregar(x, lista=[]):\n    lista.append(x)\n    return lista\n\nprint(agregar(1))\nprint(agregar(2))",
+      "pregunta": "¿Qué imprime en la segunda llamada?",
+      "opciones": [
+        { "texto": "[2]", "explicacion": "Incorrecta. En Python los valores por defecto se evalúan una sola vez al definir la función, no en cada invocación." },
+        { "texto": "[1, 2]", "explicacion": "Correcta. La lista por defecto es un objeto mutable compartido entre llamadas, por lo que conserva el 1 de la primera llamada." },
+        { "texto": "Error en tiempo de ejecución", "explicacion": "Incorrecta. La sintaxis es válida en Python, aunque usar mutables como valor por defecto es una trampa clásica." }
+      ],
+      "correcta": 1,
+      "estrategia": "En Python, los argumentos por defecto mutables (`=[]`) se crean una única vez al definir `def`.",
+      "conceptos": ["Python", "Argumentos por defecto", "Mutabilidad"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-302",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En un sistema de grafos para rutas de entrega, un algoritmo recorre todos los nodos vecinos de un vértice antes de avanzar al siguiente nivel de profundidad.",
+      "pregunta": "¿Qué algoritmo de recorrido y estructura auxiliar se utilizan?",
+      "opciones": [
+        { "texto": "Búsqueda en profundidad (DFS) con una pila", "explicacion": "Incorrecta. DFS explora cada rama hasta el fondo antes de retroceder." },
+        { "texto": "Búsqueda en anchura (BFS) con una cola (FIFO)", "explicacion": "Correcta. BFS visita por niveles usando una cola: encola los vecinos del nodo actual y los procesa en orden de llegada." },
+        { "texto": "Ordenamiento rápido (Quicksort) con arreglo", "explicacion": "Incorrecta. Quicksort ordena secuencias, no recorre grafos por niveles." }
+      ],
+      "correcta": 1,
+      "estrategia": "Por niveles / ruta más corta sin pesos = BFS + Cola. Hasta el fondo = DFS + Pila/recursión.",
+      "conceptos": ["BFS", "Cola", "Grafos"],
+      "fuentes": [{ "recurso": "sanchez-2013" }]
+    },
+    {
+      "id": "A3-303",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un algoritmo busca un código postal dentro de un arreglo ordenado de 1,000,000 de registros dividiendo el rango de búsqueda a la mitad en cada comparación.",
+      "pregunta": "¿Cuál es la complejidad temporal en el peor caso (notación Big-O)?",
+      "opciones": [
+        { "texto": "O(1)", "explicacion": "Incorrecta. O(1) corresponde a acceso directo por índice o tabla hash, no a búsqueda binaria." },
+        { "texto": "O(n)", "explicacion": "Incorrecta. O(n) sería búsqueda lineal elemento por elemento." },
+        { "texto": "O(log n)", "explicacion": "Correcta. La búsqueda binaria reduce el espacio de búsqueda a la mitad en cada paso, logrando complejidad logarítmica O(log n)." }
+      ],
+      "correcta": 2,
+      "estrategia": "Dividir el problema a la mitad en cada paso sobre arreglo ordenado = Búsqueda binaria = O(log n).",
+      "conceptos": ["Complejidad algorítmica", "Búsqueda binaria", "Big-O"],
+      "fuentes": [{ "recurso": "sanchez-2013" }]
+    },
+    {
+      "id": "A3-304",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Analice el siguiente código en Java:",
+      "codigo": "String a = new String(\"EGEL\");\nString b = new String(\"EGEL\");\nSystem.out.println((a == b) + \" \" + a.equals(b));",
+      "pregunta": "¿Qué imprime en consola?",
+      "opciones": [
+        { "texto": "false true", "explicacion": "Correcta. `==` compara referencias de memoria (distintas por usar `new`), mientras que `.equals()` compara el contenido de las cadenas." },
+        { "texto": "true true", "explicacion": "Incorrecta. Solo sería `true` con `==` si ambas apuntaran al mismo literal en el String Pool." },
+        { "texto": "false false", "explicacion": "Incorrecta. Ambas cadenas contienen exactamente los caracteres \"EGEL\", por lo que `equals` devuelve `true`." }
+      ],
+      "correcta": 0,
+      "estrategia": "En Java: `==` compara direcciones de objeto; `.equals()` compara contenido.",
+      "conceptos": ["Java", "Strings", "Referencias"],
+      "fuentes": [{ "recurso": "dean-2009" }]
+    },
+    {
+      "id": "A3-305",
+      "subarea": "3.1",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "En C++, una función reserva memoria dinámica con `new int[100]` dentro de un bucle que se ejecuta miles de veces y retorna sin ejecutar `delete[]`.",
+      "pregunta": "¿Qué defecto provoca este código en ejecución prolongada?",
+      "opciones": [
+        { "texto": "Desbordamiento de pila (stack overflow) inmediato en la primera iteración", "explicacion": "Incorrecta. `new` asigna en el heap, no en la pila de llamadas." },
+        { "texto": "Fuga de memoria (memory leak) en el heap hasta agotar la RAM disponible", "explicacion": "Correcta. Al perder la referencia sin liberar la memoria en el heap con `delete[]`, el consumo crece indefinidamente." },
+        { "texto": "Condición de carrera entre compiladores", "explicacion": "Incorrecta. Es un problema de gestión manual de memoria en tiempo de ejecución." }
+      ],
+      "correcta": 1,
+      "estrategia": "`new` sin `delete` en C/C++ = fuga de memoria (memory leak) en el heap.",
+      "conceptos": ["Gestión de memoria", "Heap", "Memory leak"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-306",
+      "subarea": "3.1",
+      "formato": "completamiento",
+      "nivel": "satisfactorio",
+      "base": "En TypeScript, para garantizar en tiempo de compilación que una función reciba un objeto con propiedad `id` numérica y `nombre` de texto, el desarrollador define una estructura de tipos.",
+      "pregunta": "Este mecanismo se denomina ________.",
+      "opciones": [
+        { "texto": "tipado estático", "explicacion": "Correcta. El tipado estático verifica la compatibilidad de tipos antes de ejecutar el programa, detectando errores en compilación." },
+        { "texto": "tipado dinámico débil", "explicacion": "Incorrecta. El tipado dinámico verifica tipos en tiempo de ejecución y realiza conversiones implícitas." },
+        { "texto": "reflexión en tiempo de ejecución", "explicacion": "Incorrecta. La reflexión inspecciona tipos mientras el programa ya está corriendo." }
+      ],
+      "correcta": 0,
+      "estrategia": "Verificar tipos antes de ejecutar (compilación/transpilación) = tipado estático.",
+      "conceptos": ["Tipado estático", "TypeScript"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-307",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Analice el siguiente código en Prolog:",
+      "codigo": "padre(carlos, ana).\npadre(ana, luis).\nabuelo(X, Y) :- padre(X, Z), padre(Z, Y).",
+      "pregunta": "¿Qué paradigma de programación emplea y qué responde la consulta `?- abuelo(carlos, Q).`?",
+      "opciones": [
+        { "texto": "Paradigma funcional; responde `Q = ana`", "explicacion": "Incorrecta. Prolog es lógico/declarativo, y `ana` es hija de `carlos`, no nieta." },
+        { "texto": "Paradigma lógico; responde `Q = luis`", "explicacion": "Correcta. Prolog deduce por unificación y resolución que `carlos` es padre de `ana` (Z) y `ana` es padre de `luis` (Y), por lo que `Q = luis`." },
+        { "texto": "Paradigma imperativo; produce un bucle infinito", "explicacion": "Incorrecta. No es imperativo y las reglas acíclicas terminan correctamente." }
+      ],
+      "correcta": 1,
+      "estrategia": "Hechos + reglas `:-` + consultas `?-` = Prolog = Paradigma lógico.",
+      "conceptos": ["Paradigma lógico", "Prolog", "Unificación"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-308",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un módulo de procesamiento de transacciones usa funciones puras (sin modificar variables externas ni mutar arreglos recibidos) y encadena `filter`, `map` y `reduce` sobre colecciones inmutables.",
+      "pregunta": "¿Qué paradigma de programación aplica?",
+      "opciones": [
+        { "texto": "Programación funcional", "explicacion": "Correcta. Se basa en funciones puras, inmutabilidad y funciones de orden superior como `map`, `filter` y `reduce`." },
+        { "texto": "Programación procedimental", "explicacion": "Incorrecta. El paradigma procedimental suele mutar estado global o local mediante pasos secuenciales." },
+        { "texto": "Programación orientada a aspectos", "explicacion": "Incorrecta. Separa incumbencias transversales (logging, seguridad) mediante puntos de corte." }
+      ],
+      "correcta": 0,
+      "estrategia": "Funciones puras + inmutabilidad + map/filter/reduce = Programación funcional.",
+      "conceptos": ["Paradigma funcional", "Funciones puras", "Inmutabilidad"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-309",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En POO, una clase base `Notificacion` define el método `enviar()`. Las subclases `NotificacionEmail` y `NotificacionSMS` sobrescriben `enviar()`, y un ciclo recorre una lista de `Notificacion` llamando `n.enviar()` sin verificar el tipo concreto.",
+      "pregunta": "¿Qué pilar de la programación orientada a objetos permite ese comportamiento?",
+      "opciones": [
+        { "texto": "Encapsulamiento", "explicacion": "Incorrecta. El encapsulamiento oculta el estado interno mediante modificadores de acceso." },
+        { "texto": "Polimorfismo", "explicacion": "Correcta. El polimorfismo (enlace dinámico) permite invocar la misma operación sobre distintos objetos y que cada subclase ejecute su propia implementación." },
+        { "texto": "Sobrecarga de constructores", "explicacion": "Incorrecta. La sobrecarga distingue métodos con el mismo nombre y distinta firma en tiempo de compilación." }
+      ],
+      "correcta": 1,
+      "estrategia": "Misma interfaz/método + distinto comportamiento según la subclase en ejecución = Polimorfismo.",
+      "conceptos": ["POO", "Polimorfismo"],
+      "fuentes": [{ "recurso": "dean-2009" }]
+    },
+    {
+      "id": "A3-310",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Analice el siguiente código JavaScript:",
+      "codigo": "const nums = [1, 2, 3, 4];\nconst res = nums.filter(n => n % 2 === 0).map(n => n * 10).reduce((a, b) => a + b, 0);\nconsole.log(res);",
+      "pregunta": "¿Qué valor imprime?",
+      "opciones": [
+        { "texto": "100", "explicacion": "Incorrecta. 100 sería la suma de todos los elementos multiplicados por 10 sin filtrar los impares." },
+        { "texto": "20", "explicacion": "Incorrecta. Solo toma el primer par multiplicado por 10." },
+        { "texto": "60", "explicacion": "Correcta. `filter` deja [2, 4], `map` transforma a [20, 40] y `reduce` suma 20 + 40 = 60." }
+      ],
+      "correcta": 2,
+      "estrategia": "Evalúa paso a paso: filter [2,4] → map [20,40] → reduce 60.",
+      "conceptos": ["Programación funcional", "filter", "map", "reduce"],
+      "fuentes": [{ "recurso": "ohanlon-2019" }]
+    },
+    {
+      "id": "A3-311",
+      "subarea": "3.2",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "En una aplicación gráfica de escritorio, el sistema permanece en espera hasta que el usuario hace clic en un botón o presiona una tecla; en ese instante se dispara el manejador (`onClick`) asociado.",
+      "pregunta": "¿Qué paradigma describe este modelo de ejecución?",
+      "opciones": [
+        { "texto": "Programación dirigida por eventos", "explicacion": "Correcta. El flujo del programa no es un guion fijo, sino que responde mediante callbacks/listeners a eventos externos asíncronos." },
+        { "texto": "Programación lógica", "explicacion": "Incorrecta. Se basa en predicados e inferencia lógica." },
+        { "texto": "Programación por lotes (batch)", "explicacion": "Incorrecta. Procesa trabajos secuenciales sin interacción del usuario." }
+      ],
+      "correcta": 0,
+      "estrategia": "Ciclo de escucha + callbacks ante clics/teclas/mensajes = Dirigida por eventos.",
+      "conceptos": ["Eventos", "Paradigmas de programación"],
+      "fuentes": [{ "recurso": "loy-2023" }]
+    },
+    {
+      "id": "A3-312",
+      "subarea": "3.2",
+      "formato": "completamiento",
+      "nivel": "sobresaliente",
+      "base": "En Haskell o en funciones de orden superior, una función que recuerda las variables del ámbito léxico donde fue creada incluso después de que la función externa haya retornado se conoce como ________.",
+      "pregunta": "Complete el enunciado con el concepto correcto.",
+      "opciones": [
+        { "texto": "clausura (closure)", "explicacion": "Correcta. Un closure combina una función con su entorno léxico capturado, permitiendo preservar estado privado." },
+        { "texto": "destructor", "explicacion": "Incorrecta. El destructor libera recursos cuando un objeto sale de alcance en lenguajes como C++." },
+        { "texto": "puntero nulo", "explicacion": "Incorrecta. Es una referencia sin dirección válida asignada." }
+      ],
+      "correcta": 0,
+      "estrategia": "Función + entorno léxico capturado que persiste tras retornar = Closure.",
+      "conceptos": ["Closure", "Funciones de orden superior"],
+      "fuentes": [{ "recurso": "ohanlon-2019" }]
+    },
+    {
+      "id": "A3-313",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un equipo de desarrollo configura un flujo automático que, cada vez que alguien hace `push` al repositorio Git, ejecuta el linter, compila el código y corre las pruebas unitarias e integración para detectar errores al instante.",
+      "pregunta": "¿Qué práctica de ingeniería de software implementa este flujo?",
+      "opciones": [
+        { "texto": "Integración Continua (CI)", "explicacion": "Correcta. La Integración Continua automatiza la compilación y ejecución de pruebas en cada integración de código al repositorio compartido." },
+        { "texto": "Minería de datos", "explicacion": "Incorrecta. Se refiere a descubrir patrones en grandes volúmenes de datos." },
+        { "texto": "Ofuscación de binarios", "explicacion": "Incorrecta. Dificulta la ingeniería inversa sobre código distribuido." }
+      ],
+      "correcta": 0,
+      "estrategia": "Cada push dispara build + linter + tests automáticos = Integración Continua (CI).",
+      "conceptos": ["CI/CD", "Integración continua"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 25" }]
+    },
+    {
+      "id": "A3-314",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un desarrollador necesita incorporar un único commit específico (corrección de un bug en producción) desde la rama `feature/pagos` hacia la rama `main`, sin traer el resto de los commits incompletos de `feature/pagos`.",
+      "pregunta": "¿Qué comando de Git resuelve exactamente esta necesidad?",
+      "opciones": [
+        { "texto": "git merge feature/pagos", "explicacion": "Incorrecta. `merge` integra toda la historia de `feature/pagos`, incluyendo los cambios incompletos." },
+        { "texto": "git cherry-pick <hash-del-commit>", "explicacion": "Correcta. `cherry-pick` aplica únicamente los cambios de un commit puntual sobre la rama actual." },
+        { "texto": "git reset --hard HEAD~1", "explicacion": "Incorrecta. `reset --hard` retrocede la rama actual descartando trabajo." }
+      ],
+      "correcta": 1,
+      "estrategia": "Traer un solo commit específico de otra rama sin fusionar toda la rama = `git cherry-pick`.",
+      "conceptos": ["Git", "Control de versiones", "cherry-pick"],
+      "fuentes": [{ "recurso": "pro-git-es" }]
+    },
+    {
+      "id": "A3-315",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Una empresa quiere detectar automáticamente vulnerabilidades como inyección SQL, contraseñas quemadas (hardcoded) y deuda técnica leyendo el código fuente sin ejecutar la aplicación.",
+      "pregunta": "¿Qué tipo de herramienta debe integrar en su entorno de desarrollo y pipeline?",
+      "opciones": [
+        { "texto": "Análisis estático de código (SAST / linter como SonarQube o Semgrep)", "explicacion": "Correcta. Las herramientas SAST y linters inspeccionan el árbol sintáctico y flujo de datos del código fuente sin ejecutarlo." },
+        { "texto": "Pruebas de carga con JMeter", "explicacion": "Incorrecta. JMeter ejecuta peticiones en tiempo de ejecución contra el servidor para medir rendimiento." },
+        { "texto": "Monitor APM en producción", "explicacion": "Incorrecta. Los APM observan métricas de la aplicación ya desplegada y ejecutándose." }
+      ],
+      "correcta": 0,
+      "estrategia": "Validar código fuente y seguridad sin ejecutarlo = Análisis estático (SAST / SonarQube).",
+      "conceptos": ["SAST", "Análisis estático", "Validación de código"],
+      "fuentes": [{ "recurso": "pressman-2020" }]
+    },
+    {
+      "id": "A3-316",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Al desplegar una aplicación PHP + Node.js, el equipo empaqueta exactamente la versión del intérprete, extensiones y configuración del servidor en una imagen inmutable definida en un archivo declarativo, garantizando que funcione igual en desarrollo y producción.",
+      "pregunta": "¿Qué tecnología de entorno cumple este objetivo?",
+      "opciones": [
+        { "texto": "Contenedores (Docker)", "explicacion": "Correcta. Docker empaqueta la aplicación y sus dependencias en imágenes portables aisladas mediante un Dockerfile." },
+        { "texto": "Compilador cruzado de C", "explicacion": "Incorrecta. Genera binarios para otra arquitectura de CPU, no empaqueta servicios web y extensiones." },
+        { "texto": "Editor de texto plano", "explicacion": "Incorrecta. No gestiona entornos de ejecución." }
+      ],
+      "correcta": 0,
+      "estrategia": "Imagen inmutable con dependencias + «funciona igual en dev y prod» = Contenedores (Docker).",
+      "conceptos": ["Docker", "Contenedores", "Entornos de desarrollo"],
+      "fuentes": [{ "recurso": "docker-docs" }]
+    },
+    {
+      "id": "A3-317",
+      "subarea": "3.3",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Durante una depuración, un programador coloca un punto de interrupción (breakpoint) en una línea de un método y ejecuta línea por línea inspeccionando los valores de las variables locales.",
+      "pregunta": "¿Qué herramienta del IDE está utilizando?",
+      "opciones": [
+        { "texto": "El perfilador de memoria (profiler)", "explicacion": "Incorrecta. El profiler mide consumo de CPU/memoria a lo largo del tiempo, no detiene paso a paso en breakpoints." },
+        { "texto": "El depurador interactivo (debugger)", "explicacion": "Correcta. El debugger permite pausar la ejecución en breakpoints, avanzar paso a paso (step over/into) e inspeccionar la pila y variables." },
+        { "texto": "El gestor de paquetes", "explicacion": "Incorrecta. Administra dependencias y versiones externas." }
+      ],
+      "correcta": 1,
+      "estrategia": "Breakpoints + step into + ver variables en vivo = Debugger.",
+      "conceptos": ["Depuración", "IDE", "Breakpoints"],
+      "fuentes": [{ "recurso": "pressman-2020" }]
+    },
+    {
+      "id": "A3-318",
+      "subarea": "3.3",
+      "formato": "completamiento",
+      "nivel": "sobresaliente",
+      "base": "Al escribir pruebas unitarias para un servicio de facturación que depende de un servicio externo del SAT, el desarrollador reemplaza la llamada real de red por un objeto simulado que responde valores controlados y verifica cuántas veces fue invocado.",
+      "pregunta": "Este doble de prueba se conoce como ________.",
+      "opciones": [
+        { "texto": "mock (objeto simulado)", "explicacion": "Correcta. Un mock sustituye una dependencia externa con respuestas predefinidas y permite verificar expectativas de interacción." },
+        { "texto": "compilador JIT", "explicacion": "Incorrecta. Es un componente de máquinas virtuales para optimizar bytecode." },
+        { "texto": "migración de esquema", "explicacion": "Incorrecta. Gestiona cambios incrementales de estructura en base de datos." }
+      ],
+      "correcta": 0,
+      "estrategia": "Sustituir dependencia externa en prueba unitaria + verificar llamadas = Mock.",
+      "conceptos": ["Pruebas unitarias", "Mocking"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 8" }]
+    },
+    {
+      "id": "A3-319",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Considere una tabla `Pedidos(id, cliente_id, total, fecha)`. Se requiere listar únicamente a los clientes cuyo gasto acumulado en 2026 supere $10,000, ordenados de mayor a menor gasto.",
+      "pregunta": "¿Qué consulta SQL estándar es correcta?",
+      "opciones": [
+        { "texto": "SELECT cliente_id, SUM(total) AS gasto FROM Pedidos WHERE YEAR(fecha) = 2026 AND SUM(total) > 10000 GROUP BY cliente_id ORDER BY gasto DESC;", "explicacion": "Incorrecta. SQL no permite funciones de agregación como `SUM()` dentro de la cláusula `WHERE`; debe usarse `HAVING`." },
+        { "texto": "SELECT cliente_id, SUM(total) AS gasto FROM Pedidos WHERE fecha >= '2026-01-01' AND fecha < '2027-01-01' GROUP BY cliente_id HAVING SUM(total) > 10000 ORDER BY gasto DESC;", "explicacion": "Correcta. `WHERE` filtra las filas antes de agrupar, `GROUP BY` agrupa por cliente y `HAVING` filtra sobre el agregado `SUM(total)`." },
+        { "texto": "SELECT cliente_id, SUM(total) AS gasto FROM Pedidos HAVING fecha >= '2026-01-01' GROUP BY cliente_id ORDER BY gasto ASC;", "explicacion": "Incorrecta. `HAVING` no puede ir antes de `GROUP BY` y `ASC` ordena de menor a mayor." }
+      ],
+      "correcta": 1,
+      "estrategia": "Regla de oro SQL: `WHERE` filtra filas individuales; `HAVING` filtra grupos después de `GROUP BY`.",
+      "conceptos": ["SQL", "GROUP BY", "HAVING"],
+      "fuentes": [{ "recurso": "beaulieu-2020" }]
+    },
+    {
+      "id": "A3-320",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un sistema bancario realiza transferencias entre dos cuentas (`UPDATE cuentas SET saldo = saldo - 500 ...` y `UPDATE cuentas SET saldo = saldo + 500 ...`). Si ocurre un fallo eléctrico entre ambas instrucciones, ninguna de las dos debe quedar aplicada.",
+      "pregunta": "¿Qué propiedad ACID garantiza este comportamiento de «todo o nada»?",
+      "opciones": [
+        { "texto": "Atomicidad", "explicacion": "Correcta. La atomicidad garantiza que una transacción se ejecuta completa (COMMIT) o se revierte íntegramente (ROLLBACK)." },
+        { "texto": "Aislamiento", "explicacion": "Incorrecta. El aislamiento evita que transacciones concurrentes vean estados intermedios inconsistentes entre sí." },
+        { "texto": "Durabilidad", "explicacion": "Incorrecta. La durabilidad garantiza que los cambios ya confirmados (COMMIT) persistan tras un fallo." }
+      ],
+      "correcta": 0,
+      "estrategia": "ACID: Atomicidad = todo o nada; Consistencia = reglas válidas; Aislamiento = concurrencia sin interferencia; Durabilidad = persiste tras commit.",
+      "conceptos": ["ACID", "Transacciones", "Atomicidad"],
+      "fuentes": [{ "recurso": "ullman-2016" }]
+    },
+    {
+      "id": "A3-321",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Se tienen las tablas `Clientes(id, nombre)` y `Pedidos(id, cliente_id, total)`. Se necesita obtener TODOS los clientes, incluyendo aquellos que nunca han realizado un pedido (mostrando NULL en sus campos de pedido).",
+      "pregunta": "¿Qué tipo de unión SQL debe emplearse?",
+      "opciones": [
+        { "texto": "INNER JOIN", "explicacion": "Incorrecta. `INNER JOIN` excluye a los clientes que no tienen coincidencias en `Pedidos`." },
+        { "texto": "LEFT JOIN (desde Clientes hacia Pedidos)", "explicacion": "Correcta. `LEFT JOIN` conserva todas las filas de la tabla izquierda (`Clientes`) y rellena con `NULL` cuando no hay fila en `Pedidos`." },
+        { "texto": "CROSS JOIN", "explicacion": "Incorrecta. Genera el producto cartesiano de todos los clientes con todos los pedidos." }
+      ],
+      "correcta": 1,
+      "estrategia": "Conservar todos los registros de la tabla principal aunque no tengan hijos = `LEFT JOIN`.",
+      "conceptos": ["SQL", "LEFT JOIN", "Consultas relacionales"],
+      "fuentes": [{ "recurso": "sqlbolt" }]
+    },
+    {
+      "id": "A3-322",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "En una base de datos NoSQL documental (MongoDB), se almacenan logs de sensores donde un documento tiene `{ sensor: 'T1', lectura: 24.5, unidad: 'C' }` y otro `{ sensor: 'H2', humedad: 60, ubicacion: { piso: 2 } }`.",
+      "pregunta": "¿Cómo se clasifican estos datos por su estructura y qué lenguaje/formato utilizan habitualmente?",
+      "opciones": [
+        { "texto": "Datos no estructurados; requieren SQL estricto con esquema fijo", "explicacion": "Incorrecta. Tienen etiquetas clave-valor y jerarquía, no son texto libre ni audio sin estructura." },
+        { "texto": "Datos semiestructurados; se representan en JSON/BSON y se consultan mediante operadores de documentos o agregación", "explicacion": "Correcta. JSON/BSON son formatos semiestructurados autodescriptivos que permiten campos variables por documento." },
+        { "texto": "Datos estructurados tabulares en Tercera Forma Normal", "explicacion": "Incorrecta. Los documentos anidados y con campos distintos no siguen un esquema tabular fijo en 3FN." }
+      ],
+      "correcta": 1,
+      "estrategia": "JSON / XML con campos variables y etiquetas = datos semiestructurados.",
+      "conceptos": ["Datos semiestructurados", "NoSQL", "MongoDB"],
+      "fuentes": [{ "recurso": "date-2006" }]
+    },
+    {
+      "id": "A3-323",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Una tabla `Facturas` tiene 50 millones de filas. Las búsquedas por `folio_fiscal` tardan 8 segundos porque el motor recorre toda la tabla (full table scan), aunque `folio_fiscal` es único.",
+      "pregunta": "¿Qué estructura de base de datos reduce drásticamente el tiempo de búsqueda?",
+      "opciones": [
+        { "texto": "Crear un índice (B-Tree / UNIQUE INDEX) sobre la columna `folio_fiscal`", "explicacion": "Correcta. Un índice B-Tree permite localizar el registro en tiempo logarítmico sin escanear los 50 millones de filas." },
+        { "texto": "Convertir la columna `folio_fiscal` a tipo `TEXT` sin restricciones", "explicacion": "Incorrecta. Los campos `TEXT` sin índice siguen requiriendo escaneo completo o índices de prefijo." },
+        { "texto": "Eliminar la clave primaria de la tabla", "explicacion": "Incorrecta. Degrada la integridad referencial y el rendimiento." }
+      ],
+      "correcta": 0,
+      "estrategia": "Full table scan lento en columna filtrada frecuentemente → crear índice.",
+      "conceptos": ["Índices SQL", "Optimización de consultas"],
+      "fuentes": [{ "recurso": "postgres-tutorial" }]
+    },
+    {
+      "id": "A3-324",
+      "subarea": "3.4",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un sistema distribuido con sede en México y España replica la tabla `CatalogoProductos` en ambas sedes con copias de solo lectura actualizadas cada minuto, mientras las escrituras se centralizan en el nodo principal.",
+      "pregunta": "¿Qué arquitectura de base de datos describe el escenario?",
+      "opciones": [
+        { "texto": "Replicación maestro-réplica (primario-secundario) asíncrona", "explicacion": "Correcta. Un nodo primario recibe escrituras y propaga cambios de forma asíncrona (cada minuto) a réplicas de lectura locales para reducir latencia." },
+        { "texto": "Fragmentación vertical sin copias", "explicacion": "Incorrecta. Aquí toda la tabla se copia completa en ambas sedes." },
+        { "texto": "Base de datos en memoria sin persistencia", "explicacion": "Incorrecta. No describe replicación geográfica." }
+      ],
+      "correcta": 0,
+      "estrategia": "Escritura en nodo único + copias de lectura actualizadas periódicamente = replicación primario-réplica asíncrona.",
+      "conceptos": ["Replicación", "Bases de datos distribuidas"],
+      "fuentes": [{ "recurso": "date-2006" }]
+    },
+    {
+      "id": "A3-325",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Una empresa de logística necesita desarrollar una aplicación móvil para repartidores que acceda a GPS en segundo plano, trabaje sin conexión en zonas rurales y ofrezca el máximo rendimiento en iOS y Android con presupuesto suficiente para dos equipos.",
+      "pregunta": "¿Qué tipo de desarrollo móvil se ajusta mejor a estas restricciones?",
+      "opciones": [
+        { "texto": "Aplicación web responsiva sin caché local", "explicacion": "Incorrecta. Sin conexión ni soporte offline/nativo perdería operatividad en zonas rurales y acceso fluido a GPS en segundo plano." },
+        { "texto": "Desarrollo nativo (Swift para iOS y Kotlin para Android)", "explicacion": "Correcta. El desarrollo nativo brinda acceso directo sin intermediarios a APIs de hardware (GPS en segundo plano, almacenamiento local) y máximo desempeño cuando hay presupuesto para ambos equipos." },
+        { "texto": "Script de consola ejecutado por SSH", "explicacion": "Incorrecta. No es una interfaz móvil usable para repartidores en ruta." }
+      ],
+      "correcta": 1,
+      "estrategia": "Hardware profundo en segundo plano + máximo rendimiento + presupuesto para dos equipos = Nativo.",
+      "conceptos": ["Desarrollo móvil", "Nativo vs Híbrido"],
+      "fuentes": [{ "recurso": "sommerville-2016" }]
+    },
+    {
+      "id": "A3-326",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Un sistema web implementa una API RESTful sobre HTTP. El cliente solicita actualizar **parcialmente** solo el campo `telefono` del usuario con ID 42 sin enviar todo el recurso completo.",
+      "pregunta": "¿Qué método HTTP representa semánticamente mejor esta operación?",
+      "opciones": [
+        { "texto": "GET /api/usuarios/42", "explicacion": "Incorrecta. `GET` es solo de lectura e idempotente; no modifica recursos." },
+        { "texto": "PATCH /api/usuarios/42", "explicacion": "Correcta. `PATCH` aplica modificaciones parciales a un recurso existente, mientras `PUT` reemplaza el recurso completo." },
+        { "texto": "DELETE /api/usuarios/42", "explicacion": "Incorrecta. `DELETE` elimina el recurso." }
+      ],
+      "correcta": 1,
+      "estrategia": "REST: GET leer, POST crear, PUT reemplazar completo, PATCH modificar parcialmente, DELETE borrar.",
+      "conceptos": ["API REST", "Métodos HTTP", "PATCH"],
+      "fuentes": [{ "recurso": "mdn-aprende" }]
+    },
+    {
+      "id": "A3-327",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Una aplicación web de comercio recibe un ataque donde un script malicioso inyectado en el campo de comentarios se ejecuta en el navegador de otros usuarios y roba sus cookies de sesión.",
+      "pregunta": "¿Qué vulnerabilidad (OWASP Top 10) ocurrió y cómo se mitiga?",
+      "opciones": [
+        { "texto": "Cross-Site Scripting (XSS); se mitiga escapando/sanitizando salidas HTML y usando cookies `HttpOnly`", "explicacion": "Correcta. XSS ocurre cuando datos no confiables se renderizan como script ejecutable en el navegador víctima; escapar salidas y marcar cookies `HttpOnly` bloquea el robo." },
+        { "texto": "Inyección SQL; se mitiga usando `GROUP BY`", "explicacion": "Incorrecta. La inyección SQL ataca la base de datos en el servidor, no ejecuta JavaScript en el navegador del usuario." },
+        { "texto": "Denegación de servicio físico; se mitiga cambiando el cable de red", "explicacion": "Incorrecta. No corresponde a ejecución de scripts en el navegador." }
+      ],
+      "correcta": 0,
+      "estrategia": "Script inyectado que corre en navegador de otros usuarios = XSS (mitigación: escape de salida + CSP + `HttpOnly`).",
+      "conceptos": ["XSS", "OWASP", "Seguridad web"],
+      "fuentes": [{ "recurso": "pressman-2020" }]
+    },
+    {
+      "id": "A3-328",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "sobresaliente",
+      "base": "Un microcontrolador ESP32 lee temperatura cada 500 milisegundos con restricciones estrictas de memoria RAM (520 KB) y consumo energético de batería.",
+      "pregunta": "¿Qué característica distingue principalmente el desarrollo para sistemas embebidos frente a aplicaciones web empresariales?",
+      "opciones": [
+        { "texto": "Uso intensivo de máquinas virtuales pesadas y recolección de basura sin límites", "explicacion": "Incorrecta. Los sistemas embebidos evitan sobrecarga de memoria y pausas impredecibles." },
+        { "texto": "Gestión estricta de memoria, tiempo real/temporización determinista e interacción directa con hardware (GPIO, I2C, SPI)", "explicacion": "Correcta. Los sistemas embebidos operan con recursos muy limitados y deben interactuar con periféricos y cumplir restricciones temporales y de energía." },
+        { "texto": "Renderizado obligatorio de hojas de estilo CSS3 en el microcontrolador", "explicacion": "Incorrecta. No aplica a la lógica de sensores en un microcontrolador." }
+      ],
+      "correcta": 1,
+      "estrategia": "Sistemas embebidos = recursos limitados + bajo consumo + interacción directa con hardware/sensores.",
+      "conceptos": ["Sistemas embebidos", "IoT", "Restricciones de hardware"],
+      "fuentes": [{ "recurso": "sommerville-2016", "detalle": "Cap. 20" }]
+    },
+    {
+      "id": "A3-329",
+      "subarea": "3.5",
+      "formato": "cuestionamiento-directo",
+      "nivel": "satisfactorio",
+      "base": "Una startup necesita lanzar rápido una app móvil para iOS y Android con una interfaz estándar y un solo equipo de 3 desarrolladores que dominan JavaScript/TypeScript o Dart.",
+      "pregunta": "¿Qué enfoque de plataforma optimiza tiempo y costo manteniendo rendimiento cercano al nativo?",
+      "opciones": [
+        { "texto": "Framework multiplataforma (como React Native o Flutter)", "explicacion": "Correcta. Permite compartir la mayor parte del código entre iOS y Android con un solo equipo y compilar vistas nativas o de alto rendimiento." },
+        { "texto": "Desarrollar dos aplicaciones nativas independientes desde cero en ensamblador", "explicacion": "Incorrecta. Duplica esfuerzo y es inviable en tiempo/costo." },
+        { "texto": "Limitar la aplicación exclusivamente a terminales de escritorio Windows", "explicacion": "Incorrecta. Incumple el requisito de disponibilidad móvil en iOS y Android." }
+      ],
+      "correcta": 0,
+      "estrategia": "Un solo equipo + iOS y Android + tiempo/presupuesto ajustado = Multiplataforma (React Native / Flutter).",
+      "conceptos": ["Desarrollo móvil multiplataforma", "React Native", "Flutter"],
+      "fuentes": [{ "recurso": "sommerville-2016" }]
+    },
+    {
+      "id": "A3-330",
+      "subarea": "3.5",
+      "formato": "completamiento",
+      "nivel": "sobresaliente",
+      "base": "En una aplicación web moderna (SPA) que consulta una API alojada en otro subdominio (`api.midominio.com` desde `app.midominio.com`), el navegador bloquea la petición hasta que el servidor responde con los encabezados adecuados.",
+      "pregunta": "Este mecanismo de seguridad del navegador se conoce como ________.",
+      "opciones": [
+        { "texto": "CORS (Cross-Origin Resource Sharing)", "explicacion": "Correcta. CORS controla qué orígenes externos tienen permiso de leer respuestas desde el navegador mediante encabezados como `Access-Control-Allow-Origin`." },
+        { "texto": "DNS Round Robin", "explicacion": "Incorrecta. Es una técnica de balanceo de carga en resolución de nombres." },
+        { "texto": "DHCP", "explicacion": "Incorrecta. Asigna direcciones IP dinámicas en una red local." }
+      ],
+      "correcta": 0,
+      "estrategia": "Petición entre orígenes/subdominios distintos bloqueada por el navegador = CORS.",
+      "conceptos": ["CORS", "Seguridad web", "HTTP"],
+      "fuentes": [{ "recurso": "mdn-aprende" }]
+    }
+  ]
+}

@@ -20,6 +20,11 @@
         "preguntas/extendido/a4-gestion.json",
         "preguntas/extendido/lyc-lenguaje.json",
         "preguntas/refuerzo-julio-2026.json",
+        "preguntas/ampliacion/a1-analisis.json",
+        "preguntas/ampliacion/a2-diseno.json",
+        "preguntas/ampliacion/a3-desarrollo.json",
+        "preguntas/ampliacion/a4-gestion.json",
+        "preguntas/ampliacion/lyc-lenguaje.json",
         "preguntas/reto/reto.json"
       ],
       "guias": {

@@ -312,18 +312,14 @@ export function Simulator({
 
       let nuevoIntentoId: number | null = null;
       if (user) {
-        try {
-          const intentoRes = await api.crearIntento({
-            modo,
-            area_filtro: soloErrores ? 'errores' : subarea !== 'todas' ? subarea : area,
-            banco_filtro: banco,
-            total_preguntas: res.preguntas.length,
-            pregunta_ids: res.preguntas.map((p) => p.id),
-          });
-          nuevoIntentoId = intentoRes.intento.id;
-        } catch {
-          nuevoIntentoId = null;
-        }
+        const intentoRes = await api.crearIntento({
+          modo,
+          area_filtro: soloErrores ? 'errores' : subarea !== 'todas' ? subarea : area,
+          banco_filtro: banco,
+          total_preguntas: res.preguntas.length,
+          pregunta_ids: res.preguntas.map((p) => p.id),
+        });
+        nuevoIntentoId = intentoRes.intento.id;
       }
 
       setPreguntas(res.preguntas);
