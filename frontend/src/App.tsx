@@ -37,6 +37,7 @@ export function App() {
   const [simArea, setSimArea] = useState<string>('todas');
   const [simSubarea, setSimSubarea] = useState<string>('todas');
   const [guiaClave, setGuiaClave] = useState<string | undefined>(undefined);
+  const [resumeIntentoId, setResumeIntentoId] = useState<number | null>(null);
 
   const cargarProgreso = useCallback(async () => {
     if (getStoredToken()) {
@@ -223,6 +224,8 @@ export function App() {
             erroresRecientes={estadisticas?.errores_recientes ?? []}
             initialArea={simArea}
             initialSubarea={simSubarea}
+            resumeIntentoId={resumeIntentoId}
+            onResumeHandled={() => setResumeIntentoId(null)}
             onOpenGuia={(clave) => handleNavigate('guias', { guiaClave: clave })}
             onOpenAuth={() => setAuthOpen(true)}
             onAttemptFinished={cargarProgreso}
@@ -245,6 +248,10 @@ export function App() {
             estadisticas={estadisticas}
             onOpenAuth={() => setAuthOpen(true)}
             onAttemptDeleted={cargarProgreso}
+            onResumeAttempt={(id) => {
+              setResumeIntentoId(id);
+              handleNavigate('simulador');
+            }}
           />
         )}
       </main>

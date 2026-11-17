@@ -61,7 +61,7 @@ for (const t of manifest.temarios) {
 
   for (const [clave, ruta] of Object.entries(t.guias ?? {})) {
     if (!existsSync(join(CONTENIDO, ruta))) err("manifest.guias", `no existe ${ruta} (${clave})`);
-    else if (clave !== "estrategias" && !subareas.has(clave) && !areasValidas.has(clave))
+    else if (!["estrategias", "temas-criticos"].includes(clave) && !subareas.has(clave) && !areasValidas.has(clave))
       aviso("manifest.guias", `«${clave}» no es subárea ni área del temario`);
   }
 

@@ -59,9 +59,14 @@ class EgelController extends Controller
                 }
             }
 
+            $lista = $seleccion->values();
+            if ($request->boolean('ocultar_respuestas')) {
+                $lista = $lista->map(fn (Pregunta $p) => self::ocultarRespuestas($p))->values();
+            }
+
             return response()->json([
-                'preguntas' => $seleccion->values(),
-                'total' => $seleccion->count(),
+                'preguntas' => $lista,
+                'total' => $lista->count(),
             ]);
         }
 
@@ -98,10 +103,26 @@ class EgelController extends Controller
             })->values();
         }
 
+        $lista = $preguntas->values();
+        if ($request->boolean('ocultar_respuestas')) {
+            $lista = $lista->map(fn (Pregunta $p) => self::ocultarRespuestas($p))->values();
+        }
+
         return response()->json([
-            'preguntas' => $preguntas,
-            'total' => $preguntas->count(),
+            'preguntas' => $lista,
+            'total' => $lista->count(),
         ]);
+    }
+
+    public static function ocultarRespuestas(Pregunta $p): array
+    {
+        $data = $p->toArray();
+        unset($data['correcta'], $data['estrategia'], $data['trampa']);
+        $data['opciones'] = array_map(
+            fn ($o) => ['texto' => $o['texto'] ?? '', 'explicacion' => ''],
+            $data['opciones'] ?? []
+        );
+        return $data;
     }
 
     public function biblioteca(Request $request): JsonResponse
@@ -199,21 +220,27 @@ class EgelController extends Controller
             }
         }
 
-        $preguntas = Pregunta::all()
-            ->filter(fn (Pregunta $p) => str_contains(
-                mb_strtolower($p->id . ' ' . ($p->base ?? '') . ' ' . $p->pregunta . ' ' . implode(' ', $p->conceptos ?? [])),
-                $q
-            ))
-            ->take(8)
-            ->values();
+        $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
 
-        $recursos = Recurso::all()
-            ->filter(fn (Recurso $r) => str_contains(
-                mb_strtolower($r->titulo . ' ' . ($r->autores ?? '') . ' ' . ($r->nota ?? '')),
-                $q
-            ))
-            ->take(8)
-            ->values();
+        $preguntas = Pregunta::query()
+            ->select(['id', 'area', 'subarea', 'pregunta'])
+            ->where(function ($query) use ($like) {
+                $query->whereRaw('LOWER(id) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(COALESCE(base, "")) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(pregunta) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(COALESCE(conceptos, "")) LIKE ?', [$like]);
+            })
+            ->limit(8)
+            ->get();
+
+        $recursos = Recurso::query()
+            ->where(function ($query) use ($like) {
+                $query->whereRaw('LOWER(titulo) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(COALESCE(autores, "")) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(COALESCE(nota, "")) LIKE ?', [$like]);
+            })
+            ->limit(8)
+            ->get();
 
         return response()->json([
             'guias' => $guias,

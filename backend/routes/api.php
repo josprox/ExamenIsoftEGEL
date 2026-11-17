@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Route;
 
 // Autenticación
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
     Route::middleware(AuthenticateApiToken::class)->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
@@ -29,6 +29,7 @@ Route::middleware(AuthenticateApiToken::class)->group(function () {
     Route::get('/preguntas', [EgelController::class, 'preguntas']);
     Route::get('/intentos', [IntentoController::class, 'index']);
     Route::post('/intentos', [IntentoController::class, 'store']);
+    Route::get('/intentos/{intento}', [IntentoController::class, 'show']);
     Route::post('/intentos/{intento}/respuestas', [IntentoController::class, 'guardarRespuesta']);
     Route::post('/intentos/{intento}/finalizar', [IntentoController::class, 'finalizar']);
     Route::delete('/intentos/{intento}', [IntentoController::class, 'destroy']);

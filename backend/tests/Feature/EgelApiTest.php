@@ -192,4 +192,75 @@ class EgelApiTest extends TestCase
             ->assertJsonCount(0, 'intentos')
             ->assertJsonPath('estadisticas.total_intentos', 0);
     }
+
+    public function test_modo_examen_oculta_respuestas_hasta_finalizar_y_permite_reanudar(): void
+    {
+        $reg = $this->postJson('/api/auth/register', [
+            'name' => 'Elena',
+            'email' => 'elena@example.com',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
+        ]);
+        $token = $reg->json('token');
+
+        // La búsqueda pública no debe exponer respuestas correctas
+        $busqueda = $this->getJson('/api/buscar?q=requerimiento')->assertStatus(200);
+        if (!empty($busqueda->json('preguntas'))) {
+            $this->assertArrayNotHasKey('correcta', $busqueda->json('preguntas.0'));
+        }
+
+        // En modo examen oculta 'correcta'
+        $pregRes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/preguntas?area=A1&limit=2&ocultar_respuestas=1')
+            ->assertStatus(200);
+
+        $preguntas = $pregRes->json('preguntas');
+        $this->assertCount(2, $preguntas);
+        $this->assertArrayNotHasKey('correcta', $preguntas[0]);
+
+        $ids = array_column($preguntas, 'id');
+
+        $intentoRes = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/intentos', [
+                'modo' => 'examen',
+                'area_filtro' => 'A1',
+                'total_preguntas' => 2,
+                'pregunta_ids' => $ids,
+            ])
+            ->assertStatus(201);
+
+        $intentoId = $intentoRes->json('intento.id');
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/intentos/{$intentoId}/respuestas", [
+                'pregunta_id' => $ids[0],
+                'seleccionada' => 0,
+            ])
+            ->assertStatus(200);
+
+        // Reanudar intento pendiente mantiene oculta la respuesta correcta
+        $showPendiente = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson("/api/intentos/{$intentoId}")
+            ->assertStatus(200)
+            ->assertJsonCount(2, 'preguntas')
+            ->assertJsonCount(1, 'respuestas');
+        $this->assertArrayNotHasKey('correcta', $showPendiente->json('preguntas.0'));
+
+        // Al finalizar con duración, devuelve preguntas completas con 'correcta'
+        $fin = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson("/api/intentos/{$intentoId}/finalizar", [
+                'duracion_segundos' => 145,
+            ])
+            ->assertStatus(200)
+            ->assertJsonPath('intento.completado', true)
+            ->assertJsonPath('intento.duracion_segundos', 145)
+            ->assertJsonCount(2, 'preguntas');
+        $this->assertArrayHasKey('correcta', $fin->json('preguntas.0'));
+
+        // Estadísticas incluyen desglose por subárea
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/intentos')
+            ->assertStatus(200)
+            ->assertJsonStructure(['estadisticas' => ['por_area', 'por_subarea']]);
+    }
 }

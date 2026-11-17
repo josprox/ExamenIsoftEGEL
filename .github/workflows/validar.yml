@@ -15,11 +15,13 @@ jobs:
           node-version: 22
       - name: Validar temario, preguntas, guías y recursos
         run: node scripts/validar.mjs
+      - uses: oven-sh/setup-bun@v2
       - name: Compilar React
-        run: npm --prefix frontend install --ignore-scripts && npm run build
+        working-directory: frontend
+        run: bun install --frozen-lockfile && bun run build
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.5'
+          php-version: '8.4'
           extensions: mbstring, sqlite3, pdo_sqlite
       - name: Instalar Laravel
         working-directory: backend

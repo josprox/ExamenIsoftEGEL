@@ -33,7 +33,7 @@ export interface Pregunta {
   codigo?: string | null;
   pregunta: string;
   opciones: Opcion[];
-  correcta: number;
+  correcta?: number;
   estrategia?: string | null;
   trampa?: string | null;
   conceptos?: string[];
@@ -93,10 +93,12 @@ export interface Intento {
   modo: 'inmediato' | 'examen';
   area_filtro: string | null;
   banco_filtro: string | null;
+  pregunta_ids?: string[] | null;
   total_preguntas: number;
   aciertos: number;
   errores: number;
   porcentaje: number;
+  duracion_segundos?: number;
   completado: boolean;
   created_at: string;
   respuestas?: RespuestaGuardada[];
@@ -108,6 +110,7 @@ export interface EstadisticasUsuario {
   total_aciertos: number;
   precision_global: number;
   por_area: Record<string, { total: number; aciertos: number; porcentaje: number }>;
+  por_subarea?: Record<string, { total: number; aciertos: number; porcentaje: number }>;
   errores_recientes: string[];
 }
 

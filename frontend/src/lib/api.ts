@@ -88,6 +88,7 @@ export const api = {
     ids?: string[];
     preset?: 'egel_completo' | 'practica_rapida';
     orden?: 'modular' | 'aleatorio';
+    ocultarRespuestas?: boolean;
   }) => {
     const qs = new URLSearchParams();
     if (params.preset) qs.set('preset', params.preset);
@@ -97,6 +98,7 @@ export const api = {
     if (params.banco && params.banco !== 'todos') qs.set('banco', params.banco);
     if (params.limit) qs.set('limit', String(params.limit));
     if (params.ids?.length) qs.set('ids', params.ids.join(','));
+    if (params.ocultarRespuestas) qs.set('ocultar_respuestas', '1');
     const query = qs.toString();
     return request<{ preguntas: Pregunta[]; total: number }>(
       `/preguntas${query ? `?${query}` : ''}`
@@ -131,11 +133,19 @@ export const api = {
     area_filtro?: string | null;
     banco_filtro?: string | null;
     total_preguntas: number;
+    pregunta_ids?: string[];
   }) =>
     request<{ intento: Intento }>('/intentos', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  getIntento: (intentoId: number) =>
+    request<{
+      intento: Intento;
+      preguntas: Pregunta[];
+      respuestas: Array<{ pregunta_id: string; seleccionada: number; es_correcta: boolean | null }>;
+    }>(`/intentos/${intentoId}`),
 
   guardarRespuesta: (intentoId: number, respuesta: RespuestaGuardada) =>
     request<{ intento: Intento }>(`/intentos/${intentoId}/respuestas`, {
@@ -143,9 +153,12 @@ export const api = {
       body: JSON.stringify(respuesta),
     }),
 
-  finalizarIntento: (intentoId: number) =>
-    request<{ intento: Intento }>(`/intentos/${intentoId}/finalizar`, {
+  finalizarIntento: (intentoId: number, duracion_segundos?: number) =>
+    request<{ intento: Intento; preguntas?: Pregunta[] }>(`/intentos/${intentoId}/finalizar`, {
       method: 'POST',
+      body: JSON.stringify(
+        duracion_segundos !== undefined ? { duracion_segundos } : {}
+      ),
     }),
 
   eliminarIntento: (intentoId: number) =>

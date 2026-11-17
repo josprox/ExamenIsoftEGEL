@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Pregunta;
 use App\Models\Recurso;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 
 class ContenidoLoader
@@ -129,6 +130,9 @@ class ContenidoLoader
             );
         }
 
+        Cache::forget('egel_guias_v1');
+        Cache::forget('egel_comandos_v1');
+
         return [
             'preguntas' => count($preguntas),
             'recursos' => count($recursos),
@@ -137,59 +141,63 @@ class ContenidoLoader
 
     public static function getGuias(): array
     {
-        $manifestPath = self::contenidoPath('manifest.json');
-        if (!File::exists($manifestPath)) {
-            return [];
-        }
-        $manifest = json_decode(File::get($manifestPath), true);
-        $activeId = $manifest['temarioActivo'] ?? null;
-        $guiasMap = [];
-        foreach ($manifest['temarios'] ?? [] as $t) {
-            if ($t['id'] === $activeId) {
-                $guiasMap = $t['guias'] ?? [];
-                break;
+        return Cache::remember('egel_guias_v1', 3600, function () {
+            $manifestPath = self::contenidoPath('manifest.json');
+            if (!File::exists($manifestPath)) {
+                return [];
             }
-        }
+            $manifest = json_decode(File::get($manifestPath), true);
+            $activeId = $manifest['temarioActivo'] ?? null;
+            $guiasMap = [];
+            foreach ($manifest['temarios'] ?? [] as $t) {
+                if ($t['id'] === $activeId) {
+                    $guiasMap = $t['guias'] ?? [];
+                    break;
+                }
+            }
 
-        $resultado = [];
-        foreach ($guiasMap as $clave => $ruta) {
-            $full = self::contenidoPath($ruta);
-            if (!File::exists($full)) {
-                continue;
+            $resultado = [];
+            foreach ($guiasMap as $clave => $ruta) {
+                $full = self::contenidoPath($ruta);
+                if (!File::exists($full)) {
+                    continue;
+                }
+                $contenido = File::get($full);
+                $titulo = $clave;
+                if (preg_match('/^#\s+(.+)$/m', $contenido, $m)) {
+                    $titulo = trim($m[1]);
+                }
+                $resultado[] = [
+                    'clave' => $clave,
+                    'titulo' => $titulo,
+                    'contenido' => $contenido,
+                ];
             }
-            $contenido = File::get($full);
-            $titulo = $clave;
-            if (preg_match('/^#\s+(.+)$/m', $contenido, $m)) {
-                $titulo = trim($m[1]);
-            }
-            $resultado[] = [
-                'clave' => $clave,
-                'titulo' => $titulo,
-                'contenido' => $contenido,
-            ];
-        }
 
-        return $resultado;
+            return $resultado;
+        });
     }
 
     public static function getComandos(): array
     {
-        $manifestPath = self::contenidoPath('manifest.json');
-        if (!File::exists($manifestPath)) {
-            return [];
-        }
-        $manifest = json_decode(File::get($manifestPath), true);
-        $resultado = [];
-        foreach ($manifest['comandos'] ?? [] as $ruta) {
-            $full = self::contenidoPath($ruta);
-            if (!File::exists($full)) {
-                continue;
+        return Cache::remember('egel_comandos_v1', 3600, function () {
+            $manifestPath = self::contenidoPath('manifest.json');
+            if (!File::exists($manifestPath)) {
+                return [];
             }
-            $data = json_decode(File::get($full), true);
-            if ($data) {
-                $resultado[] = $data;
+            $manifest = json_decode(File::get($manifestPath), true);
+            $resultado = [];
+            foreach ($manifest['comandos'] ?? [] as $ruta) {
+                $full = self::contenidoPath($ruta);
+                if (!File::exists($full)) {
+                    continue;
+                }
+                $data = json_decode(File::get($full), true);
+                if ($data) {
+                    $resultado[] = $data;
+                }
             }
-        }
-        return $resultado;
+            return $resultado;
+        });
     }
 }

@@ -16,10 +16,17 @@ import {
   Trash2,
   LogIn,
   Lock,
+  Highlighter,
+  Eraser,
+  Flag,
 } from 'lucide-react';
 import { api } from '../lib/api';
-import { saveLocalAttempt } from '../lib/localProgress';
 import type { Pregunta, Temario, User } from '../types/egel';
+import {
+  HighlightableText,
+  type HighlightColor,
+  type HighlightRange,
+} from './HighlightableText';
 
 interface SimulatorProps {
   temario: Temario | null;
@@ -27,6 +34,8 @@ interface SimulatorProps {
   erroresRecientes?: string[];
   initialArea?: string;
   initialSubarea?: string;
+  resumeIntentoId?: number | null;
+  onResumeHandled?: () => void;
   onOpenGuia?: (clave: string) => void;
   onOpenAuth: () => void;
   onAttemptFinished: () => void;
@@ -39,6 +48,15 @@ type TipoSimulacion = 'rapida' | 'por_modulo' | 'egel_completo';
 const LETTERS = ['A', 'B', 'C', 'D'];
 const ACTIVE_SESSION_KEY = 'egel_active_session_v1';
 
+function formatSeconds(totalSec: number): string {
+  const s = Math.max(0, Math.floor(totalSec));
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = s % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return hrs > 0 ? `${hrs}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
+}
+
 interface SavedSession {
   modo: Modo;
   area: string;
@@ -48,6 +66,9 @@ interface SavedSession {
   indice: number;
   respuestas: Record<string, number>;
   intentoId: number | null;
+  elapsedSeconds?: number;
+  subrayados?: Record<string, Record<string, HighlightRange[]>>;
+  marcadas?: Record<string, boolean>;
   paused?: boolean;
 }
 
@@ -81,6 +102,8 @@ export function Simulator({
   erroresRecientes = [],
   initialArea = 'todas',
   initialSubarea = 'todas',
+  resumeIntentoId = null,
+  onResumeHandled,
   onOpenGuia,
   onOpenAuth,
   onAttemptFinished,
@@ -113,6 +136,17 @@ export function Simulator({
   const [hasPausedSession, setHasPausedSession] = useState<boolean>(
     () => Boolean(initialSaved?.paused && initialSaved.preguntas.length > 0)
   );
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(
+    () => initialSaved?.elapsedSeconds ?? 0
+  );
+  const [subrayarActivo, setSubrayarActivo] = useState(false);
+  const [colorSubrayado, setColorSubrayado] = useState<HighlightColor>('amber');
+  const [subrayados, setSubrayados] = useState<Record<string, Record<string, HighlightRange[]>>>(
+    () => initialSaved?.subrayados ?? {}
+  );
+  const [marcadas, setMarcadas] = useState<Record<string, boolean>>(
+    () => initialSaved?.marcadas ?? {}
+  );
 
   // Si el usuario navegó desde Inicio/Guías con un filtro específico, lo aplicamos
   useEffect(() => {
@@ -122,6 +156,62 @@ export function Simulator({
       setSubarea(initialSubarea);
     }
   }, [initialArea, initialSubarea]);
+
+  // Reanudar un intento pendiente desde Progreso (BD)
+  useEffect(() => {
+    if (!resumeIntentoId || !user) return;
+    let cancelled = false;
+    setLoading(true);
+    setErrorMsg(null);
+    api
+      .getIntento(resumeIntentoId)
+      .then((res) => {
+        if (cancelled) return;
+        if (!res.preguntas.length) {
+          setErrorMsg('Este intento no tiene preguntas registradas para reanudar.');
+          return;
+        }
+        const respMap: Record<string, number> = {};
+        for (const r of res.respuestas) {
+          respMap[r.pregunta_id] = r.seleccionada;
+        }
+        const firstUnanswered = res.preguntas.findIndex((p) => respMap[p.id] === undefined);
+        setModo(res.intento.modo);
+        setPreguntas(res.preguntas);
+        setRespuestas(respMap);
+        setIntentoId(res.intento.id);
+        setIndice(firstUnanswered >= 0 ? firstUnanswered : 0);
+        setElapsedSeconds(res.intento.duracion_segundos ?? 0);
+        setSubrayados({});
+        setMarcadas({});
+        setHasPausedSession(false);
+        setPhase('running');
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setErrorMsg(err instanceof Error ? err.message : 'No se pudo reanudar el intento.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+          onResumeHandled?.();
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resumeIntentoId, user, onResumeHandled]);
+
+  // Cronómetro en vivo durante la simulación
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const timer = window.setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [phase]);
 
   // Guardar sesión activa automáticamente mientras está en curso
   useEffect(() => {
@@ -135,11 +225,27 @@ export function Simulator({
         indice,
         respuestas,
         intentoId,
+        elapsedSeconds,
+        subrayados,
+        marcadas,
         paused: false,
       });
       setHasPausedSession(false);
     }
-  }, [phase, modo, area, subarea, banco, preguntas, indice, respuestas, intentoId]);
+  }, [
+    phase,
+    modo,
+    area,
+    subarea,
+    banco,
+    preguntas,
+    indice,
+    respuestas,
+    intentoId,
+    elapsedSeconds,
+    subrayados,
+    marcadas,
+  ]);
 
   const areasDisponibles = useMemo(() => {
     if (!temario) return [];
@@ -194,7 +300,10 @@ export function Simulator({
                   orden: 'modular' as const,
                 };
 
-      const res = await api.getPreguntas(reqParams);
+      const res = await api.getPreguntas({
+        ...reqParams,
+        ocultarRespuestas: modo === 'examen',
+      });
 
       if (!res.preguntas.length) {
         setErrorMsg('No se encontraron preguntas con esos filtros.');
@@ -209,6 +318,7 @@ export function Simulator({
             area_filtro: soloErrores ? 'errores' : subarea !== 'todas' ? subarea : area,
             banco_filtro: banco,
             total_preguntas: res.preguntas.length,
+            pregunta_ids: res.preguntas.map((p) => p.id),
           });
           nuevoIntentoId = intentoRes.intento.id;
         } catch {
@@ -220,6 +330,9 @@ export function Simulator({
       setIntentoId(nuevoIntentoId);
       setRespuestas({});
       setIndice(0);
+      setElapsedSeconds(0);
+      setSubrayados({});
+      setMarcadas({});
       setMostrarTodasExplicaciones(false);
       setHasPausedSession(false);
       setPhase('running');
@@ -243,6 +356,9 @@ export function Simulator({
         indice,
         respuestas,
         intentoId,
+        elapsedSeconds,
+        subrayados,
+        marcadas,
         paused: true,
       });
       setHasPausedSession(true);
@@ -258,6 +374,9 @@ export function Simulator({
     setIndice(saved.indice);
     setRespuestas(saved.respuestas);
     setIntentoId(saved.intentoId);
+    setElapsedSeconds(saved.elapsedSeconds ?? 0);
+    setSubrayados(saved.subrayados ?? {});
+    setMarcadas(saved.marcadas ?? {});
     setHasPausedSession(false);
     setPhase('running');
   };
@@ -270,6 +389,9 @@ export function Simulator({
     setPreguntas([]);
     setRespuestas({});
     setIndice(0);
+    setElapsedSeconds(0);
+    setSubrayados({});
+    setMarcadas({});
 
     if (user && idToDelete) {
       try {
@@ -330,23 +452,19 @@ export function Simulator({
   const finalizar = useCallback(async () => {
     writeSavedSession(null);
     setHasPausedSession(false);
-    saveLocalAttempt({
-      modo,
-      area_filtro: subarea !== 'todas' ? subarea : area,
-      banco_filtro: banco,
-      preguntas,
-      respuestas,
-    });
     if (user && intentoId) {
       try {
-        await api.finalizarIntento(intentoId);
+        const res = await api.finalizarIntento(intentoId, elapsedSeconds);
+        if (res.preguntas && res.preguntas.length > 0) {
+          setPreguntas(res.preguntas);
+        }
       } catch {
         // ignore
       }
     }
     onAttemptFinished();
     setPhase('summary');
-  }, [modo, subarea, area, banco, preguntas, respuestas, user, intentoId, onAttemptFinished]);
+  }, [user, intentoId, elapsedSeconds, onAttemptFinished]);
 
   // Atajos de teclado amigables mientras estás respondiendo
   useEffect(() => {
@@ -790,18 +908,22 @@ export function Simulator({
                 )}
                 <p className="mt-2 text-sm font-semibold text-stone-900">{p.pregunta}</p>
                 <div className="mt-3 space-y-1.5 text-xs">
-                  <div className="text-emerald-800">
-                    <strong>Correcta ({LETTERS[p.correcta]}):</strong>{' '}
-                    {p.opciones[p.correcta]?.texto}
-                  </div>
+                  {p.correcta !== undefined && (
+                    <div className="text-emerald-800">
+                      <strong>Correcta ({LETTERS[p.correcta]}):</strong>{' '}
+                      {p.opciones[p.correcta]?.texto}
+                    </div>
+                  )}
                   {!ok && sel !== undefined && (
                     <div className="text-rose-700">
                       <strong>Tu respuesta ({LETTERS[sel]}):</strong> {p.opciones[sel]?.texto}
                     </div>
                   )}
-                  <div className="mt-2 rounded-xl bg-stone-50 border border-stone-200 p-3 text-stone-700">
-                    {p.opciones[p.correcta]?.explicacion}
-                  </div>
+                  {p.correcta !== undefined && p.opciones[p.correcta]?.explicacion && (
+                    <div className="mt-2 rounded-xl bg-stone-50 border border-stone-200 p-3 text-stone-700">
+                      {p.opciones[p.correcta]?.explicacion}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -817,6 +939,61 @@ export function Simulator({
   const esCorrecta = yaRespondida && seleccionActual === preguntaActual?.correcta;
   const progresoPct =
     preguntas.length > 0 ? Math.round((stats.contestadas / preguntas.length) * 100) : 0;
+
+  const tiempoLimiteSeg = preguntas.length * 150;
+  const tiempoRestante = Math.max(0, tiempoLimiteSeg - elapsedSeconds);
+  const tiempoCritico = modo === 'examen' && tiempoRestante <= 300;
+
+  const subrayadosActual = preguntaActual ? subrayados[preguntaActual.id] ?? {} : {};
+  const tieneSubrayados = Object.values(subrayadosActual).some((arr) => arr.length > 0);
+  const estaMarcada = preguntaActual ? Boolean(marcadas[preguntaActual.id]) : false;
+
+  const addSubrayado = (campo: string, range: HighlightRange) => {
+    if (!preguntaActual) return;
+    setSubrayados((prev) => {
+      const qMap = prev[preguntaActual.id] ?? {};
+      const list = qMap[campo] ?? [];
+      return {
+        ...prev,
+        [preguntaActual.id]: {
+          ...qMap,
+          [campo]: [...list, range],
+        },
+      };
+    });
+  };
+
+  const removeSubrayado = (campo: string, index: number) => {
+    if (!preguntaActual) return;
+    setSubrayados((prev) => {
+      const qMap = prev[preguntaActual.id] ?? {};
+      const list = qMap[campo] ?? [];
+      return {
+        ...prev,
+        [preguntaActual.id]: {
+          ...qMap,
+          [campo]: list.filter((_, idx) => idx !== index),
+        },
+      };
+    });
+  };
+
+  const limpiarSubrayadosActual = () => {
+    if (!preguntaActual) return;
+    setSubrayados((prev) => {
+      const next = { ...prev };
+      delete next[preguntaActual.id];
+      return next;
+    });
+  };
+
+  const toggleMarcadaActual = () => {
+    if (!preguntaActual) return;
+    setMarcadas((prev) => ({
+      ...prev,
+      [preguntaActual.id]: !prev[preguntaActual.id],
+    }));
+  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -834,6 +1011,21 @@ export function Simulator({
           </div>
 
           <div className="flex items-center gap-3 text-xs font-semibold">
+            <span
+              title={
+                modo === 'examen'
+                  ? 'Tiempo restante sugerido (2.5 min por reactivo)'
+                  : 'Tiempo transcurrido'
+              }
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 font-mono ${
+                tiempoCritico
+                  ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-300'
+                  : 'bg-stone-100 text-stone-700'
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              {modo === 'examen' ? formatSeconds(tiempoRestante) : formatSeconds(elapsedSeconds)}
+            </span>
             {modo === 'inmediato' && (
               <>
                 <span className="flex items-center gap-1 text-emerald-700">
@@ -953,9 +1145,15 @@ export function Simulator({
                       setIndice(idx);
                       setMostrarTodasExplicaciones(false);
                     }}
-                    className={`h-7 min-w-[28px] rounded-lg border px-1.5 text-xs transition cursor-pointer ${cls}`}
+                    className={`relative h-7 min-w-[28px] rounded-lg border px-1.5 text-xs transition cursor-pointer ${cls}`}
                   >
                     {idx + 1}
+                    {marcadas[p.id] && (
+                      <span
+                        title="Marcada para revisar"
+                        className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-amber-500 ring-1 ring-white"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -986,35 +1184,117 @@ export function Simulator({
               )}
             </div>
 
-            {onOpenGuia && (
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() =>
-                  onOpenGuia(
-                    preguntaActual.subarea.startsWith('L1')
-                      ? 'L1'
-                      : preguntaActual.subarea.startsWith('L2')
-                        ? 'L2'
-                        : preguntaActual.subarea
-                  )
-                }
-                className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800 hover:bg-teal-50 transition cursor-pointer"
+                onClick={() => setSubrayarActivo((v) => !v)}
+                title="Activa para subrayar pistas y restricciones en el caso (Método DCPDV)"
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
+                  subrayarActivo
+                    ? 'border-amber-400 bg-amber-100 text-amber-900 shadow-sm'
+                    : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                }`}
               >
-                <BookOpen className="h-3 w-3" />
-                Ver guía {preguntaActual.subarea}
+                <Highlighter className="h-3.5 w-3.5" />
+                Subrayar
               </button>
-            )}
+
+              {subrayarActivo && (
+                <div className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50/70 px-2 py-1">
+                  {(
+                    [
+                      { id: 'amber', cls: 'bg-amber-300', label: 'Pista' },
+                      { id: 'emerald', cls: 'bg-emerald-300', label: 'Dato clave' },
+                      { id: 'rose', cls: 'bg-rose-300', label: 'Trampa' },
+                    ] as const
+                  ).map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      title={`Color: ${c.label}`}
+                      onClick={() => setColorSubrayado(c.id)}
+                      className={`h-4 w-4 rounded-full ${c.cls} transition cursor-pointer ${
+                        colorSubrayado === c.id ? 'ring-2 ring-stone-800 scale-110' : 'opacity-70'
+                      }`}
+                    />
+                  ))}
+                  {tieneSubrayados && (
+                    <button
+                      type="button"
+                      onClick={limpiarSubrayadosActual}
+                      title="Quitar todos los subrayados de esta pregunta"
+                      className="ml-1 inline-flex items-center gap-1 text-[11px] text-stone-600 hover:text-rose-700 cursor-pointer"
+                    >
+                      <Eraser className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={toggleMarcadaActual}
+                title="Marcar pregunta para revisar después"
+                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
+                  estaMarcada
+                    ? 'border-amber-400 bg-amber-50 text-amber-800'
+                    : 'border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                <Flag className="h-3 w-3" />
+                {estaMarcada ? 'Marcada' : 'Marcar'}
+              </button>
+
+              {onOpenGuia && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenGuia(
+                      preguntaActual.subarea.startsWith('L1')
+                        ? 'L1'
+                        : preguntaActual.subarea.startsWith('L2')
+                          ? 'L2'
+                          : preguntaActual.subarea
+                    )
+                  }
+                  className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800 hover:bg-teal-50 transition cursor-pointer"
+                >
+                  <BookOpen className="h-3 w-3" />
+                  Ver guía {preguntaActual.subarea}
+                </button>
+              )}
+            </div>
           </div>
+
+          {subrayarActivo && (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-1.5 text-[11px] text-amber-900">
+              Modo <strong>Subrayar</strong> activo: selecciona cualquier fragmento del caso o pregunta para resaltarlo, o haz clic sobre un subrayado para quitarlo.
+            </div>
+          )}
 
           {preguntaActual.estimulo && (
             <div className="mb-4 rounded-xl border border-stone-200 bg-stone-50 p-4 text-xs sm:text-sm text-stone-700 leading-relaxed whitespace-pre-line">
-              {preguntaActual.estimulo}
+              <HighlightableText
+                text={preguntaActual.estimulo}
+                ranges={subrayadosActual.estimulo ?? []}
+                enabled={subrayarActivo}
+                activeColor={colorSubrayado}
+                onAddRange={(r) => addSubrayado('estimulo', r)}
+                onRemoveRange={(idx) => removeSubrayado('estimulo', idx)}
+              />
             </div>
           )}
 
           {preguntaActual.base && (
             <div className="mb-4 rounded-r-xl border-l-4 border-teal-600 bg-stone-50 p-4 text-sm text-stone-800 leading-relaxed whitespace-pre-line">
-              {preguntaActual.base}
+              <HighlightableText
+                text={preguntaActual.base}
+                ranges={subrayadosActual.base ?? []}
+                enabled={subrayarActivo}
+                activeColor={colorSubrayado}
+                onAddRange={(r) => addSubrayado('base', r)}
+                onRemoveRange={(idx) => removeSubrayado('base', idx)}
+              />
             </div>
           )}
 
@@ -1026,7 +1306,14 @@ export function Simulator({
               <ul className="space-y-1.5 text-sm text-stone-800">
                 {preguntaActual.lista.map((item, idx) => (
                   <li key={idx} className="leading-relaxed">
-                    {item}
+                    <HighlightableText
+                      text={item}
+                      ranges={subrayadosActual[`lista_${idx}`] ?? []}
+                      enabled={subrayarActivo}
+                      activeColor={colorSubrayado}
+                      onAddRange={(r) => addSubrayado(`lista_${idx}`, r)}
+                      onRemoveRange={(rIdx) => removeSubrayado(`lista_${idx}`, rIdx)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -1040,7 +1327,14 @@ export function Simulator({
           )}
 
           <h2 className="text-base sm:text-lg font-bold text-stone-900 leading-snug mb-5">
-            {preguntaActual.pregunta}
+            <HighlightableText
+              text={preguntaActual.pregunta}
+              ranges={subrayadosActual.pregunta ?? []}
+              enabled={subrayarActivo}
+              activeColor={colorSubrayado}
+              onAddRange={(r) => addSubrayado('pregunta', r)}
+              onRemoveRange={(idx) => removeSubrayado('pregunta', idx)}
+            />
           </h2>
 
           {/* Opciones */}
@@ -1130,7 +1424,10 @@ export function Simulator({
                     <XCircle className="h-6 w-6 text-rose-600 shrink-0" />
                     <div>
                       <h3 className="text-base font-bold text-rose-900">
-                        Incorrecto — La respuesta correcta es la {LETTERS[preguntaActual.correcta]}
+                        Incorrecto
+                        {preguntaActual.correcta !== undefined
+                          ? ` — La respuesta correcta es la ${LETTERS[preguntaActual.correcta]}`
+                          : ''}
                       </h3>
                       <p className="text-xs text-rose-700">
                         Revisa por qué descartar tu opción y qué distingue a la correcta.
@@ -1149,12 +1446,14 @@ export function Simulator({
                 </div>
               )}
 
-              <div className="rounded-xl border border-emerald-200 bg-white p-3.5 text-xs sm:text-sm text-emerald-950">
-                <span className="font-bold text-emerald-700">
-                  Por qué {LETTERS[preguntaActual.correcta]} es correcta:{' '}
-                </span>
-                {preguntaActual.opciones[preguntaActual.correcta]?.explicacion}
-              </div>
+              {preguntaActual.correcta !== undefined && (
+                <div className="rounded-xl border border-emerald-200 bg-white p-3.5 text-xs sm:text-sm text-emerald-950">
+                  <span className="font-bold text-emerald-700">
+                    Por qué {LETTERS[preguntaActual.correcta]} es correcta:{' '}
+                  </span>
+                  {preguntaActual.opciones[preguntaActual.correcta]?.explicacion}
+                </div>
+              )}
 
               {preguntaActual.estrategia && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs sm:text-sm text-amber-950">

@@ -13,21 +13,25 @@ class Intento extends Model
         'modo',
         'area_filtro',
         'banco_filtro',
+        'pregunta_ids',
         'total_preguntas',
         'aciertos',
         'errores',
         'porcentaje',
+        'duracion_segundos',
         'completado',
     ];
 
     protected function casts(): array
     {
         return [
+            'pregunta_ids' => 'array',
             'completado' => 'boolean',
             'total_preguntas' => 'integer',
             'aciertos' => 'integer',
             'errores' => 'integer',
             'porcentaje' => 'integer',
+            'duracion_segundos' => 'integer',
         ];
     }
 
