@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { api, getStoredToken, setStoredToken } from './lib/api';
 import { getLocalProgress } from './lib/localProgress';
+import { buildPath, parseLocation, type AppTab } from './lib/router';
 import type { EstadisticasUsuario, Intento, Temario, User } from './types/egel';
 import { AuthModal } from './components/AuthModal';
 import { SearchModal } from './components/SearchModal';
@@ -25,10 +26,11 @@ import { Biblioteca } from './components/Biblioteca';
 import { Comandos } from './components/Comandos';
 import { Progreso } from './components/Progreso';
 
-type Tab = 'inicio' | 'simulador' | 'guias' | 'biblioteca' | 'comandos' | 'progreso';
+type Tab = AppTab;
 
 export function App() {
-  const [tab, setTab] = useState<Tab>('inicio');
+  const initialRoute = parseLocation();
+  const [tab, setTab] = useState<Tab>(initialRoute.tab);
   const [user, setUser] = useState<User | null>(null);
   const [temario, setTemario] = useState<Temario | null>(null);
   const [intentos, setIntentos] = useState<Intento[]>([]);
@@ -36,10 +38,16 @@ export function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const [simArea, setSimArea] = useState<string>('todas');
-  const [simSubarea, setSimSubarea] = useState<string>('todas');
-  const [guiaClave, setGuiaClave] = useState<string | undefined>(undefined);
+  const [simArea, setSimArea] = useState<string>(initialRoute.area);
+  const [simSubarea, setSimSubarea] = useState<string>(initialRoute.subarea);
+  const [guiaClave, setGuiaClave] = useState<string | undefined>(initialRoute.guiaClave);
   const [resumeIntentoId, setResumeIntentoId] = useState<number | null>(null);
+  const [bibliotecaMode, setBibliotecaMode] = useState<'catalogo' | 'web'>(
+    initialRoute.bibliotecaMode
+  );
+  const [bibliotecaWebQuery, setBibliotecaWebQuery] = useState<string>(
+    initialRoute.bibliotecaWebQuery
+  );
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -110,10 +118,36 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  useEffect(() => {
+    const onPopState = () => {
+      const next = parseLocation();
+      setTab(next.tab);
+      setSimArea(next.area);
+      setSimSubarea(next.subarea);
+      setGuiaClave(next.guiaClave);
+      setBibliotecaMode(next.bibliotecaMode);
+      setBibliotecaWebQuery(next.bibliotecaWebQuery);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   const handleNavigate = (
     targetTab: Tab,
-    opts?: { area?: string; subarea?: string; guiaClave?: string }
+    opts?: {
+      area?: string;
+      subarea?: string;
+      guiaClave?: string;
+      bibliotecaMode?: 'catalogo' | 'web';
+      bibliotecaWebQuery?: string;
+    }
   ) => {
+    const nextArea = opts?.area ?? (targetTab === 'simulador' ? 'todas' : simArea);
+    const nextSubarea = opts?.subarea ?? (targetTab === 'simulador' ? 'todas' : simSubarea);
+    const nextGuia = opts?.guiaClave ?? (targetTab === 'guias' ? guiaClave : undefined);
+    const nextBibMode = opts?.bibliotecaMode ?? (targetTab === 'biblioteca' ? bibliotecaMode : 'catalogo');
+    const nextBibQuery = opts?.bibliotecaWebQuery ?? (targetTab === 'biblioteca' ? bibliotecaWebQuery : '');
+
     if (opts?.area) setSimArea(opts.area);
     else if (targetTab === 'simulador') setSimArea('todas');
 
@@ -121,7 +155,22 @@ export function App() {
     else if (targetTab === 'simulador') setSimSubarea('todas');
 
     if (opts?.guiaClave) setGuiaClave(opts.guiaClave);
+    if (opts?.bibliotecaMode) setBibliotecaMode(opts.bibliotecaMode);
+    if (opts?.bibliotecaWebQuery !== undefined) setBibliotecaWebQuery(opts.bibliotecaWebQuery);
+
     setTab(targetTab);
+
+    const nextUrl = buildPath(targetTab, {
+      area: nextArea,
+      subarea: nextSubarea,
+      guiaClave: nextGuia,
+      bibliotecaMode: nextBibMode,
+      bibliotecaWebQuery: nextBibQuery,
+    });
+    if (window.location.pathname + window.location.search !== nextUrl) {
+      window.history.pushState(null, '', nextUrl);
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -260,9 +309,33 @@ export function App() {
             onPracticeSubarea={(sub) =>
               handleNavigate('simulador', { subarea: sub })
             }
+            onSelectClave={(clave) => {
+              setGuiaClave(clave);
+              const nextUrl = buildPath('guias', { guiaClave: clave });
+              if (window.location.pathname !== nextUrl) {
+                window.history.pushState(null, '', nextUrl);
+              }
+            }}
           />
         )}
-        {tab === 'biblioteca' && <Biblioteca temario={temario} />}
+        {tab === 'biblioteca' && (
+          <Biblioteca
+            temario={temario}
+            initialMode={bibliotecaMode}
+            initialWebQuery={bibliotecaWebQuery}
+            onModeChange={(nextMode, nextQ) => {
+              setBibliotecaMode(nextMode);
+              if (nextQ !== undefined) setBibliotecaWebQuery(nextQ);
+              const nextUrl = buildPath('biblioteca', {
+                bibliotecaMode: nextMode,
+                bibliotecaWebQuery: nextQ,
+              });
+              if (window.location.pathname + window.location.search !== nextUrl) {
+                window.history.pushState(null, '', nextUrl);
+              }
+            }}
+          />
+        )}
         {tab === 'comandos' && <Comandos />}
         {tab === 'progreso' && (
           <Progreso
@@ -347,6 +420,12 @@ export function App() {
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onNavigate={handleNavigate}
+        onOpenWebPortal={(q) => {
+          handleNavigate('biblioteca', {
+            bibliotecaMode: 'web',
+            bibliotecaWebQuery: q,
+          });
+        }}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import type {
   AuthResponse,
   BibliotecaResumen,
+  ConceptoWeb,
   EstadisticasUsuario,
   Guia,
   Intento,
@@ -11,6 +12,7 @@ import type {
   ResultadoBusqueda,
   Temario,
   User,
+  WebFuenteId,
 } from '../types/egel';
 
 const TOKEN_KEY = 'egel_auth_token';
@@ -138,6 +140,11 @@ export const api = {
   buscar: (q: string, tipo: 'todos' | 'guias' | 'preguntas' | 'comandos' | 'recursos' = 'todos') =>
     request<ResultadoBusqueda>(
       `/buscar?q=${encodeURIComponent(q)}&tipo=${encodeURIComponent(tipo)}`
+    ),
+
+  buscarWeb: (q: string, fuente: 'todos' | WebFuenteId = 'todos') =>
+    request<{ conceptos: ConceptoWeb[] }>(
+      `/buscar-web?q=${encodeURIComponent(q)}&fuente=${encodeURIComponent(fuente)}`
     ),
 
   // Intentos y progreso (requiere login)

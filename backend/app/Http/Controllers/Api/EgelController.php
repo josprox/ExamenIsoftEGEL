@@ -8,6 +8,8 @@ use App\Models\Recurso;
 use App\Services\ContenidoLoader;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class EgelController extends Controller
 {
@@ -310,5 +312,316 @@ class EgelController extends Controller
             'recursos' => $recursos,
             'total' => count($guias) + count($comandos) + count($preguntas) + count($recursos),
         ]);
+    }
+
+    public function buscarWeb(Request $request): JsonResponse
+    {
+        $q = trim((string) $request->query('q', ''));
+        $fuente = (string) $request->query('fuente', 'todos');
+        if (mb_strlen($q) < 2) {
+            return response()->json(['conceptos' => []]);
+        }
+
+        $cacheKey = 'egel_web_search_v3_' . sha1($fuente . '|' . mb_strtolower($q));
+
+        $conceptos = Cache::remember($cacheKey, 3600, function () use ($q, $fuente) {
+            $want = fn (string $name) => $fuente === 'todos' || $fuente === $name;
+
+            $responses = Http::pool(fn ($pool) => [
+                'wiki_es' => $want('wikipedia')
+                    ? $pool->as('wiki_es')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://es.wikipedia.org/w/api.php', [
+                        'action' => 'query',
+                        'generator' => 'search',
+                        'gsrsearch' => $q,
+                        'gsrlimit' => $fuente === 'wikipedia' ? 6 : 4,
+                        'prop' => 'extracts|info',
+                        'inprop' => 'url',
+                        'exintro' => 1,
+                        'explaintext' => 1,
+                        'exchars' => 240,
+                        'format' => 'json',
+                        'utf8' => 1,
+                    ])
+                    : null,
+                'mdn' => $want('mdn')
+                    ? $pool->as('mdn')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://developer.mozilla.org/api/v1/search', [
+                        'q' => $q,
+                        'locale' => 'es',
+                        'size' => $fuente === 'mdn' ? 6 : 3,
+                    ])
+                    : null,
+                'so' => $want('stackoverflow')
+                    ? $pool->as('so')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://api.stackexchange.com/2.3/search/advanced', [
+                        'order' => 'desc',
+                        'sort' => 'votes',
+                        'q' => $q,
+                        'site' => 'stackoverflow',
+                        'pagesize' => $fuente === 'stackoverflow' ? 6 : 3,
+                    ])
+                    : null,
+                'openlib' => $want('openlibrary')
+                    ? $pool->as('openlib')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://openlibrary.org/search.json', [
+                        'q' => $q,
+                        'limit' => $fuente === 'openlibrary' ? 6 : 3,
+                    ])
+                    : null,
+                'openalex' => $want('openalex')
+                    ? $pool->as('openalex')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://api.openalex.org/works', [
+                        'search' => $q,
+                        'per-page' => $fuente === 'openalex' ? 6 : 3,
+                    ])
+                    : null,
+                'crossref' => $want('crossref')
+                    ? $pool->as('crossref')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (mailto:contacto@astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://api.crossref.org/works', [
+                        'query' => $q,
+                        'rows' => $fuente === 'crossref' ? 6 : 3,
+                    ])
+                    : null,
+                'arxiv' => $want('arxiv')
+                    ? $pool->as('arxiv')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                    ])->get('https://export.arxiv.org/api/query', [
+                        'search_query' => 'all:' . $q,
+                        'start' => 0,
+                        'max_results' => $fuente === 'arxiv' ? 6 : 3,
+                    ])
+                    : null,
+                'github' => $want('github')
+                    ? $pool->as('github')->timeout(4)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0',
+                        'Accept' => 'application/vnd.github+json',
+                    ])->get('https://api.github.com/search/repositories', [
+                        'q' => $q,
+                        'sort' => 'stars',
+                        'per_page' => $fuente === 'github' ? 6 : 3,
+                    ])
+                    : null,
+            ]);
+
+            $resultados = [];
+
+            // 1. Wikipedia (ES, con fallback a EN si no hay resultados)
+            $wikiItems = $this->parseWikipediaResponse($responses['wiki_es'] ?? null, 'es');
+            if (empty($wikiItems) && $want('wikipedia')) {
+                $wikiItems = $this->consultarWikipedia('en', $q);
+            }
+            $resultados = array_merge($resultados, $wikiItems);
+
+            // 2. MDN Web Docs
+            $mdnResp = $responses['mdn'] ?? null;
+            if ($mdnResp instanceof \Illuminate\Http\Client\Response && $mdnResp->ok()) {
+                foreach ($mdnResp->json('documents') ?? [] as $doc) {
+                    $slug = (string) ($doc['mdn_url'] ?? '');
+                    if ($slug === '') continue;
+                    $resultados[] = [
+                        'title' => (string) ($doc['title'] ?? ''),
+                        'extract' => trim((string) ($doc['summary'] ?? '')),
+                        'url' => 'https://developer.mozilla.org' . $slug,
+                        'source' => 'developer.mozilla.org',
+                        'category' => 'mdn',
+                    ];
+                }
+            }
+
+            // 3. Stack Overflow
+            $soResp = $responses['so'] ?? null;
+            if ($soResp instanceof \Illuminate\Http\Client\Response && $soResp->ok()) {
+                foreach ($soResp->json('items') ?? [] as $item) {
+                    $link = (string) ($item['link'] ?? '');
+                    $title = html_entity_decode((string) ($item['title'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    if ($link === '' || $title === '') continue;
+                    $tags = implode(', ', array_slice($item['tags'] ?? [], 0, 4));
+                    $score = (int) ($item['score'] ?? 0);
+                    $answers = (int) ($item['answer_count'] ?? 0);
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => "Votos: {$score} · Respuestas: {$answers}" . ($tags ? " · Etiquetas: {$tags}" : ''),
+                        'url' => $link,
+                        'source' => 'stackoverflow.com',
+                        'category' => 'stackoverflow',
+                    ];
+                }
+            }
+
+            // 4. Open Library
+            $olResp = $responses['openlib'] ?? null;
+            if ($olResp instanceof \Illuminate\Http\Client\Response && $olResp->ok()) {
+                foreach ($olResp->json('docs') ?? [] as $doc) {
+                    $key = (string) ($doc['key'] ?? '');
+                    $title = (string) ($doc['title'] ?? '');
+                    if ($key === '' || $title === '') continue;
+                    $autores = implode(', ', array_slice($doc['author_name'] ?? [], 0, 2));
+                    $anio = $doc['first_publish_year'] ?? null;
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => trim(($autores ?: 'Autor no especificado') . ($anio ? " ({$anio})" : '')),
+                        'url' => 'https://openlibrary.org' . $key,
+                        'source' => 'openlibrary.org',
+                        'category' => 'openlibrary',
+                    ];
+                }
+            }
+
+            // 5. OpenAlex (artículos científicos)
+            $oaResp = $responses['openalex'] ?? null;
+            if ($oaResp instanceof \Illuminate\Http\Client\Response && $oaResp->ok()) {
+                foreach ($oaResp->json('results') ?? [] as $work) {
+                    $title = trim((string) ($work['title'] ?? ''));
+                    $url = (string) ($work['doi'] ?? $work['id'] ?? '');
+                    if ($title === '' || $url === '') continue;
+                    $year = $work['publication_year'] ?? null;
+                    $cited = (int) ($work['cited_by_count'] ?? 0);
+                    $auths = collect($work['authorships'] ?? [])
+                        ->take(2)
+                        ->map(fn ($a) => $a['author']['display_name'] ?? '')
+                        ->filter()
+                        ->implode(', ');
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => trim(($auths ?: 'Investigación académica') . ($year ? " · {$year}" : '') . " · Citas: {$cited}"),
+                        'url' => $url,
+                        'source' => 'openalex.org',
+                        'category' => 'openalex',
+                    ];
+                }
+            }
+
+            // 6. Crossref (publicaciones con DOI)
+            $crResp = $responses['crossref'] ?? null;
+            if ($crResp instanceof \Illuminate\Http\Client\Response && $crResp->ok()) {
+                foreach ($crResp->json('message.items') ?? [] as $item) {
+                    $title = trim((string) ($item['title'][0] ?? ''));
+                    $url = (string) ($item['URL'] ?? '');
+                    if ($title === '' || $url === '') continue;
+                    $publisher = (string) ($item['publisher'] ?? '');
+                    $year = $item['published']['date-parts'][0][0] ?? null;
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => trim(($publisher ?: 'Publicación académica') . ($year ? " ({$year})" : '')),
+                        'url' => $url,
+                        'source' => 'crossref.org',
+                        'category' => 'crossref',
+                    ];
+                }
+            }
+
+            // 7. arXiv (preprints de computación)
+            $axResp = $responses['arxiv'] ?? null;
+            if ($axResp instanceof \Illuminate\Http\Client\Response && $axResp->ok()) {
+                $xml = @simplexml_load_string($axResp->body());
+                if ($xml && isset($xml->entry)) {
+                    foreach ($xml->entry as $entry) {
+                        $title = trim(preg_replace('/\s+/', ' ', (string) $entry->title));
+                        $url = trim((string) $entry->id);
+                        $summary = trim(preg_replace('/\s+/', ' ', (string) $entry->summary));
+                        if ($title === '' || $url === '') continue;
+                        $resultados[] = [
+                            'title' => $title,
+                            'extract' => mb_substr($summary, 0, 200) . (mb_strlen($summary) > 200 ? '…' : ''),
+                            'url' => $url,
+                            'source' => 'arxiv.org',
+                            'category' => 'arxiv',
+                        ];
+                    }
+                }
+            }
+
+            // 8. GitHub (repositorios populares)
+            $ghResp = $responses['github'] ?? null;
+            if ($ghResp instanceof \Illuminate\Http\Client\Response && $ghResp->ok()) {
+                foreach ($ghResp->json('items') ?? [] as $repo) {
+                    $name = (string) ($repo['full_name'] ?? '');
+                    $url = (string) ($repo['html_url'] ?? '');
+                    if ($name === '' || $url === '') continue;
+                    $stars = number_format((int) ($repo['stargazers_count'] ?? 0));
+                    $lang = (string) ($repo['language'] ?? '');
+                    $desc = trim((string) ($repo['description'] ?? ''));
+                    $resultados[] = [
+                        'title' => $name . ($lang ? " ({$lang})" : ''),
+                        'extract' => "★ {$stars}" . ($desc ? " · {$desc}" : ''),
+                        'url' => $url,
+                        'source' => 'github.com',
+                        'category' => 'github',
+                    ];
+                }
+            }
+
+            return $resultados;
+        });
+
+        return response()->json([
+            'conceptos' => $conceptos,
+        ]);
+    }
+
+    private function parseWikipediaResponse(mixed $response, string $lang): array
+    {
+        if (!($response instanceof \Illuminate\Http\Client\Response) || !$response->ok()) {
+            return [];
+        }
+
+        $pages = $response->json('query.pages');
+        if (!is_array($pages)) {
+            return [];
+        }
+
+        return collect($pages)
+            ->sortBy('index')
+            ->map(fn ($p) => [
+                'title' => (string) ($p['title'] ?? ''),
+                'extract' => trim((string) ($p['extract'] ?? '')),
+                'url' => (string) ($p['fullurl'] ?? ''),
+                'source' => "{$lang}.wikipedia.org",
+                'category' => 'wikipedia',
+            ])
+            ->filter(fn ($item) => $item['title'] !== '' && $item['url'] !== '')
+            ->values()
+            ->all();
+    }
+
+    private function consultarWikipedia(string $lang, string $q): array
+    {
+        try {
+            $response = Http::timeout(4)
+                ->withHeaders([
+                    'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                    'Accept' => 'application/json',
+                ])
+                ->get("https://{$lang}.wikipedia.org/w/api.php", [
+                    'action' => 'query',
+                    'generator' => 'search',
+                    'gsrsearch' => $q,
+                    'gsrlimit' => 4,
+                    'prop' => 'extracts|info',
+                    'inprop' => 'url',
+                    'exintro' => 1,
+                    'explaintext' => 1,
+                    'exchars' => 220,
+                    'format' => 'json',
+                    'utf8' => 1,
+                ]);
+
+            return $this->parseWikipediaResponse($response, $lang);
+        } catch (\Throwable) {
+            return [];
+        }
     }
 }

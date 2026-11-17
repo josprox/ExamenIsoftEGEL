@@ -6,6 +6,7 @@ import type { Guia } from '../types/egel';
 interface GuiasProps {
   initialClave?: string;
   onPracticeSubarea: (subarea: string) => void;
+  onSelectClave?: (clave: string) => void;
 }
 
 function renderInline(text: string): React.ReactNode[] {
@@ -183,7 +184,7 @@ function MarkdownView({ content }: { content: string }) {
   return <div>{blocks}</div>;
 }
 
-export function Guias({ initialClave, onPracticeSubarea }: GuiasProps) {
+export function Guias({ initialClave, onPracticeSubarea, onSelectClave }: GuiasProps) {
   const [guias, setGuias] = useState<Guia[]>([]);
   const [activa, setActiva] = useState<string>(initialClave || 'estrategias');
   const [filtro, setFiltro] = useState('');
@@ -237,7 +238,10 @@ export function Guias({ initialClave, onPracticeSubarea }: GuiasProps) {
             <button
               key={g.clave}
               type="button"
-              onClick={() => setActiva(g.clave)}
+              onClick={() => {
+                setActiva(g.clave);
+                onSelectClave?.(g.clave);
+              }}
               className={`w-full rounded-xl px-3 py-2 text-left text-xs transition cursor-pointer ${
                 g.clave === guiaActual?.clave
                   ? 'bg-teal-700 text-white font-semibold shadow-sm'

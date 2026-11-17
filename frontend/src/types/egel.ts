@@ -143,6 +143,24 @@ export interface RamaComandos {
   comandos: ComandoItem[];
 }
 
+export type WebFuenteId =
+  | 'wikipedia'
+  | 'mdn'
+  | 'stackoverflow'
+  | 'openlibrary'
+  | 'openalex'
+  | 'crossref'
+  | 'arxiv'
+  | 'github';
+
+export interface ConceptoWeb {
+  title: string;
+  extract: string;
+  url: string;
+  source: string;
+  category?: WebFuenteId;
+}
+
 export interface ResultadoBusqueda {
   guias: Guia[];
   comandos: Array<{ rama: string; icono: string; comando: string; descripcion: string }>;

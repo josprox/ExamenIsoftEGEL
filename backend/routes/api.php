@@ -23,6 +23,7 @@ Route::get('/biblioteca', [EgelController::class, 'biblioteca']);
 Route::get('/guias', [EgelController::class, 'guias']);
 Route::get('/comandos', [EgelController::class, 'comandos']);
 Route::get('/buscar', [EgelController::class, 'buscar']);
+Route::get('/buscar-web', [EgelController::class, 'buscarWeb'])->middleware('throttle:120,1');
 
 // Simulador, progreso e intentos (requiere login)
 Route::middleware(AuthenticateApiToken::class)->group(function () {

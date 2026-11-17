@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class EgelApiTest extends TestCase
@@ -262,5 +263,37 @@ class EgelApiTest extends TestCase
             ->getJson('/api/intentos')
             ->assertStatus(200)
             ->assertJsonStructure(['estadisticas' => ['por_area', 'por_subarea']]);
+    }
+
+    public function test_buscar_web_consulta_conceptos_wikipedia(): void
+    {
+        Http::fake([
+            'https://es.wikipedia.org/*' => Http::response([
+                'query' => [
+                    'pages' => [
+                        '123' => [
+                            'index' => 1,
+                            'title' => 'Scrum (desarrollo de software)',
+                            'extract' => 'Scrum es un marco de trabajo ágil para gestión de proyectos.',
+                            'fullurl' => 'https://es.wikipedia.org/wiki/Scrum_(desarrollo_de_software)',
+                        ],
+                    ],
+                ],
+            ], 200),
+            'https://developer.mozilla.org/*' => Http::response(['documents' => []], 200),
+            'https://api.stackexchange.com/*' => Http::response(['items' => []], 200),
+            'https://openlibrary.org/*' => Http::response(['docs' => []], 200),
+            'https://api.openalex.org/*' => Http::response(['results' => []], 200),
+            'https://api.crossref.org/*' => Http::response(['message' => ['items' => []]], 200),
+            'https://export.arxiv.org/*' => Http::response('<feed></feed>', 200),
+            'https://api.github.com/*' => Http::response(['items' => []], 200),
+        ]);
+
+        $this->getJson('/api/buscar-web?q=Scrum')
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'conceptos')
+            ->assertJsonPath('conceptos.0.title', 'Scrum (desarrollo de software)')
+            ->assertJsonPath('conceptos.0.source', 'es.wikipedia.org')
+            ->assertJsonPath('conceptos.0.category', 'wikipedia');
     }
 }

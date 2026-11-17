@@ -9,11 +9,13 @@ import {
   ArrowRight,
   Copy,
   Check,
+  Globe,
+  ExternalLink,
 } from 'lucide-react';
 import { api } from '../lib/api';
-import type { ResultadoBusqueda } from '../types/egel';
+import type { ConceptoWeb, ResultadoBusqueda } from '../types/egel';
 
-type SearchTipo = 'todos' | 'guias' | 'preguntas' | 'comandos' | 'recursos';
+type SearchTipo = 'todos' | 'guias' | 'preguntas' | 'comandos' | 'recursos' | 'web';
 
 const SUGGESTED_QUERIES = ['ISO 25010', 'Scrum', 'REST', 'SQL', 'Docker', 'RACI', 'ATAM'];
 
@@ -24,13 +26,27 @@ interface SearchModalProps {
     tab: 'inicio' | 'simulador' | 'guias' | 'biblioteca' | 'comandos' | 'progreso',
     opts?: { area?: string; subarea?: string; guiaClave?: string }
   ) => void;
+  onOpenWebPortal?: (query: string) => void;
 }
 
-export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
+const CATEGORY_LABELS: Record<string, { label: string; cls: string }> = {
+  wikipedia: { label: 'Wikipedia', cls: 'bg-sky-50 text-sky-700' },
+  mdn: { label: 'MDN Docs', cls: 'bg-indigo-50 text-indigo-700' },
+  stackoverflow: { label: 'Stack Overflow', cls: 'bg-orange-50 text-orange-700' },
+  openlibrary: { label: 'Open Library', cls: 'bg-emerald-50 text-emerald-700' },
+  openalex: { label: 'OpenAlex', cls: 'bg-violet-50 text-violet-700' },
+  crossref: { label: 'Crossref', cls: 'bg-amber-50 text-amber-800' },
+  arxiv: { label: 'arXiv', cls: 'bg-rose-50 text-rose-700' },
+  github: { label: 'GitHub', cls: 'bg-stone-200 text-stone-800' },
+};
+
+export function SearchModal({ isOpen, onClose, onNavigate, onOpenWebPortal }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [tipo, setTipo] = useState<SearchTipo>('todos');
   const [resultados, setResultados] = useState<ResultadoBusqueda | null>(null);
+  const [webConceptos, setWebConceptos] = useState<ConceptoWeb[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingWeb, setLoadingWeb] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,6 +54,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
       setQuery('');
       setTipo('todos');
       setResultados(null);
+      setWebConceptos([]);
     }
   }, [isOpen]);
 
@@ -51,19 +68,43 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (!isOpen || query.trim().length < 2) {
+    const trimmed = query.trim();
+    if (!isOpen || trimmed.length < 2) {
       setResultados(null);
+      setWebConceptos([]);
       return;
     }
-    const timer = setTimeout(() => {
+
+    const localTimer = setTimeout(() => {
+      if (tipo === 'web') {
+        setResultados({ guias: [], comandos: [], preguntas: [], recursos: [] });
+        return;
+      }
       setLoading(true);
       api
-        .buscar(query.trim(), tipo)
+        .buscar(trimmed, tipo)
         .then((res) => setResultados(res))
         .catch(() => setResultados(null))
         .finally(() => setLoading(false));
     }, 180);
-    return () => clearTimeout(timer);
+
+    const webTimer = setTimeout(() => {
+      if (tipo !== 'todos' && tipo !== 'web') {
+        setWebConceptos([]);
+        return;
+      }
+      setLoadingWeb(true);
+      api
+        .buscarWeb(trimmed)
+        .then((res) => setWebConceptos(res.conceptos ?? []))
+        .catch(() => setWebConceptos([]))
+        .finally(() => setLoadingWeb(false));
+    }, 320);
+
+    return () => {
+      clearTimeout(localTimer);
+      clearTimeout(webTimer);
+    };
   }, [query, tipo, isOpen]);
 
   if (!isOpen) return null;
@@ -89,7 +130,21 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
     { id: 'preguntas', label: 'Preguntas' },
     { id: 'comandos', label: 'Comandos' },
     { id: 'recursos', label: 'Biblioteca' },
+    { id: 'web', label: 'Conceptos Web' },
   ];
+
+  const hayResultadosLocales =
+    Boolean(resultados) &&
+    (resultados!.guias.length > 0 ||
+      resultados!.preguntas.length > 0 ||
+      resultados!.comandos.length > 0 ||
+      resultados!.recursos.length > 0);
+
+  const sinResultados =
+    !loading &&
+    !loadingWeb &&
+    !hayResultadosLocales &&
+    webConceptos.length === 0;
 
   return (
     <div
@@ -107,7 +162,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar en guías, preguntas, comandos o biblioteca..."
+            placeholder="Buscar en guías, preguntas, comandos, biblioteca o Wikipedia..."
             className="flex-1 bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none"
           />
           {query && (
@@ -135,12 +190,13 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
               key={t.id}
               type="button"
               onClick={() => setTipo(t.id)}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer shrink-0 ${
+              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer shrink-0 ${
                 tipo === t.id
                   ? 'bg-teal-700 text-white'
                   : 'text-stone-600 hover:bg-stone-200/70'
               }`}
             >
+              {t.id === 'web' && <Globe className="h-3 w-3" />}
               {t.label}
             </button>
           ))}
@@ -150,7 +206,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
           {query.trim().length < 2 ? (
             <div className="py-4 text-center space-y-3">
               <p className="text-xs text-stone-500">
-                Escribe al menos 2 caracteres o prueba con una búsqueda rápida:
+                Escribe al menos 2 caracteres para buscar en el portal y conceptos de Wikipedia:
               </p>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {SUGGESTED_QUERIES.map((term) => (
@@ -165,19 +221,15 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                 ))}
               </div>
             </div>
-          ) : loading ? (
+          ) : loading && tipo !== 'web' ? (
             <p className="text-xs text-stone-500 text-center py-6">Buscando en el portal...</p>
-          ) : !resultados ||
-            (resultados.guias.length === 0 &&
-              resultados.preguntas.length === 0 &&
-              resultados.comandos.length === 0 &&
-              resultados.recursos.length === 0) ? (
+          ) : sinResultados ? (
             <p className="text-xs text-stone-500 text-center py-6">
               Sin resultados para «{query}».
             </p>
           ) : (
             <>
-              {resultados.guias.length > 0 && (
+              {resultados && resultados.guias.length > 0 && (
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-teal-700 mb-1.5">
                     Guías de estudio ({resultados.guias.length})
@@ -206,7 +258,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                 </div>
               )}
 
-              {resultados.preguntas.length > 0 && (
+              {resultados && resultados.preguntas.length > 0 && (
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 mb-1.5">
                     Preguntas ({resultados.preguntas.length})
@@ -227,7 +279,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                 </div>
               )}
 
-              {resultados.comandos.length > 0 && (
+              {resultados && resultados.comandos.length > 0 && (
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1.5">
                     Comandos ({resultados.comandos.length})
@@ -262,7 +314,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                 </div>
               )}
 
-              {resultados.recursos.length > 0 && (
+              {resultados && resultados.recursos.length > 0 && (
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1.5">
                     Biblioteca ({resultados.recursos.length})
@@ -283,6 +335,64 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                       </span>
                     </button>
                   ))}
+                </div>
+              )}
+
+              {(tipo === 'todos' || tipo === 'web') && (
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-sky-700 mb-1.5">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Globe className="h-3.5 w-3.5" />
+                      Conceptos en la web (8 fuentes confiables)
+                    </span>
+                    {loadingWeb && (
+                      <span className="font-normal lowercase text-stone-400">consultando...</span>
+                    )}
+                  </div>
+                  {webConceptos.slice(0, tipo === 'web' ? 12 : 5).map((c) => {
+                    const badge = c.category ? CATEGORY_LABELS[c.category] : null;
+                    return (
+                      <a
+                        key={`${c.source}-${c.url}`}
+                        href={c.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-xl px-3 py-2 text-left hover:bg-sky-50/70 transition"
+                      >
+                        <div className="flex items-center justify-between gap-2 text-xs font-semibold text-stone-900">
+                          <span className="truncate">{c.title}</span>
+                          <span className="inline-flex items-center gap-1.5 shrink-0">
+                            {badge && (
+                              <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${badge.cls}`}>
+                                {badge.label}
+                              </span>
+                            )}
+                            <ExternalLink className="h-3 w-3 text-sky-700" />
+                          </span>
+                        </div>
+                        {c.extract && (
+                          <p className="mt-0.5 text-[11px] text-stone-600 line-clamp-2 leading-relaxed">
+                            {c.extract}
+                          </p>
+                        )}
+                      </a>
+                    );
+                  })}
+
+                  {onOpenWebPortal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onOpenWebPortal(query.trim());
+                        onClose();
+                      }}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50/60 px-3 py-2 text-xs font-semibold text-sky-800 hover:bg-sky-100 transition cursor-pointer"
+                    >
+                      <Globe className="h-3.5 w-3.5" />
+                      Ver más resultados de «{query.trim()}» en Explorador Web
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               )}
             </>
