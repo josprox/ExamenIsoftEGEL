@@ -28,20 +28,30 @@ import type {
 type AlcanceFiltro = 'todos' | 'catalogo' | 'web';
 type WebFuente = 'todos' | WebFuenteId;
 
-const WEB_SOURCES: Array<{ id: WebFuenteId; label: string; badgeCls: string }> = [
-  { id: 'wikipedia', label: 'Wikipedia', badgeCls: 'bg-sky-50 text-sky-700' },
-  { id: 'mdn', label: 'MDN Web Docs', badgeCls: 'bg-indigo-50 text-indigo-700' },
-  { id: 'github', label: 'GitHub', badgeCls: 'bg-stone-200 text-stone-800' },
-  { id: 'stackoverflow', label: 'Stack Overflow', badgeCls: 'bg-orange-50 text-orange-700' },
-  { id: 'openalex', label: 'OpenAlex', badgeCls: 'bg-violet-50 text-violet-700' },
-  { id: 'openlibrary', label: 'Open Library', badgeCls: 'bg-emerald-50 text-emerald-700' },
-  { id: 'crossref', label: 'Crossref', badgeCls: 'bg-amber-50 text-amber-800' },
-  { id: 'arxiv', label: 'arXiv', badgeCls: 'bg-rose-50 text-rose-700' },
+const WEB_SOURCES: Array<{
+  id: WebFuenteId;
+  label: string;
+  badgeCls: string;
+  accentCls: string;
+}> = [
+  { id: 'wikipedia', label: 'Wikipedia', badgeCls: 'bg-sky-50 text-sky-700', accentCls: 'border-l-sky-500' },
+  { id: 'wikidata', label: 'Wikidata', badgeCls: 'bg-cyan-50 text-cyan-800', accentCls: 'border-l-cyan-600' },
+  { id: 'mdn', label: 'MDN Web Docs', badgeCls: 'bg-indigo-50 text-indigo-700', accentCls: 'border-l-indigo-500' },
+  { id: 'github', label: 'GitHub', badgeCls: 'bg-stone-200 text-stone-800', accentCls: 'border-l-stone-700' },
+  { id: 'stackoverflow', label: 'Stack Overflow', badgeCls: 'bg-orange-50 text-orange-700', accentCls: 'border-l-orange-500' },
+  { id: 'hackernews', label: 'Hacker News', badgeCls: 'bg-amber-100 text-amber-900', accentCls: 'border-l-amber-600' },
+  { id: 'reddit', label: 'Reddit', badgeCls: 'bg-red-50 text-red-700', accentCls: 'border-l-red-500' },
+  { id: 'semanticscholar', label: 'Semantic Scholar', badgeCls: 'bg-blue-50 text-blue-800', accentCls: 'border-l-blue-600' },
+  { id: 'openalex', label: 'OpenAlex', badgeCls: 'bg-violet-50 text-violet-700', accentCls: 'border-l-violet-500' },
+  { id: 'openlibrary', label: 'Open Library', badgeCls: 'bg-emerald-50 text-emerald-700', accentCls: 'border-l-emerald-500' },
+  { id: 'crossref', label: 'Crossref', badgeCls: 'bg-amber-50 text-amber-800', accentCls: 'border-l-amber-500' },
+  { id: 'arxiv', label: 'arXiv', badgeCls: 'bg-rose-50 text-rose-700', accentCls: 'border-l-rose-500' },
 ];
 
-const SOURCE_BADGES: Record<string, { label: string; cls: string }> = Object.fromEntries(
-  WEB_SOURCES.map((s) => [s.id, { label: s.label, cls: s.badgeCls }])
-);
+const SOURCE_BADGES: Record<string, { label: string; cls: string; accentCls: string }> =
+  Object.fromEntries(
+    WEB_SOURCES.map((s) => [s.id, { label: s.label, cls: s.badgeCls, accentCls: s.accentCls }])
+  );
 
 const SUGGESTIONS = [
   'ISO/IEC 25010',
@@ -71,8 +81,8 @@ export function Biblioteca({
   const [q, setQ] = useState(initialWebQuery);
   const [mostrarFiltrosLocales, setMostrarFiltrosLocales] = useState(false);
 
-  // Catálogo local
-  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  // Catálogo local (se carga una sola vez y se filtra en 0ms en el cliente)
+  const [catalogoCompleto, setCatalogoCompleto] = useState<Recurso[]>([]);
   const [resumen, setResumen] = useState<BibliotecaResumen | null>(null);
   const [loadingLocal, setLoadingLocal] = useState(true);
   const [area, setArea] = useState('todas');
@@ -84,10 +94,10 @@ export function Biblioteca({
   const [soloGratuito, setSoloGratuito] = useState(false);
   const [previewRecurso, setPreviewRecurso] = useState<Recurso | null>(null);
 
-  // Web (carga progresiva por fuente + scroll infinito)
+  // Web (2 lotes progresivos: fuentes rápidas primero, luego académicas + scroll infinito)
   const [webFuente, setWebFuente] = useState<WebFuente>('todos');
   const [webResults, setWebResults] = useState<ConceptoWeb[]>([]);
-  const [pendingSources, setPendingSources] = useState<WebFuenteId[]>([]);
+  const [webStatus, setWebStatus] = useState<'idle' | 'rapidas' | 'academicas'>('idle');
   const [visibleWebCount, setVisibleWebCount] = useState(12);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -119,90 +129,111 @@ export function Biblioteca({
     return () => observer.disconnect();
   }, [webResults.length, visibleWebCount]);
 
-  // Carga del catálogo local unificado
+  // Carga del catálogo local una sola vez desde caché
   useEffect(() => {
-    if (alcance === 'web') {
-      setLoadingLocal(false);
-      return;
-    }
     let active = true;
     setLoadingLocal(true);
-    const timer = setTimeout(() => {
-      api
-        .getBiblioteca({
-          area,
-          tipo,
-          idioma,
-          q,
-          soloArchivo,
-          soloOficial,
-          soloGratuito,
-          orden,
-        })
-        .then((res) => {
-          if (active) {
-            setRecursos(res.recursos);
-            if (res.resumen) setResumen(res.resumen);
-          }
-        })
-        .catch(() => {
-          if (active) setRecursos([]);
-        })
-        .finally(() => {
-          if (active) setLoadingLocal(false);
-        });
-    }, 150);
-
+    api
+      .getBiblioteca()
+      .then((res) => {
+        if (active) {
+          setCatalogoCompleto(res.recursos);
+          if (res.resumen) setResumen(res.resumen);
+        }
+      })
+      .catch(() => {
+        if (active) setCatalogoCompleto([]);
+      })
+      .finally(() => {
+        if (active) setLoadingLocal(false);
+      });
     return () => {
       active = false;
-      clearTimeout(timer);
     };
-  }, [alcance, area, tipo, idioma, q, soloArchivo, soloOficial, soloGratuito, orden]);
+  }, []);
 
-  // Carga progresiva por fuente en la web cuando hay consulta (>= 2 caracteres)
+  // Filtrado instantáneo en cliente (0ms al escribir)
+  const recursos = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const filtrados = catalogoCompleto.filter((r) => {
+      if (area !== 'todas' && !r.areas.includes(area)) return false;
+      if (tipo !== 'todos' && r.tipo !== tipo) return false;
+      if (idioma !== 'todos' && (r.idioma ?? '') !== idioma) return false;
+      if (soloArchivo && !r.archivo) return false;
+      if (soloOficial && !r.oficial) return false;
+      if (soloGratuito && !r.gratuito) return false;
+      if (needle !== '') {
+        const hay = `${r.titulo} ${r.autores ?? ''} ${r.nota ?? ''} ${(r.subareas ?? []).join(' ')}`.toLowerCase();
+        if (!hay.includes(needle)) return false;
+      }
+      return true;
+    });
+
+    if (orden === 'anio_desc') {
+      return [...filtrados].sort((a, b) => (b.anio ?? 0) - (a.anio ?? 0));
+    }
+    if (orden === 'titulo') {
+      return [...filtrados].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
+    }
+    return filtrados;
+  }, [catalogoCompleto, area, tipo, idioma, q, soloArchivo, soloOficial, soloGratuito, orden]);
+
+  // Carga progresiva en 2 lotes: primero fuentes rápidas (Wikipedia, Wikidata, MDN, HN, GitHub, SO), luego académicas
   useEffect(() => {
     const trimmed = q.trim();
     if (alcance === 'catalogo' || trimmed.length < 2) {
       setWebResults([]);
-      setPendingSources([]);
+      setWebStatus('idle');
       return;
     }
 
     let active = true;
     setVisibleWebCount(12);
 
-    const sourcesToFetch: WebFuenteId[] =
-      webFuente === 'todos' ? WEB_SOURCES.map((s) => s.id) : [webFuente];
-
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       if (!active) return;
       setWebResults([]);
-      setPendingSources(sourcesToFetch);
 
-      for (const src of sourcesToFetch) {
-        api
-          .buscarWeb(trimmed, src)
-          .then((res) => {
-            if (!active) return;
-            const nuevos = res.conceptos ?? [];
-            if (nuevos.length > 0) {
-              setWebResults((prev) => {
-                const seen = new Set(prev.map((x) => x.url));
-                const filtered = nuevos.filter((x) => !seen.has(x.url));
-                return [...prev, ...filtered];
-              });
-            }
-          })
-          .catch(() => {
-            // Ignorar fallo puntual de una fuente
-          })
-          .finally(() => {
-            if (active) {
-              setPendingSources((prev) => prev.filter((id) => id !== src));
-            }
-          });
+      if (webFuente !== 'todos') {
+        setWebStatus('rapidas');
+        try {
+          const res = await api.buscarWeb(trimmed, webFuente);
+          if (active) setWebResults(res.conceptos ?? []);
+        } catch {
+          if (active) setWebResults([]);
+        } finally {
+          if (active) setWebStatus('idle');
+        }
+        return;
       }
-    }, 240);
+
+      setWebStatus('rapidas');
+      try {
+        const res1 = await api.buscarWeb(trimmed, 'rapidas');
+        if (!active) return;
+        setWebResults(res1.conceptos ?? []);
+      } catch {
+        // continuar con el segundo lote aunque falle el primero
+      }
+
+      if (!active) return;
+      setWebStatus('academicas');
+      try {
+        const res2 = await api.buscarWeb(trimmed, 'academicas');
+        if (!active) return;
+        const extra = res2.conceptos ?? [];
+        if (extra.length > 0) {
+          setWebResults((prev) => {
+            const seen = new Set(prev.map((x) => x.url));
+            return [...prev, ...extra.filter((x) => !seen.has(x.url))];
+          });
+        }
+      } catch {
+        // ignorar
+      } finally {
+        if (active) setWebStatus('idle');
+      }
+    }, 260);
 
     return () => {
       active = false;
@@ -242,7 +273,7 @@ export function Biblioteca({
     [webResults]
   );
 
-  const webBusy = pendingSources.length > 0;
+  const webBusy = webStatus !== 'idle';
   const tieneConsultaWeb = q.trim().length >= 2 && alcance !== 'catalogo';
 
   const cambiarAlcance = (nuevo: AlcanceFiltro) => {
@@ -261,7 +292,7 @@ export function Biblioteca({
               Biblioteca y Explorador Web
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-stone-600">
-              Busca en un solo lugar dentro de los {resumen?.total_catalogo ?? 140} recursos del portal y en 8 fuentes web confiables.
+              Busca en un solo lugar dentro de los {resumen?.total_catalogo ?? 140} recursos del portal y en 12 fuentes web confiables.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -321,7 +352,7 @@ export function Biblioteca({
               [
                 { id: 'todos', label: 'Todo (Catálogo + Web)' },
                 { id: 'catalogo', label: 'Solo Catálogo local' },
-                { id: 'web', label: 'Solo Web (8 fuentes)' },
+                { id: 'web', label: 'Solo Web (12 fuentes)' },
               ] as const
             ).map((opt) => (
               <button
@@ -638,12 +669,9 @@ export function Biblioteca({
             {webBusy && (
               <span className="inline-flex items-center gap-1.5 text-xs text-sky-700 font-medium">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Consultando:{' '}
-                {pendingSources
-                  .slice(0, 3)
-                  .map((id) => SOURCE_BADGES[id]?.label ?? id)
-                  .join(', ')}
-                {pendingSources.length > 3 ? ` (+${pendingSources.length - 3})` : ''}
+                {webStatus === 'rapidas'
+                  ? 'Consultando Wikipedia, Wikidata, MDN, GitHub, Stack Overflow y Hacker News...'
+                  : 'Cargando fuentes académicas y comunidad (Semantic Scholar, OpenAlex, arXiv, Reddit)...'}
               </span>
             )}
           </div>
@@ -659,7 +687,7 @@ export function Biblioteca({
                   : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
               }`}
             >
-              Todas (8)
+              Todas (12)
             </button>
             {WEB_SOURCES.map((f) => (
               <button
@@ -677,7 +705,7 @@ export function Biblioteca({
             ))}
           </div>
 
-          <div className="space-y-3">
+          <div className="grid gap-3.5 grid-cols-1 md:grid-cols-2">
             {webResults.slice(0, visibleWebCount).map((item) => {
               const badge = item.category ? SOURCE_BADGES[item.category] : null;
               return (
@@ -686,64 +714,69 @@ export function Biblioteca({
                   href={item.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="block rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 hover:border-sky-400 hover:shadow-sm transition group"
+                  className={`flex flex-col justify-between rounded-2xl border border-stone-200 border-l-4 ${
+                    badge?.accentCls ?? 'border-l-sky-500'
+                  } bg-white p-4 sm:p-5 hover:border-sky-400 hover:shadow-md transition group`}
                 >
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 mb-1">
-                    {badge && (
-                      <span
-                        className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${badge.cls}`}
-                      >
-                        {badge.label}
+                  <div>
+                    <div className="flex items-center justify-between gap-2 text-xs text-stone-500 mb-2">
+                      {badge && (
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[11px] font-semibold shrink-0 ${badge.cls}`}
+                        >
+                          {badge.label}
+                        </span>
+                      )}
+                      <span className="truncate text-[11px] text-emerald-700 font-medium">
+                        {item.source}
                       </span>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-stone-900 group-hover:text-sky-800 group-hover:underline flex items-start justify-between gap-2 leading-snug">
+                      <span className="break-words">{item.title}</span>
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-1 text-stone-400 group-hover:text-sky-700" />
+                    </h3>
+                    {item.extract && (
+                      <p className="mt-2 text-xs text-stone-600 leading-relaxed line-clamp-3">
+                        {item.extract}
+                      </p>
                     )}
-                    <span className="truncate max-w-full text-[11px] text-emerald-700">
-                      {item.url}
-                    </span>
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-sky-800 group-hover:underline flex items-center gap-1.5">
-                    <span className="break-words">{item.title}</span>
-                    <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                  </h3>
-                  {item.extract && (
-                    <p className="mt-1.5 text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
-                      {item.extract}
-                    </p>
-                  )}
                 </a>
               );
             })}
 
             {webBusy &&
-              [1, 2].map((n) => (
+              [1, 2, 3, 4].map((n) => (
                 <div
                   key={`skel-${n}`}
                   className="animate-pulse rounded-2xl border border-stone-200 bg-white p-5 space-y-2.5"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="h-4 w-20 rounded bg-sky-100" />
-                    <div className="h-3 w-48 rounded bg-stone-100" />
+                    <div className="h-3 w-24 rounded bg-stone-100" />
                   </div>
-                  <div className="h-5 w-2/3 rounded bg-stone-200" />
+                  <div className="h-5 w-3/4 rounded bg-stone-200" />
                   <div className="h-3.5 w-full rounded bg-stone-100" />
+                  <div className="h-3.5 w-5/6 rounded bg-stone-100" />
                 </div>
               ))}
-
-            {!webBusy && webResults.length === 0 && (
-              <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
-                No se encontraron resultados web para «{q.trim()}».
-              </div>
-            )}
-
-            {webResults.length > visibleWebCount && (
-              <div
-                ref={loadMoreRef}
-                className="flex items-center justify-center gap-2 py-4 text-xs font-medium text-sky-700"
-              >
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Cargando más resultados ({webResults.length - visibleWebCount} restantes)...
-              </div>
-            )}
           </div>
+
+          {!webBusy && webResults.length === 0 && (
+            <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+              No se encontraron resultados web para «{q.trim()}».
+            </div>
+          )}
+
+          {webResults.length > visibleWebCount && (
+            <div
+              ref={loadMoreRef}
+              className="flex items-center justify-center gap-2 py-4 text-xs font-medium text-sky-700"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Cargando más resultados ({webResults.length - visibleWebCount} restantes)...
+            </div>
+          )}
         </section>
       )}
 

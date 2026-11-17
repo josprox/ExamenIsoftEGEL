@@ -142,7 +142,7 @@ export const api = {
       `/buscar?q=${encodeURIComponent(q)}&tipo=${encodeURIComponent(tipo)}`
     ),
 
-  buscarWeb: (q: string, fuente: 'todos' | WebFuenteId = 'todos') =>
+  buscarWeb: (q: string, fuente: 'todos' | 'rapidas' | 'academicas' | WebFuenteId = 'todos') =>
     request<{ conceptos: ConceptoWeb[] }>(
       `/buscar-web?q=${encodeURIComponent(q)}&fuente=${encodeURIComponent(fuente)}`
     ),

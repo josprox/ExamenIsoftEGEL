@@ -59,7 +59,32 @@ En el EGEL suelen mezclar estas normas como distractores entre sí:
 
 ---
 
-## 5. Accesibilidad e IHC: ISO 9241 y WCAG 2.2
+## 5. Familia ISO 9000 (ISO 9001 e ISO/IEC 90003)
+
+- **ISO 9001** es la norma internacional de **Sistemas de Gestión de la Calidad (SGC)** para cualquier organización. En el EGEL se evalúa su enfoque en **procesos**, **satisfacción del cliente** y **mejora continua**:
+  - **Ciclo PHVA (PDCA):** **Planificar** (objetivos y procesos), **Hacer** (implementar), **Verificar** (medir y auditar) y **Actuar** (corregir y mejorar).
+  - **Principios clave:** enfoque al cliente, liderazgo, compromiso de las personas, enfoque a procesos, mejora, toma de decisiones basada en evidencia y gestión de relaciones.
+- **ISO/IEC/IEEE 90003:** es la guía específica para **aplicar ISO 9001 al desarrollo, suministro y mantenimiento de software** (traduce las cláusulas de 9001 a ciclo de vida, pruebas, configuración y mantenimiento).
+- **Trampa de examen:** ISO 9001 / 90003 **certifica el proceso** de la empresa; **NO** mide atributos técnicos del software terminado (eso es **ISO/IEC 25010**).
+
+---
+
+## 6. Familia ISO/IEC 27000 (Seguridad de la Información)
+
+La serie **27000** es la más importante en seguridad organizacional y auditoría:
+
+| Norma | Rol dentro de la familia 27000 |
+|---|---|
+| **ISO/IEC 27000** | **Fundamentos y vocabulario:** define conceptos base como activo, amenaza, vulnerabilidad, riesgo y la tríada **CIA** (Confidencialidad, Integridad y Disponibilidad). |
+| **ISO/IEC 27001** | **Requisitos del SGSI (certificable):** establece cómo implantar, operar, revisar y mejorar un Sistema de Gestión de Seguridad de la Información basado en **gestión de riesgos** y ciclo PHVA. |
+| **ISO/IEC 27002** | **Guía de controles de seguridad:** catálogo de buenas prácticas y controles concretos (organizacionales, de personas, físicos y tecnológicos como cifrado, copias de respaldo, control de accesos y bitácoras). |
+| **ISO/IEC 27005** | **Gestión de riesgos de seguridad de la información:** metodología para identificar activos, amenazas, vulnerabilidades e impacto. |
+
+> 💡 **Cómo distinguirlas en un reactivo:** si el caso habla de **implementar o certificar el SGSI** → **ISO/IEC 27001**. Si pide **elegir controles técnicos/administrativos** (política de contraseñas, cifrado, respaldo) → **ISO/IEC 27002**. Si pregunta por **definiciones generales o la tríada CIA** → **ISO/IEC 27000**.
+
+---
+
+## 7. Accesibilidad e IHC: ISO 9241 y WCAG 2.2
 
 - **ISO 9241-11:** define la usabilidad mediante tres ejes medibles: **eficacia**, **eficiencia** y **satisfacción** en un contexto específico de uso.
 - **ISO 9241-110:** principios de diálogo (adecuación a la tarea, autodescriptivo, controlabilidad, conformidad con expectativas, tolerancia a errores).

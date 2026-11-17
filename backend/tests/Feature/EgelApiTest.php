@@ -287,6 +287,10 @@ class EgelApiTest extends TestCase
             'https://api.crossref.org/*' => Http::response(['message' => ['items' => []]], 200),
             'https://export.arxiv.org/*' => Http::response('<feed></feed>', 200),
             'https://api.github.com/*' => Http::response(['items' => []], 200),
+            'https://www.wikidata.org/*' => Http::response(['search' => []], 200),
+            'https://api.semanticscholar.org/*' => Http::response(['data' => []], 200),
+            'https://hn.algolia.com/*' => Http::response(['hits' => []], 200),
+            'https://www.reddit.com/*' => Http::response(['data' => ['children' => []]], 200),
         ]);
 
         $this->getJson('/api/buscar-web?q=Scrum')

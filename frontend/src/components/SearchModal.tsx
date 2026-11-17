@@ -31,8 +31,12 @@ interface SearchModalProps {
 
 const CATEGORY_LABELS: Record<string, { label: string; cls: string }> = {
   wikipedia: { label: 'Wikipedia', cls: 'bg-sky-50 text-sky-700' },
+  wikidata: { label: 'Wikidata', cls: 'bg-cyan-50 text-cyan-800' },
   mdn: { label: 'MDN Docs', cls: 'bg-indigo-50 text-indigo-700' },
   stackoverflow: { label: 'Stack Overflow', cls: 'bg-orange-50 text-orange-700' },
+  hackernews: { label: 'Hacker News', cls: 'bg-amber-100 text-amber-900' },
+  reddit: { label: 'Reddit', cls: 'bg-red-50 text-red-700' },
+  semanticscholar: { label: 'Semantic Scholar', cls: 'bg-blue-50 text-blue-800' },
   openlibrary: { label: 'Open Library', cls: 'bg-emerald-50 text-emerald-700' },
   openalex: { label: 'OpenAlex', cls: 'bg-violet-50 text-violet-700' },
   crossref: { label: 'Crossref', cls: 'bg-amber-50 text-amber-800' },
@@ -95,7 +99,7 @@ export function SearchModal({ isOpen, onClose, onNavigate, onOpenWebPortal }: Se
       }
       setLoadingWeb(true);
       api
-        .buscarWeb(trimmed)
+        .buscarWeb(trimmed, 'rapidas')
         .then((res) => setWebConceptos(res.conceptos ?? []))
         .catch(() => setWebConceptos([]))
         .finally(() => setLoadingWeb(false));
@@ -343,7 +347,7 @@ export function SearchModal({ isOpen, onClose, onNavigate, onOpenWebPortal }: Se
                   <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-sky-700 mb-1.5">
                     <span className="inline-flex items-center gap-1.5">
                       <Globe className="h-3.5 w-3.5" />
-                      Conceptos en la web (8 fuentes confiables)
+                      Conceptos en la web (12 fuentes confiables)
                     </span>
                     {loadingWeb && (
                       <span className="font-normal lowercase text-stone-400">consultando...</span>

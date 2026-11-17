@@ -9,7 +9,6 @@ import {
   Terminal,
 } from 'lucide-react';
 import type { Temario } from '../types/egel';
-import { BrandLogo } from './BrandLogo';
 
 interface InicioProps {
   temario: Temario | null;
@@ -24,7 +23,7 @@ export function Inicio({ temario, onNavigate }: InicioProps) {
     <div className="mx-auto max-w-5xl space-y-8">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-stone-200 bg-gradient-to-br from-white via-white to-teal-50/60 p-6 sm:p-10 shadow-sm">
-        <div className="grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
+        <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/20 bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-teal-800">
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
@@ -64,17 +63,15 @@ export function Inicio({ temario, onNavigate }: InicioProps) {
             </div>
           </div>
 
-          <div className="hidden lg:flex flex-col items-center justify-center rounded-2xl border border-teal-900/10 bg-white/90 p-6 shadow-sm text-center">
-            <BrandLogo className="h-20 w-20 drop-shadow-sm" />
-            <div className="mt-4 text-sm font-bold text-stone-900">
-              Banco de 382 reactivos
-            </div>
-            <p className="mt-1 text-xs text-stone-500 leading-relaxed">
-              Incluye casos prácticos, código, ordenamiento y multirreactivos de lectura.
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-1.5 text-[11px] font-semibold">
-              <span className="rounded-lg bg-teal-50 px-2.5 py-1 text-teal-800">203 examen</span>
-              <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-amber-800">Subrayado</span>
+          <div className="hidden lg:flex flex-col gap-3 rounded-2xl border border-teal-900/10 bg-white/95 p-3 shadow-sm">
+            <img
+              src="/og-cover.svg"
+              alt="Portada oficial EGEL Plus ISOFT 2026"
+              className="w-full rounded-xl border border-stone-200 object-cover shadow-xs"
+            />
+            <div className="flex flex-wrap justify-center gap-1.5 text-[11px] font-semibold pb-1">
+              <span className="rounded-lg bg-teal-50 px-2.5 py-1 text-teal-800">382 reactivos</span>
+              <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-amber-800">Subrayado DCPDV</span>
               <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-stone-700">19 subáreas</span>
             </div>
           </div>

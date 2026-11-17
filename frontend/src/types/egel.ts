@@ -145,8 +145,12 @@ export interface RamaComandos {
 
 export type WebFuenteId =
   | 'wikipedia'
+  | 'wikidata'
   | 'mdn'
   | 'stackoverflow'
+  | 'hackernews'
+  | 'reddit'
+  | 'semanticscholar'
   | 'openlibrary'
   | 'openalex'
   | 'crossref'

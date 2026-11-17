@@ -129,13 +129,15 @@ class EgelController extends Controller
 
     public function biblioteca(Request $request): JsonResponse
     {
-        if (Recurso::count() === 0) {
-            ContenidoLoader::importarTodoABaseDeDatos();
-        }
+        $recursos = Cache::remember('egel_recursos_v1', 3600, function () {
+            if (Recurso::count() === 0) {
+                ContenidoLoader::importarTodoABaseDeDatos();
+            }
 
-        $recursos = Recurso::orderByRaw('COALESCE(prioridad, 99) ASC')
-            ->orderBy('titulo')
-            ->get();
+            return Recurso::orderByRaw('COALESCE(prioridad, 99) ASC')
+                ->orderBy('titulo')
+                ->get();
+        });
 
         $area = $request->query('area');
         $tipo = $request->query('tipo');
@@ -322,14 +324,23 @@ class EgelController extends Controller
             return response()->json(['conceptos' => []]);
         }
 
-        $cacheKey = 'egel_web_search_v3_' . sha1($fuente . '|' . mb_strtolower($q));
+        $cacheKey = 'egel_web_search_v4_' . sha1($fuente . '|' . mb_strtolower($q));
 
         $conceptos = Cache::remember($cacheKey, 3600, function () use ($q, $fuente) {
-            $want = fn (string $name) => $fuente === 'todos' || $fuente === $name;
+            $rapidas = ['wikipedia', 'wikidata', 'mdn', 'hackernews', 'github', 'stackoverflow'];
+            $academicas = ['semanticscholar', 'openalex', 'openlibrary', 'crossref', 'arxiv', 'reddit'];
 
+            $want = function (string $name) use ($fuente, $rapidas, $academicas): bool {
+                if ($fuente === 'todos') return true;
+                if ($fuente === 'rapidas') return in_array($name, $rapidas, true);
+                if ($fuente === 'academicas') return in_array($name, $academicas, true);
+                return $fuente === $name;
+            };
+
+            $t = 2.5;
             $responses = Http::pool(fn ($pool) => [
                 'wiki_es' => $want('wikipedia')
-                    ? $pool->as('wiki_es')->timeout(4)->withHeaders([
+                    ? $pool->as('wiki_es')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://es.wikipedia.org/w/api.php', [
@@ -347,7 +358,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'mdn' => $want('mdn')
-                    ? $pool->as('mdn')->timeout(4)->withHeaders([
+                    ? $pool->as('mdn')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://developer.mozilla.org/api/v1/search', [
@@ -357,7 +368,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'so' => $want('stackoverflow')
-                    ? $pool->as('so')->timeout(4)->withHeaders([
+                    ? $pool->as('so')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://api.stackexchange.com/2.3/search/advanced', [
@@ -369,7 +380,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'openlib' => $want('openlibrary')
-                    ? $pool->as('openlib')->timeout(4)->withHeaders([
+                    ? $pool->as('openlib')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://openlibrary.org/search.json', [
@@ -378,7 +389,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'openalex' => $want('openalex')
-                    ? $pool->as('openalex')->timeout(4)->withHeaders([
+                    ? $pool->as('openalex')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://api.openalex.org/works', [
@@ -387,7 +398,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'crossref' => $want('crossref')
-                    ? $pool->as('crossref')->timeout(4)->withHeaders([
+                    ? $pool->as('crossref')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (mailto:contacto@astriom.org)',
                         'Accept' => 'application/json',
                     ])->get('https://api.crossref.org/works', [
@@ -396,7 +407,7 @@ class EgelController extends Controller
                     ])
                     : null,
                 'arxiv' => $want('arxiv')
-                    ? $pool->as('arxiv')->timeout(4)->withHeaders([
+                    ? $pool->as('arxiv')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
                     ])->get('https://export.arxiv.org/api/query', [
                         'search_query' => 'all:' . $q,
@@ -405,13 +416,56 @@ class EgelController extends Controller
                     ])
                     : null,
                 'github' => $want('github')
-                    ? $pool->as('github')->timeout(4)->withHeaders([
+                    ? $pool->as('github')->timeout($t)->withHeaders([
                         'User-Agent' => 'ExamenIsoftEGEL/1.0',
                         'Accept' => 'application/vnd.github+json',
                     ])->get('https://api.github.com/search/repositories', [
                         'q' => $q,
                         'sort' => 'stars',
                         'per_page' => $fuente === 'github' ? 6 : 3,
+                    ])
+                    : null,
+                'wikidata' => $want('wikidata')
+                    ? $pool->as('wikidata')->timeout($t)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://www.wikidata.org/w/api.php', [
+                        'action' => 'wbsearchentities',
+                        'search' => $q,
+                        'language' => 'es',
+                        'uselang' => 'es',
+                        'type' => 'item',
+                        'limit' => $fuente === 'wikidata' ? 6 : 3,
+                        'format' => 'json',
+                    ])
+                    : null,
+                'semanticscholar' => $want('semanticscholar')
+                    ? $pool->as('semanticscholar')->timeout($t)->withHeaders([
+                        'User-Agent' => 'ExamenIsoftEGEL/1.0 (https://egelsoft.astriom.org)',
+                        'Accept' => 'application/json',
+                    ])->get('https://api.semanticscholar.org/graph/v1/paper/search', [
+                        'query' => $q,
+                        'limit' => $fuente === 'semanticscholar' ? 6 : 3,
+                        'fields' => 'title,abstract,year,url,citationCount',
+                    ])
+                    : null,
+                'hackernews' => $want('hackernews')
+                    ? $pool->as('hackernews')->timeout($t)->withHeaders([
+                        'Accept' => 'application/json',
+                    ])->get('https://hn.algolia.com/api/v1/search', [
+                        'query' => $q,
+                        'tags' => 'story',
+                        'hitsPerPage' => $fuente === 'hackernews' ? 6 : 3,
+                    ])
+                    : null,
+                'reddit' => $want('reddit')
+                    ? $pool->as('reddit')->timeout($t)->withHeaders([
+                        'User-Agent' => 'web:ExamenIsoftEGEL:v1.0 (by /u/egel_portal)',
+                        'Accept' => 'application/json',
+                    ])->get('https://www.reddit.com/search.json', [
+                        'q' => $q,
+                        'sort' => 'relevance',
+                        'limit' => $fuente === 'reddit' ? 6 : 3,
                     ])
                     : null,
             ]);
@@ -560,6 +614,90 @@ class EgelController extends Controller
                         'url' => $url,
                         'source' => 'github.com',
                         'category' => 'github',
+                    ];
+                }
+            }
+
+            // 9. Wikidata (grafo de conocimiento estructurado)
+            $wdResp = $responses['wikidata'] ?? null;
+            if ($wdResp instanceof \Illuminate\Http\Client\Response && $wdResp->ok()) {
+                foreach ($wdResp->json('search') ?? [] as $item) {
+                    $label = (string) ($item['label'] ?? '');
+                    $url = (string) ($item['concepturi'] ?? '');
+                    if ($label === '' || $url === '') continue;
+                    $desc = trim((string) ($item['description'] ?? 'Entidad de conocimiento estructurado'));
+                    $id = (string) ($item['id'] ?? '');
+                    $resultados[] = [
+                        'title' => $label . ($id ? " ({$id})" : ''),
+                        'extract' => $desc,
+                        'url' => $url,
+                        'source' => 'wikidata.org',
+                        'category' => 'wikidata',
+                    ];
+                }
+            }
+
+            // 10. Semantic Scholar (investigación académica con IA)
+            $ssResp = $responses['semanticscholar'] ?? null;
+            if ($ssResp instanceof \Illuminate\Http\Client\Response && $ssResp->ok()) {
+                foreach ($ssResp->json('data') ?? [] as $paper) {
+                    $title = trim((string) ($paper['title'] ?? ''));
+                    $url = (string) ($paper['url'] ?? '');
+                    if ($title === '' || $url === '') continue;
+                    $year = $paper['year'] ?? null;
+                    $cites = (int) ($paper['citationCount'] ?? 0);
+                    $abs = trim((string) ($paper['abstract'] ?? ''));
+                    $meta = ($year ? "{$year} · " : '') . "Citas: {$cites}";
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => $abs ? "{$meta} — " . mb_substr($abs, 0, 170) . '…' : $meta,
+                        'url' => $url,
+                        'source' => 'semanticscholar.org',
+                        'category' => 'semanticscholar',
+                    ];
+                }
+            }
+
+            // 11. Hacker News (Algolia API)
+            $hnResp = $responses['hackernews'] ?? null;
+            if ($hnResp instanceof \Illuminate\Http\Client\Response && $hnResp->ok()) {
+                foreach ($hnResp->json('hits') ?? [] as $hit) {
+                    $title = trim((string) ($hit['title'] ?? ''));
+                    $url = (string) ($hit['url'] ?? '');
+                    if ($url === '' && !empty($hit['objectID'])) {
+                        $url = 'https://news.ycombinator.com/item?id=' . $hit['objectID'];
+                    }
+                    if ($title === '' || $url === '') continue;
+                    $pts = (int) ($hit['points'] ?? 0);
+                    $comments = (int) ($hit['num_comments'] ?? 0);
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => "Hacker News · {$pts} puntos · {$comments} comentarios",
+                        'url' => $url,
+                        'source' => 'news.ycombinator.com',
+                        'category' => 'hackernews',
+                    ];
+                }
+            }
+
+            // 12. Reddit (discusiones técnicas de comunidad)
+            $rdResp = $responses['reddit'] ?? null;
+            if ($rdResp instanceof \Illuminate\Http\Client\Response && $rdResp->ok()) {
+                foreach ($rdResp->json('data.children') ?? [] as $child) {
+                    $post = $child['data'] ?? null;
+                    if (!is_array($post)) continue;
+                    $title = trim((string) ($post['title'] ?? ''));
+                    $permalink = (string) ($post['permalink'] ?? '');
+                    if ($title === '' || $permalink === '') continue;
+                    $sub = (string) ($post['subreddit_name_prefixed'] ?? 'reddit');
+                    $ups = (int) ($post['ups'] ?? 0);
+                    $comments = (int) ($post['num_comments'] ?? 0);
+                    $resultados[] = [
+                        'title' => $title,
+                        'extract' => "{$sub} · {$ups} votos · {$comments} comentarios",
+                        'url' => 'https://www.reddit.com' . $permalink,
+                        'source' => 'reddit.com',
+                        'category' => 'reddit',
                     ];
                 }
             }
