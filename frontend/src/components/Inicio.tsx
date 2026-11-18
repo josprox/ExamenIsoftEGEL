@@ -1,15 +1,24 @@
-import { Image, Platform, Pressable, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Image, Linking, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
+  Code2,
   Compass,
+  ExternalLink,
+  GitBranch,
   Globe,
   Highlighter,
   Layers,
   Library,
+  Package,
   Play,
+  Rocket,
+  Server,
   ShieldCheck,
   Sparkles,
   Target,
@@ -28,7 +37,139 @@ interface InicioProps {
   ) => void;
 }
 
+interface EcosystemCard {
+  id: string;
+  badge: string;
+  title: string;
+  description: string;
+  cta: string;
+  url: string;
+  accentCls: string;
+  badgeCls: string;
+  badgeTextCls: string;
+  iconBgCls: string;
+  iconColor: string;
+  Icon: typeof GitBranch;
+}
+
+const ECOSYSTEM_CARDS: EcosystemCard[] = [
+  {
+    id: 'github-egel',
+    badge: 'Open Source · Invitación',
+    title: 'ExamenIsoftEGEL en GitHub',
+    description:
+      'Te invitamos a visitar el repositorio oficial, dejar una estrella, reportar mejoras o contribuir con reactivos y guías.',
+    cta: 'Ver repositorio',
+    url: 'https://github.com/josprox/ExamenIsoftEGEL',
+    accentCls: 'bg-teal-600',
+    badgeCls: 'bg-teal-50 dark:bg-teal-950/70',
+    badgeTextCls: 'text-teal-700 dark:text-teal-300',
+    iconBgCls: 'bg-teal-50 dark:bg-teal-950/60',
+    iconColor: '#0f766e',
+    Icon: GitBranch,
+  },
+  {
+    id: 'astriom-home',
+    badge: 'Web Principal',
+    title: 'Astriom Systems',
+    description:
+      'Organización tecnológica independiente: software, productos e infraestructura diseñados para sistemas que deben perdurar.',
+    cta: 'Visitar astriom.org',
+    url: 'https://astriom.org',
+    accentCls: 'bg-sky-600',
+    badgeCls: 'bg-sky-50 dark:bg-sky-950/70',
+    badgeTextCls: 'text-sky-700 dark:text-sky-300',
+    iconBgCls: 'bg-sky-50 dark:bg-sky-950/60',
+    iconColor: '#0284c7',
+    Icon: Globe,
+  },
+  {
+    id: 'joss-lang',
+    badge: 'Lenguaje + Runtime Go',
+    title: 'Lenguaje Joss',
+    description:
+      'Lenguaje de programación y plataforma backend con runtime en Go, CLI, ORM, WebSockets, autenticación y despliegue.',
+    cta: 'Explorar Joss',
+    url: 'https://astriom.org/lenguaje',
+    accentCls: 'bg-indigo-600',
+    badgeCls: 'bg-indigo-50 dark:bg-indigo-950/70',
+    badgeTextCls: 'text-indigo-700 dark:text-indigo-300',
+    iconBgCls: 'bg-indigo-50 dark:bg-indigo-950/60',
+    iconColor: '#4f46e5',
+    Icon: Code2,
+  },
+  {
+    id: 'astriom-pub',
+    badge: 'Developer Tools',
+    title: 'Astriom Pub',
+    description:
+      'Registro y distribución de paquetes reutilizables y versionados para ampliar aplicaciones construidas en Joss.',
+    cta: 'Abrir registro',
+    url: 'https://astriom.org/pub',
+    accentCls: 'bg-emerald-600',
+    badgeCls: 'bg-emerald-50 dark:bg-emerald-950/70',
+    badgeTextCls: 'text-emerald-700 dark:text-emerald-300',
+    iconBgCls: 'bg-emerald-50 dark:bg-emerald-950/60',
+    iconColor: '#059669',
+    Icon: Package,
+  },
+  {
+    id: 'requiem',
+    badge: 'Infraestructura',
+    title: 'Requiem Bare-Metal',
+    description:
+      'Suite de despliegue bare-metal para instalar y recuperar sistemas Windows desde entornos Linux autónomos.',
+    cta: 'Ver en GitHub',
+    url: 'https://github.com/josprox/Requiem',
+    accentCls: 'bg-amber-600',
+    badgeCls: 'bg-amber-50 dark:bg-amber-950/70',
+    badgeTextCls: 'text-amber-700 dark:text-amber-300',
+    iconBgCls: 'bg-amber-50 dark:bg-amber-950/60',
+    iconColor: '#d97706',
+    Icon: Server,
+  },
+  {
+    id: 'astriom-docs',
+    badge: 'Documentación y Blog',
+    title: 'Docs y Blog Astriom',
+    description:
+      'Documentación técnica de Joss, guías de desarrollo y artículos de ingeniería publicados por Astriom.',
+    cta: 'Leer docs',
+    url: 'https://astriom.org/docs',
+    accentCls: 'bg-violet-600',
+    badgeCls: 'bg-violet-50 dark:bg-violet-950/70',
+    badgeTextCls: 'text-violet-700 dark:text-violet-300',
+    iconBgCls: 'bg-violet-50 dark:bg-violet-950/60',
+    iconColor: '#7c3aed',
+    Icon: BookOpen,
+  },
+  {
+    id: 'astriom-shop',
+    badge: 'Apps y Utilidades',
+    title: 'Apps',
+    description:
+      'Joss Authenticator, Estrella Music, HTML to PDF y herramientas especializadas para escritorio y móvil.',
+    cta: 'Explorar productos',
+    url: 'https://github.com/josprox',
+    accentCls: 'bg-rose-600',
+    badgeCls: 'bg-rose-50 dark:bg-rose-950/70',
+    badgeTextCls: 'text-rose-700 dark:text-rose-300',
+    iconBgCls: 'bg-rose-50 dark:bg-rose-950/60',
+    iconColor: '#e11d48',
+    Icon: Rocket,
+  },
+];
+
 export function Inicio({ temario, onNavigate }: InicioProps) {
+  const sliderRef = useRef<React.ComponentRef<typeof ScrollView> | null>(null);
+  const [sliderX, setSliderX] = useState(0);
+
+  const slideBy = (delta: number) => {
+    const nextX = Math.max(0, sliderX + delta);
+    setSliderX(nextX);
+    sliderRef.current?.scrollTo({ x: nextX, animated: true });
+  };
+
   return (
     <View className="mx-auto w-full max-w-6xl gap-7">
       {/* Hero profesional */}
@@ -306,6 +447,88 @@ export function Inicio({ temario, onNavigate }: InicioProps) {
             Estimación Satisfactorio / Sobresaliente en tu progreso.
           </Text>
         </View>
+      </View>
+
+      {/* Carrusel deslizable: GitHub y productos Astriom */}
+      <View className="gap-3">
+        <View className="flex-row items-end justify-between gap-3">
+          <View className="flex-1">
+            <Text className="text-xs font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400">
+              Código abierto y ecosistema Astriom
+            </Text>
+            <Text className="text-xl font-extrabold text-stone-900 dark:text-slate-100">
+              Conoce el repositorio y otros proyectos
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <Pressable
+              onPress={() => slideBy(-320)}
+              accessibilityLabel="Deslizar a la izquierda"
+              className="h-9 w-9 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 items-center justify-center active:bg-stone-100 dark:active:bg-slate-800"
+            >
+              <ChevronLeft size={18} color="#64748b" />
+            </Pressable>
+            <Pressable
+              onPress={() => slideBy(320)}
+              accessibilityLabel="Deslizar a la derecha"
+              className="h-9 w-9 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 items-center justify-center active:bg-stone-100 dark:active:bg-slate-800"
+            >
+              <ChevronRight size={18} color="#64748b" />
+            </Pressable>
+          </View>
+        </View>
+
+        <ScrollView
+          ref={sliderRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={312}
+          onScroll={(e) => setSliderX(e.nativeEvent.contentOffset.x)}
+          scrollEventThrottle={32}
+          contentContainerStyle={{ gap: 12, paddingVertical: 2 }}
+        >
+          {ECOSYSTEM_CARDS.map((card) => {
+            const IconComp = card.Icon;
+            return (
+              <Pressable
+                key={card.id}
+                onPress={() => Linking.openURL(card.url)}
+                className="w-[285px] sm:w-[300px] overflow-hidden rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 justify-between shadow-xs active:border-teal-500"
+              >
+                <View>
+                  <View className={`h-1 w-full ${card.accentCls}`} />
+                  <View className="p-4 sm:p-5 gap-2.5">
+                    <View className="flex-row items-center justify-between gap-2">
+                      <View className={`h-9 w-9 rounded-xl ${card.iconBgCls} items-center justify-center`}>
+                        <IconComp size={18} color={card.iconColor} />
+                      </View>
+                      <View className={`rounded-full px-2.5 py-1 ${card.badgeCls}`}>
+                        <Text className={`text-[10px] font-bold uppercase tracking-wider ${card.badgeTextCls}`}>
+                          {card.badge}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text className="text-base font-bold text-stone-900 dark:text-slate-100">
+                      {card.title}
+                    </Text>
+                    <Text className="text-xs leading-relaxed text-stone-600 dark:text-slate-400">
+                      {card.description}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="px-4 sm:px-5 pb-4 flex-row items-center gap-1.5">
+                  <Text className="text-xs font-semibold text-teal-700 dark:text-teal-400">
+                    {card.cta}
+                  </Text>
+                  <ExternalLink size={13} color="#0d9488" />
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Mapa de estudio */}

@@ -1,11 +1,29 @@
 # EGEL Plus ISOFT · Práctica, Guías y Biblioteca
 
-Plataforma web abierta para practicar el **EGEL Plus de Ingeniería de Software (Ceneval)**, con retroalimentación inmediata desde la primera pregunta, guías por subárea, chuletario de comandos y biblioteca de documentos.
+Plataforma multiplataforma (Web, Android e iOS) para practicar el **EGEL Plus de Ingeniería de Software (Ceneval)**, con retroalimentación inmediata desde la primera pregunta, método de subrayado **DCPDV** persistente en base de datos, guías por subárea, chuletario de comandos y biblioteca integrada con 12 fuentes abiertas.
 
 - **Pruébalo en línea:** [https://egelsoft.astriom.org](https://egelsoft.astriom.org)
 - **Repositorio oficial:** [https://github.com/josprox/ExamenIsoftEGEL](https://github.com/josprox/ExamenIsoftEGEL)
 
 El contenido se organiza con base en la [Guía para el sustentante de julio de 2026](biblioteca/general/guia-sustentante-egel-plus-isoft-julio-2026.pdf). Las preguntas son originales de práctica; no son reactivos oficiales.
+
+---
+
+## Características principales
+
+- **Simulador EGEL Plus (203 reactivos o práctica por área/subárea):**
+  - Módulos por área, mapa de preguntas colapsable, modo Estudio (con retroalimentación inmediata) y Examen Real.
+  - **Subrayado estratégico DCPDV** (ámbar, esmeralda y rosa) sincronizado en base de datos y tiempo real.
+  - Estado de simulación pausada respaldado en base de datos y **WebSockets (`/api/ws`)**.
+- **Guías de estudio y Chuletario de Comandos:**
+  - Resúmenes técnicos por subárea, normas ISO (25010, 9001, 27000) y **147 comandos** en 11 ramas listos para copiar.
+- **Biblioteca y Explorador Web (159 recursos locales + 12 fuentes abiertas):**
+  - Buscador unificado (`Ctrl+K` o pestaña Biblioteca) con streaming por WebSocket sobre Wikipedia, Wikidata, MDN Web Docs, GitHub, Stack Overflow, Hacker News, Reddit, Semantic Scholar, OpenAlex, Open Library, Crossref y arXiv.
+  - **Visor integrado:** lector de PDFs locales, extracción limpia vía API oficial para **Wikipedia** y **Wikidata**, renderizado Markdown de `README.md` para **GitHub** y reproductor integrado para videos de **YouTube**, **Vimeo** y archivos directos.
+- **Perfil, Progreso y Tema:**
+  - Estadísticas por área/subárea, actualización de perfil y selector de tema (**Sistema**, **Claro** y **Oscuro** con detección automática en vivo).
+
+---
 
 ## Estructura de la guía
 
@@ -24,61 +42,92 @@ En Lenguaje y Comunicación, los procesos de lectura y las dimensiones de redacc
 
 La aplicación muestra aciertos y porcentajes de práctica. No convierte esos porcentajes a ICNE ni asigna un nivel oficial, pues Ceneval determina la calificación con su propio proceso.
 
+---
+
 ## Iniciar el proyecto en local
 
-Requiere **PHP 8.3+**, **Composer**, **Bun** (o Node.js) y **MySQL** (o SQLite para pruebas locales). Configura `backend/.env` con `DB_CONNECTION` y tus credenciales. Después:
+Requiere **Go 1.23+** (con soporte de toolchain), **Node.js 18+** / **Bun** y **MySQL / MariaDB**.
+
+### 1. Backend (Go + GORM + Chi)
+
+Copia `backend/.env.example` a `backend/.env` y configura tus credenciales de MySQL:
 
 ```bash
 cd backend
-composer install
-php artisan key:generate
-php artisan migrate
-php artisan egel:importar
-php artisan serve
+cp .env.example .env
+go run ./cmd/server
 ```
 
-En otra terminal, para el frontend:
+El servidor arranca en `http://localhost:8000`, ejecuta `AutoMigrate` de las tablas en MySQL y carga automáticamente `contenido/` y `biblioteca/`.
+
+### 2. Frontend (Expo + React Native Web + NativeWind)
+
+En otra terminal:
 
 ```bash
 cd frontend
-bun install
-bun dev
+npm install
+npm run web
 ```
 
-Abre `http://localhost:5173`. Vite envía las solicitudes `/api` y `/biblioteca-files` a Laravel en `http://127.0.0.1:8000`. Después de editar bancos o recursos, vuelve a ejecutar `php artisan egel:importar` dentro de `backend` para actualizar la base de datos.
+Abre `http://localhost:8081`. En desarrollo web, `api.ts` redirige automáticamente las llamadas al backend local en `http://localhost:8000`.
+
+### 3. Probar en celular (Expo Go)
+
+```bash
+cd frontend
+npm start
+```
+
+Escanea el QR con **Expo Go** (Android o iOS). Por defecto la app móvil apunta a `https://egelsoft.astriom.org`; si deseas apuntar a tu backend Go local en la misma red Wi-Fi, inicia con:
+
+```powershell
+$env:EXPO_PUBLIC_API_URL="http://TU_IP_LOCAL:8000"
+npm start
+```
+
+---
 
 ## Despliegue en Coolify / Docker
 
-El repositorio incluye un [Dockerfile](Dockerfile) multi-etapa (compila `frontend/` con Bun e instala `backend/` con PHP 8.4-FPM + Nginx) y [entrypoint.sh](entrypoint.sh) que ejecuta `migrate --force` y `egel:importar` al iniciar el contenedor en el puerto `80`.
+El repositorio incluye un [Dockerfile](Dockerfile) multi-etapa de un solo contenedor:
+1. Compila `frontend/` (`expo export -p web` → `/app/dist`) con `oven/bun:1-alpine`.
+2. Compila `backend/` (`./cmd/server` → `/app/egel-server`) con `golang:1.27-alpine`.
+3. Ejecuta todo en `alpine:3.21` exponiendo el puerto **`80`** (`API`, `WebSocket /api/ws`, `dist/` y `biblioteca/`).
 
-Variables recomendadas en Coolify:
+Configuración recomendada en Coolify:
+- **Build Pack:** `Dockerfile`
+- **Ports Exposes:** `80`
+- **Domains:** `https://egelsoft.astriom.org`
+- **Environment Variables:**
 
 ```env
-APP_NAME="EGEL Plus ISOFT"
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://egelsoft.astriom.org
-APP_KEY=base64:TU_CLAVE_DE_LARAVEL
-
-DB_CONNECTION=mysql
-DB_HOST=10.0.0.101
+DB_HOST=TU_HOST_MYSQL
 DB_PORT=3306
 DB_DATABASE=egelsoft
-DB_USERNAME=josprox
+DB_USERNAME=TU_USUARIO
 DB_PASSWORD=TU_PASSWORD
 ```
+
+*(Las variables `PORT=80`, `CONTENIDO_DIR=/app/contenido`, `BIBLIOTECA_DIR=/app/biblioteca` y `DIST_DIR=/app/dist` ya están definidas en el `Dockerfile`.)*
+
+---
 
 ## Organización
 
 | Ruta | Función |
 | --- | --- |
-| `frontend/` | Interfaz React + TypeScript + Tailwind + Bun |
-| `backend/` | API Laravel, autenticación opcional, progreso y MySQL |
-| `contenido/` | Temario, bancos de preguntas, guías, recursos y comandos |
+| `frontend/` | App Expo (Web + Android + iOS) con React Native, NativeWind v4 y TypeScript |
+| `backend/` | API REST y WebSocket en Go (Chi + GORM + MySQL) |
+| `contenido/` | Temario, bancos de preguntas, guías Markdown, recursos y comandos |
 | `biblioteca/` | Documentos de consulta y PDFs organizados por área |
-| `scripts/validar.mjs` | Validación del contenido y referencias |
-| `Dockerfile`, `entrypoint.sh`, `docker/` | Empaquetado único para Coolify |
+| `scripts/validar.mjs` | Validación de integridad de bancos, guías y recursos |
+| `Dockerfile` | Empaquetado único para producción / Coolify |
 
-El banco contiene **268 preguntas**: 72 base, 131 extendidas, 20 de refuerzo y 45 de reto. El simulacro de 203 usa los tres primeros bancos. Para contribuir, consulta [CONTRIBUTING.md](CONTRIBUTING.md) y ejecuta `node scripts/validar.mjs`.
+El banco contiene **382 preguntas** (`base`: 72, `extendido`: 131, `refuerzo`: 20, `ampliacion`: 114, `reto`: 45), **147 comandos** en 11 ramas y **159 recursos** catalogados. Para contribuir, consulta [CONTRIBUTING.md](CONTRIBUTING.md) y ejecuta:
+
+```bash
+npm run test
+```
 
 Este proyecto no está afiliado con Ceneval. EGEL y EGEL Plus son marcas de Ceneval, A.C.

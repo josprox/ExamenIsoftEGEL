@@ -5,7 +5,7 @@
   "description": "Guía, simulador y biblioteca para el EGEL Plus ISOFT (Ceneval)",
   "type": "module",
   "scripts": {
-    "dev:frontend": "bun --cwd frontend run dev",
+    "dev:frontend": "bun --cwd frontend run web",
     "dev:backend": "cd backend && go run ./cmd/server",
     "build": "bun --cwd frontend run build",
     "validar": "node scripts/validar.mjs",
