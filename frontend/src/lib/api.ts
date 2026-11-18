@@ -18,7 +18,7 @@ import type {
 } from '../types/egel';
 
 export const TOKEN_KEY = 'egel_auth_token';
-const DEFAULT_BACKEND_URL = 'https://egelsoftback.astriom.org';
+const DEFAULT_BACKEND_URL = 'https://egelsoft.astriom.org';
 
 export function getApiBaseUrl(): string {
   const configured = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '');

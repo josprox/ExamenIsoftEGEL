@@ -39,18 +39,18 @@ const WEB_SOURCES: Array<{
   textCls: string;
   accentCls: string;
 }> = [
-  { id: 'wikipedia', label: 'Wikipedia', bgCls: 'bg-sky-50', textCls: 'text-sky-700', accentCls: 'border-l-sky-500' },
-  { id: 'wikidata', label: 'Wikidata', bgCls: 'bg-cyan-50', textCls: 'text-cyan-800', accentCls: 'border-l-cyan-600' },
-  { id: 'mdn', label: 'MDN Web Docs', bgCls: 'bg-indigo-50', textCls: 'text-indigo-700', accentCls: 'border-l-indigo-500' },
-  { id: 'github', label: 'GitHub', bgCls: 'bg-stone-200', textCls: 'text-stone-800', accentCls: 'border-l-stone-700' },
-  { id: 'stackoverflow', label: 'Stack Overflow', bgCls: 'bg-orange-50', textCls: 'text-orange-700', accentCls: 'border-l-orange-500' },
-  { id: 'hackernews', label: 'Hacker News', bgCls: 'bg-amber-100', textCls: 'text-amber-900', accentCls: 'border-l-amber-600' },
-  { id: 'reddit', label: 'Reddit', bgCls: 'bg-red-50', textCls: 'text-red-700', accentCls: 'border-l-red-500' },
-  { id: 'semanticscholar', label: 'Semantic Scholar', bgCls: 'bg-blue-50', textCls: 'text-blue-800', accentCls: 'border-l-blue-600' },
-  { id: 'openalex', label: 'OpenAlex', bgCls: 'bg-violet-50', textCls: 'text-violet-700', accentCls: 'border-l-violet-500' },
-  { id: 'openlibrary', label: 'Open Library', bgCls: 'bg-emerald-50', textCls: 'text-emerald-700', accentCls: 'border-l-emerald-500' },
-  { id: 'crossref', label: 'Crossref', bgCls: 'bg-amber-50', textCls: 'text-amber-800', accentCls: 'border-l-amber-500' },
-  { id: 'arxiv', label: 'arXiv', bgCls: 'bg-rose-50', textCls: 'text-rose-700', accentCls: 'border-l-rose-500' },
+  { id: 'wikipedia', label: 'Wikipedia', bgCls: 'bg-sky-50 dark:bg-sky-950/60', textCls: 'text-sky-700 dark:text-sky-300', accentCls: 'border-l-sky-500' },
+  { id: 'wikidata', label: 'Wikidata', bgCls: 'bg-cyan-50 dark:bg-cyan-950/60', textCls: 'text-cyan-800 dark:text-cyan-300', accentCls: 'border-l-cyan-600' },
+  { id: 'mdn', label: 'MDN Web Docs', bgCls: 'bg-indigo-50 dark:bg-indigo-950/60', textCls: 'text-indigo-700 dark:text-indigo-300', accentCls: 'border-l-indigo-500' },
+  { id: 'github', label: 'GitHub', bgCls: 'bg-stone-200 dark:bg-slate-800', textCls: 'text-stone-800 dark:text-slate-200', accentCls: 'border-l-stone-700 dark:border-l-slate-500' },
+  { id: 'stackoverflow', label: 'Stack Overflow', bgCls: 'bg-orange-50 dark:bg-orange-950/60', textCls: 'text-orange-700 dark:text-orange-300', accentCls: 'border-l-orange-500' },
+  { id: 'hackernews', label: 'Hacker News', bgCls: 'bg-amber-100 dark:bg-amber-950/60', textCls: 'text-amber-900 dark:text-amber-300', accentCls: 'border-l-amber-600' },
+  { id: 'reddit', label: 'Reddit', bgCls: 'bg-red-50 dark:bg-red-950/60', textCls: 'text-red-700 dark:text-red-300', accentCls: 'border-l-red-500' },
+  { id: 'semanticscholar', label: 'Semantic Scholar', bgCls: 'bg-blue-50 dark:bg-blue-950/60', textCls: 'text-blue-800 dark:text-blue-300', accentCls: 'border-l-blue-600' },
+  { id: 'openalex', label: 'OpenAlex', bgCls: 'bg-violet-50 dark:bg-violet-950/60', textCls: 'text-violet-700 dark:text-violet-300', accentCls: 'border-l-violet-500' },
+  { id: 'openlibrary', label: 'Open Library', bgCls: 'bg-emerald-50 dark:bg-emerald-950/60', textCls: 'text-emerald-700 dark:text-emerald-300', accentCls: 'border-l-emerald-500' },
+  { id: 'crossref', label: 'Crossref', bgCls: 'bg-amber-50 dark:bg-amber-950/60', textCls: 'text-amber-800 dark:text-amber-300', accentCls: 'border-l-amber-500' },
+  { id: 'arxiv', label: 'arXiv', bgCls: 'bg-rose-50 dark:bg-rose-950/60', textCls: 'text-rose-700 dark:text-rose-300', accentCls: 'border-l-rose-500' },
 ];
 
 const SOURCE_BADGES: Record<string, { label: string; bgCls: string; textCls: string; accentCls: string }> =
@@ -459,18 +459,18 @@ export function Biblioteca({
                   className="w-full"
                 >
                   <View className="flex-row items-center gap-1.5 py-0.5">
-                    <Text className="text-xs font-semibold text-stone-500 mr-1">{grp.label}</Text>
+                    <Text className="text-xs font-semibold text-stone-500 dark:text-slate-400 mr-1">{grp.label}</Text>
                     {grp.options.map((opt) => (
                       <Pressable
                         key={opt}
                         onPress={() => grp.onChange(opt)}
                         className={`rounded-lg px-2.5 py-1 ${
-                          grp.value === opt ? 'bg-teal-700' : 'bg-stone-100'
+                          grp.value === opt ? 'bg-teal-700' : 'bg-stone-100 dark:bg-slate-800'
                         }`}
                       >
                         <Text
                           className={`text-xs font-medium ${
-                            grp.value === opt ? 'text-white' : 'text-stone-700'
+                            grp.value === opt ? 'text-white' : 'text-stone-700 dark:text-slate-300'
                           }`}
                         >
                           {opt}
@@ -492,12 +492,14 @@ export function Biblioteca({
                   key={chk.label}
                   onPress={() => chk.set(!chk.val)}
                   className={`rounded-lg border px-3 py-1.5 ${
-                    chk.val ? 'border-teal-600 bg-teal-50' : 'border-stone-200 bg-white'
+                    chk.val
+                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/50'
+                      : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800'
                   }`}
                 >
                   <Text
                     className={`text-xs font-medium ${
-                      chk.val ? 'text-teal-800' : 'text-stone-700'
+                      chk.val ? 'text-teal-800 dark:text-teal-300' : 'text-stone-700 dark:text-slate-300'
                     }`}
                   >
                     {chk.val ? '✓ ' : ''}
@@ -553,23 +555,23 @@ export function Biblioteca({
           {tieneConsultaWeb && (
             <View className="flex-row items-center gap-2">
               <FolderOpen size={16} color="#0f766e" />
-              <Text className="text-sm font-bold text-stone-800">
+              <Text className="text-sm font-bold text-stone-800 dark:text-slate-200">
                 En el Catálogo EGEL ({recursos.length})
               </Text>
             </View>
           )}
 
           {loadingLocal ? (
-            <View className="py-12 items-center justify-center rounded-2xl border border-stone-200 bg-white">
+            <View className="py-12 items-center justify-center rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               <ActivityIndicator size="large" color="#0f766e" />
             </View>
           ) : recursos.length === 0 ? (
-            <View className="rounded-2xl border border-stone-200 bg-white p-6 items-center gap-2">
-              <Text className="text-sm text-stone-500 text-center">
+            <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 items-center gap-2">
+              <Text className="text-sm text-stone-500 dark:text-slate-400 text-center">
                 No se encontraron recursos locales con esos filtros.
               </Text>
               {alcance === 'todos' && q.trim().length >= 2 && (
-                <Text className="text-xs text-teal-700 text-center">
+                <Text className="text-xs text-teal-700 dark:text-teal-400 text-center">
                   Revisa los resultados web de abajo para «{q.trim()}».
                 </Text>
               )}
@@ -715,12 +717,14 @@ export function Biblioteca({
               <Pressable
                 onPress={() => setWebFuente('todos')}
                 className={`rounded-full px-3 py-1.5 ${
-                  webFuente === 'todos' ? 'bg-sky-700' : 'border border-stone-200 bg-white'
+                  webFuente === 'todos'
+                    ? 'bg-sky-700'
+                    : 'border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                 }`}
               >
                 <Text
                   className={`text-xs font-semibold ${
-                    webFuente === 'todos' ? 'text-white' : 'text-stone-600'
+                    webFuente === 'todos' ? 'text-white' : 'text-stone-600 dark:text-slate-300'
                   }`}
                 >
                   Todas (12)
@@ -731,12 +735,14 @@ export function Biblioteca({
                   key={f.id}
                   onPress={() => setWebFuente(f.id)}
                   className={`rounded-full px-3 py-1.5 ${
-                    webFuente === f.id ? 'bg-sky-700' : 'border border-stone-200 bg-white'
+                    webFuente === f.id
+                      ? 'bg-sky-700'
+                      : 'border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}
                 >
                   <Text
                     className={`text-xs font-semibold ${
-                      webFuente === f.id ? 'text-white' : 'text-stone-600'
+                      webFuente === f.id ? 'text-white' : 'text-stone-600 dark:text-slate-300'
                     }`}
                   >
                     {f.label}
@@ -747,20 +753,20 @@ export function Biblioteca({
           </ScrollView>
 
           {q.trim().length < 2 ? (
-            <View className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/40 p-6 items-center gap-2">
+            <View className="rounded-2xl border border-dashed border-sky-200 dark:border-sky-800/60 bg-sky-50/40 dark:bg-sky-950/30 p-6 items-center gap-2">
               <Globe size={28} color="#0284c7" />
-              <Text className="text-sm font-semibold text-stone-800 text-center">
+              <Text className="text-sm font-semibold text-stone-800 dark:text-slate-200 text-center">
                 Consulta conceptos en 12 fuentes abiertas y académicas
               </Text>
-              <Text className="text-xs text-stone-600 text-center max-w-lg">
+              <Text className="text-xs text-stone-600 dark:text-slate-400 text-center max-w-lg">
                 Escribe un tema arriba (ej. <Text className="font-bold">ISO 25010</Text>,{' '}
                 <Text className="font-bold">Docker</Text>, <Text className="font-bold">ATAM</Text>)
                 para consultar Wikipedia, Wikidata, MDN, GitHub, Stack Overflow, Hacker News, Reddit y repositorios científicos.
               </Text>
             </View>
           ) : !webBusy && webResults.length === 0 ? (
-            <View className="rounded-2xl border border-stone-200 bg-white p-6 items-center">
-              <Text className="text-sm text-stone-500 text-center">
+            <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 items-center">
+              <Text className="text-sm text-stone-500 dark:text-slate-400 text-center">
                 No se encontraron resultados web para «{q.trim()}».
               </Text>
             </View>

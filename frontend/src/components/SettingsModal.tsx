@@ -5,14 +5,12 @@ import {
   Keyboard,
   Monitor,
   Moon,
-  Server,
   Settings,
   Sun,
   User as UserIcon,
   Wifi,
   X,
 } from 'lucide-react-native';
-import { getApiBaseUrl } from '../lib/api';
 import type { ThemePreference } from '../lib/theme';
 import type { User } from '../types/egel';
 
@@ -37,8 +35,6 @@ export function SettingsModal({
   onOpenProfile,
   onOpenAuth,
 }: SettingsModalProps) {
-  const apiUrl = getApiBaseUrl() || (Platform.OS === 'web' ? 'Mismo origen (/api)' : '');
-
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 items-center justify-center bg-stone-950/60 p-4">
@@ -157,21 +153,6 @@ export function SettingsModal({
                         {wsConnected ? 'Conectado' : user ? 'Reconectando...' : 'Sin sesión'}
                       </Text>
                     </View>
-                  </View>
-
-                  <View className="flex-row items-center justify-between gap-2 pt-2 border-t border-stone-200/70 dark:border-slate-700/70">
-                    <View className="flex-row items-center gap-2">
-                      <Server size={15} color="#64748b" />
-                      <Text className="text-xs font-semibold text-stone-800 dark:text-slate-200">
-                        API Backend
-                      </Text>
-                    </View>
-                    <Text
-                      numberOfLines={1}
-                      className="text-xs font-mono text-stone-600 dark:text-slate-400 max-w-[200px]"
-                    >
-                      {apiUrl}
-                    </Text>
                   </View>
                 </View>
               </View>

@@ -234,9 +234,9 @@ export function SearchModal({
                       <Pressable
                         key={term}
                         onPress={() => setQuery(term)}
-                        className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 active:border-teal-600 active:bg-teal-50"
+                        className="rounded-full border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3 py-1.5 active:border-teal-600 active:bg-teal-50 dark:active:bg-teal-950/60"
                       >
-                        <Text className="text-xs font-medium text-stone-700">{term}</Text>
+                        <Text className="text-xs font-medium text-stone-700 dark:text-slate-200">{term}</Text>
                       </Pressable>
                     ))}
                   </View>
@@ -311,18 +311,18 @@ export function SearchModal({
                         <Pressable
                           key={i}
                           onPress={() => go('comandos')}
-                          className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2 active:bg-stone-100"
+                          className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2 active:bg-stone-100 dark:active:bg-slate-800"
                         >
                           <View className="flex-1 flex-row items-center gap-2">
                             <Terminal size={14} color="#78716c" />
-                            <Text numberOfLines={1} className="flex-1 text-xs text-stone-700">
-                              <Text className="font-mono text-teal-800">{c.comando}</Text> —{' '}
+                            <Text numberOfLines={1} className="flex-1 text-xs text-stone-700 dark:text-slate-300">
+                              <Text className="font-mono text-teal-800 dark:text-teal-400">{c.comando}</Text> —{' '}
                               {c.descripcion}
                             </Text>
                           </View>
                           <Pressable
                             onPress={() => copyCommand(c.comando)}
-                            className="rounded-md p-1.5 active:bg-white"
+                            className="rounded-md p-1.5 active:bg-white dark:active:bg-slate-700"
                           >
                             {copiedCmd === c.comando ? (
                               <Check size={14} color="#059669" />
@@ -337,23 +337,23 @@ export function SearchModal({
 
                   {resultados && resultados.recursos.length > 0 && (
                     <View className="gap-1">
-                      <Text className="text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
+                      <Text className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
                         Biblioteca ({resultados.recursos.length})
                       </Text>
                       {resultados.recursos.map((r) => (
                         <Pressable
                           key={r.id}
                           onPress={() => go('biblioteca')}
-                          className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2 active:bg-stone-100"
+                          className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2 active:bg-stone-100 dark:active:bg-slate-800"
                         >
                           <View className="flex-1 flex-row items-center gap-2">
                             <FileText size={14} color="#78716c" />
-                            <Text numberOfLines={1} className="flex-1 text-xs text-stone-700">
+                            <Text numberOfLines={1} className="flex-1 text-xs text-stone-700 dark:text-slate-300">
                               {r.titulo}
                             </Text>
                           </View>
-                          <View className="rounded bg-stone-100 px-1.5 py-0.5">
-                            <Text className="text-[10px] uppercase text-stone-500">{r.tipo}</Text>
+                          <View className="rounded bg-stone-100 dark:bg-slate-800 px-1.5 py-0.5">
+                            <Text className="text-[10px] uppercase text-stone-500 dark:text-slate-400">{r.tipo}</Text>
                           </View>
                         </Pressable>
                       ))}
