@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,10 +28,23 @@ func Load() Config {
 	biblioteca := envOr("BIBLIOTECA_DIR", firstExisting("../biblioteca", "./biblioteca"))
 	dist := envOr("DIST_DIR", firstExisting("../frontend/dist", "./frontend/dist", "./dist"))
 
+	dbHost := envOr("DB_HOST", "127.0.0.1")
+	dbPort := envOr("DB_PORT", "3306")
+
+	dbHost = strings.TrimPrefix(dbHost, "mysql://")
+	dbHost = strings.TrimPrefix(dbHost, "tcp://")
+	dbHost = strings.TrimSuffix(dbHost, "/")
+	if host, port, err := net.SplitHostPort(dbHost); err == nil && host != "" {
+		dbHost = host
+		if os.Getenv("DB_PORT") == "" && port != "" {
+			dbPort = port
+		}
+	}
+
 	return Config{
 		Port:          envOr("PORT", "8000"),
-		DBHost:        envOr("DB_HOST", "127.0.0.1"),
-		DBPort:        envOr("DB_PORT", "3306"),
+		DBHost:        dbHost,
+		DBPort:        dbPort,
 		DBDatabase:    envOr("DB_DATABASE", "egelsoft"),
 		DBUsername:    envOr("DB_USERNAME", "root"),
 		DBPassword:    envOr("DB_PASSWORD", ""),
@@ -41,7 +55,11 @@ func Load() Config {
 }
 
 func envOr(key, fallback string) string {
-	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+	v := strings.TrimSpace(os.Getenv(key))
+	if len(v) >= 2 && ((v[0] == '"' && v[len(v)-1] == '"') || (v[0] == '\'' && v[len(v)-1] == '\'')) {
+		v = strings.TrimSpace(v[1 : len(v)-1])
+	}
+	if v != "" {
 		return v
 	}
 	return fallback

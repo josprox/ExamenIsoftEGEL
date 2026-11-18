@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,19 +28,30 @@ func main() {
 
 	cfg := config.Load()
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	dbAddr := net.JoinHostPort(cfg.DBHost, cfg.DBPort)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.DBUsername,
 		cfg.DBPassword,
-		cfg.DBHost,
-		cfg.DBPort,
+		dbAddr,
 		cfg.DBDatabase,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Error),
-	})
+	var db *gorm.DB
+	var err error
+	for attempt := 1; attempt <= 5; attempt++ {
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Error),
+		})
+		if err == nil {
+			break
+		}
+		if attempt < 5 {
+			log.Printf("[egel-go] Reintentando conexión MySQL (%d/5) en %s/%s: %v", attempt, dbAddr, cfg.DBDatabase, err)
+			time.Sleep(2 * time.Second)
+		}
+	}
 	if err != nil {
-		log.Fatalf("[egel-go] Error conectando a MySQL (%s:%s/%s): %v", cfg.DBHost, cfg.DBPort, cfg.DBDatabase, err)
+		log.Fatalf("[egel-go] Error conectando a MySQL (%s/%s): %v", dbAddr, cfg.DBDatabase, err)
 	}
 
 	sqlDB, err := db.DB()
