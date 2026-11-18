@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -12,6 +12,8 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Clock,
   Eraser,
   Flag,
@@ -28,9 +30,7 @@ import {
   Zap,
 } from 'lucide-react-native';
 import { api } from '../lib/api';
-import { saveLocalAttempt } from '../lib/localProgress';
-import { getSyncItem, setSyncItem } from '../lib/storage';
-import type { Pregunta, Temario, User } from '../types/egel';
+import type { Intento, Pregunta, Temario, User } from '../types/egel';
 import {
   HighlightableText,
   type HighlightColor,
@@ -40,6 +40,19 @@ import {
 interface SimulatorProps {
   temario: Temario | null;
   user: User | null;
+  intentos?: Intento[];
+  lastWsEvent?: {
+    action: string;
+    intento_id: number;
+    pregunta_id?: string;
+    seleccionada?: number;
+    ts: number;
+  } | null;
+  lastSubrayadoSync?: {
+    pregunta_id: string;
+    subrayados: Record<string, HighlightRange[]>;
+    ts: number;
+  } | null;
   erroresRecientes?: string[];
   initialArea?: string;
   initialSubarea?: string;
@@ -55,7 +68,6 @@ type Modo = 'inmediato' | 'examen';
 type TipoSimulacion = 'rapida' | 'por_modulo' | 'egel_completo';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
-export const ACTIVE_SESSION_KEY = 'egel_active_session_v1';
 
 function formatSeconds(totalSec: number): string {
   const s = Math.max(0, Math.floor(totalSec));
@@ -66,44 +78,12 @@ function formatSeconds(totalSec: number): string {
   return hrs > 0 ? `${hrs}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
 }
 
-interface SavedSession {
-  modo: Modo;
-  area: string;
-  subarea: string;
-  banco: string;
-  preguntas: Pregunta[];
-  indice: number;
-  respuestas: Record<string, number>;
-  intentoId: number | null;
-  elapsedSeconds?: number;
-  subrayados?: Record<string, Record<string, HighlightRange[]>>;
-  marcadas?: Record<string, boolean>;
-  paused?: boolean;
-}
-
-function readSavedSession(): SavedSession | null {
-  try {
-    const raw = getSyncItem(ACTIVE_SESSION_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as SavedSession;
-    if (!parsed?.preguntas?.length) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writeSavedSession(session: SavedSession | null): void {
-  try {
-    setSyncItem(ACTIVE_SESSION_KEY, session ? JSON.stringify(session) : null);
-  } catch {
-    // ignore storage errors
-  }
-}
-
 export function Simulator({
   temario,
   user,
+  intentos = [],
+  lastWsEvent = null,
+  lastSubrayadoSync = null,
   erroresRecientes = [],
   initialArea = 'todas',
   initialSubarea = 'todas',
@@ -113,12 +93,8 @@ export function Simulator({
   onOpenAuth,
   onAttemptFinished,
 }: SimulatorProps) {
-  const initialSaved = useMemo(() => readSavedSession(), []);
-
-  const [phase, setPhase] = useState<Phase>(() =>
-    initialSaved && !initialSaved.paused ? 'running' : 'config'
-  );
-  const [modo, setModo] = useState<Modo>(() => initialSaved?.modo ?? 'inmediato');
+  const [phase, setPhase] = useState<Phase>('config');
+  const [modo, setModo] = useState<Modo>('inmediato');
   const [tipoSim, setTipoSim] = useState<TipoSimulacion>(() =>
     initialArea !== 'todas' || initialSubarea !== 'todas' ? 'por_modulo' : 'rapida'
   );
@@ -129,28 +105,28 @@ export function Simulator({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [preguntas, setPreguntas] = useState<Pregunta[]>(() => initialSaved?.preguntas ?? []);
-  const [indice, setIndice] = useState<number>(() => initialSaved?.indice ?? 0);
-  const [respuestas, setRespuestas] = useState<Record<string, number>>(
-    () => initialSaved?.respuestas ?? {}
-  );
-  const [intentoId, setIntentoId] = useState<number | null>(
-    () => initialSaved?.intentoId ?? null
-  );
+  const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
+  const [indice, setIndice] = useState<number>(0);
+  const [respuestas, setRespuestas] = useState<Record<string, number>>({});
+  const [intentoId, setIntentoId] = useState<number | null>(null);
   const [mostrarTodasExplicaciones, setMostrarTodasExplicaciones] = useState(false);
-  const [hasPausedSession, setHasPausedSession] = useState<boolean>(
-    () => Boolean(initialSaved?.paused && initialSaved.preguntas.length > 0)
-  );
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(
-    () => initialSaved?.elapsedSeconds ?? 0
-  );
+  const [mapaAbierto, setMapaAbierto] = useState(true);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [subrayarActivo, setSubrayarActivo] = useState(false);
   const [colorSubrayado, setColorSubrayado] = useState<HighlightColor>('amber');
-  const [subrayados, setSubrayados] = useState<Record<string, Record<string, HighlightRange[]>>>(
-    () => initialSaved?.subrayados ?? {}
-  );
-  const [marcadas, setMarcadas] = useState<Record<string, boolean>>(
-    () => initialSaved?.marcadas ?? {}
+  const [subrayados, setSubrayados] = useState<Record<string, Record<string, HighlightRange[]>>>({});
+  const [marcadas, setMarcadas] = useState<Record<string, boolean>>({});
+  const finishingRef = useRef(false);
+
+  // Simulación pausada derivada 100% de la Base de Datos (sin cookies/localStorage)
+  const pendingIntento = useMemo(
+    () =>
+      user
+        ? intentos.find(
+            (i) => !i.completado && i.pregunta_ids && i.pregunta_ids.length > 0
+          ) ?? null
+        : null,
+    [user, intentos]
   );
 
   useEffect(() => {
@@ -161,51 +137,86 @@ export function Simulator({
     }
   }, [initialArea, initialSubarea]);
 
+  // Si otro dispositivo responde, elimina o finaliza el intento actual vía WebSocket, sincronizamos al instante
   useEffect(() => {
-    if (!resumeIntentoId || !user) return;
-    let cancelled = false;
+    if (!lastWsEvent || !intentoId || phase !== 'running') return;
+    if (lastWsEvent.intento_id !== intentoId) return;
+
+    if (lastWsEvent.action === 'deleted') {
+      setPhase('config');
+      setIntentoId(null);
+      setPreguntas([]);
+      setRespuestas({});
+      setIndice(0);
+    } else if (lastWsEvent.action === 'finished' && !finishingRef.current) {
+      setPhase('summary');
+    } else if (
+      lastWsEvent.action === 'updated' &&
+      lastWsEvent.pregunta_id &&
+      typeof lastWsEvent.seleccionada === 'number'
+    ) {
+      const pid = lastWsEvent.pregunta_id;
+      const sel = lastWsEvent.seleccionada;
+      setRespuestas((prev) => (prev[pid] === sel ? prev : { ...prev, [pid]: sel }));
+    }
+  }, [lastWsEvent, intentoId, phase]);
+
+  // Sincronizar subrayados en vivo desde otro dispositivo vía WebSocket
+  useEffect(() => {
+    if (!lastSubrayadoSync || phase !== 'running') return;
+    setSubrayados((prev) => ({
+      ...prev,
+      [lastSubrayadoSync.pregunta_id]: lastSubrayadoSync.subrayados,
+    }));
+  }, [lastSubrayadoSync, phase]);
+
+  const cargarSubrayadosDePreguntas = useCallback(async (list: Pregunta[]) => {
+    if (!user || list.length === 0) return;
+    try {
+      const res = await api.getSubrayados(list.map((p) => p.id));
+      setSubrayados(res.subrayados ?? {});
+    } catch {
+      // ignore
+    }
+  }, [user]);
+
+  const cargarIntentoDesdeBD = useCallback(async (id: number) => {
     setLoading(true);
     setErrorMsg(null);
-    api
-      .getIntento(resumeIntentoId)
-      .then((res) => {
-        if (cancelled) return;
-        if (!res.preguntas.length) {
-          setErrorMsg('Este intento no tiene preguntas registradas para reanudar.');
-          return;
-        }
-        const respMap: Record<string, number> = {};
-        for (const r of res.respuestas) {
-          respMap[r.pregunta_id] = r.seleccionada;
-        }
-        const firstUnanswered = res.preguntas.findIndex((p) => respMap[p.id] === undefined);
-        setModo(res.intento.modo);
-        setPreguntas(res.preguntas);
-        setRespuestas(respMap);
-        setIntentoId(res.intento.id);
-        setIndice(firstUnanswered >= 0 ? firstUnanswered : 0);
-        setElapsedSeconds(res.intento.duracion_segundos ?? 0);
-        setSubrayados({});
-        setMarcadas({});
-        setHasPausedSession(false);
-        setPhase('running');
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setErrorMsg(err instanceof Error ? err.message : 'No se pudo reanudar el intento.');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          onResumeHandled?.();
-        }
-      });
+    try {
+      const res = await api.getIntento(id);
+      if (!res.preguntas.length) {
+        setErrorMsg('Este intento no tiene preguntas registradas para reanudar.');
+        return;
+      }
+      const respMap: Record<string, number> = {};
+      for (const r of res.respuestas) {
+        respMap[r.pregunta_id] = r.seleccionada;
+      }
+      const firstUnanswered = res.preguntas.findIndex((p) => respMap[p.id] === undefined);
+      setModo(res.intento.modo);
+      setPreguntas(res.preguntas);
+      setRespuestas(respMap);
+      setIntentoId(res.intento.id);
+      setIndice(firstUnanswered >= 0 ? firstUnanswered : 0);
+      setElapsedSeconds(res.intento.duracion_segundos ?? 0);
+      setSubrayados({});
+      setMarcadas({});
+      setPhase('running');
+      void cargarSubrayadosDePreguntas(res.preguntas);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'No se pudo reanudar el intento.');
+    } finally {
+      setLoading(false);
+    }
+  }, [cargarSubrayadosDePreguntas]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [resumeIntentoId, user, onResumeHandled]);
+  useEffect(() => {
+    if (!resumeIntentoId || !user) return;
+    cargarIntentoDesdeBD(resumeIntentoId).finally(() => {
+      onResumeHandled?.();
+    });
+  }, [resumeIntentoId, user, cargarIntentoDesdeBD, onResumeHandled]);
 
   useEffect(() => {
     if (phase !== 'running') return;
@@ -214,39 +225,6 @@ export function Simulator({
     }, 1000);
     return () => clearInterval(timer);
   }, [phase]);
-
-  useEffect(() => {
-    if (phase === 'running' && preguntas.length > 0) {
-      writeSavedSession({
-        modo,
-        area,
-        subarea,
-        banco,
-        preguntas,
-        indice,
-        respuestas,
-        intentoId,
-        elapsedSeconds,
-        subrayados,
-        marcadas,
-        paused: false,
-      });
-      setHasPausedSession(false);
-    }
-  }, [
-    phase,
-    modo,
-    area,
-    subarea,
-    banco,
-    preguntas,
-    indice,
-    respuestas,
-    intentoId,
-    elapsedSeconds,
-    subrayados,
-    marcadas,
-  ]);
 
   const areasDisponibles = useMemo(() => {
     if (!temario) return [];
@@ -266,6 +244,14 @@ export function Simulator({
       for (const s of a.subareas) {
         map[s.id] = s.nombre;
       }
+    }
+    return map;
+  }, [areasDisponibles]);
+
+  const areaNombres = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const a of areasDisponibles) {
+      map[a.id] = a.nombre;
     }
     return map;
   }, [areasDisponibles]);
@@ -319,8 +305,9 @@ export function Simulator({
       setSubrayados({});
       setMarcadas({});
       setMostrarTodasExplicaciones(false);
-      setHasPausedSession(false);
       setPhase('running');
+      void cargarSubrayadosDePreguntas(res.preguntas);
+      onAttemptFinished();
     } catch (err) {
       setErrorMsg(
         err instanceof Error ? err.message : 'No se pudieron cargar las preguntas.'
@@ -331,64 +318,64 @@ export function Simulator({
   };
 
   const pausarYSalirAlMenu = () => {
-    if (preguntas.length > 0) {
-      writeSavedSession({
-        modo,
-        area,
-        subarea,
-        banco,
-        preguntas,
-        indice,
-        respuestas,
-        intentoId,
-        elapsedSeconds,
-        subrayados,
-        marcadas,
-        paused: true,
-      });
-      setHasPausedSession(true);
-    }
     setPhase('config');
+    onAttemptFinished();
   };
 
-  const reanudarSimulacion = () => {
-    const saved = readSavedSession();
-    if (!saved) return;
-    setModo(saved.modo);
-    setPreguntas(saved.preguntas);
-    setIndice(saved.indice);
-    setRespuestas(saved.respuestas);
-    setIntentoId(saved.intentoId);
-    setElapsedSeconds(saved.elapsedSeconds ?? 0);
-    setSubrayados(saved.subrayados ?? {});
-    setMarcadas(saved.marcadas ?? {});
-    setHasPausedSession(false);
-    setPhase('running');
-  };
-
-  const descartarSimulacion = async () => {
-    const idToDelete = intentoId ?? readSavedSession()?.intentoId ?? null;
-    writeSavedSession(null);
-    setHasPausedSession(false);
-    setIntentoId(null);
-    setPreguntas([]);
-    setRespuestas({});
-    setIndice(0);
-    setElapsedSeconds(0);
-    setSubrayados({});
-    setMarcadas({});
-
+  const descartarSimulacion = async (targetId?: number) => {
+    const idToDelete = targetId ?? intentoId ?? pendingIntento?.id ?? null;
     if (user && idToDelete) {
+      setLoading(true);
       try {
         await api.eliminarIntento(idToDelete);
       } catch {
         // ignore
+      } finally {
+        setLoading(false);
       }
       onAttemptFinished();
+    }
+    if (idToDelete === intentoId) {
+      setIntentoId(null);
+      setPreguntas([]);
+      setRespuestas({});
+      setIndice(0);
+      setElapsedSeconds(0);
+      setSubrayados({});
+      setMarcadas({});
     }
   };
 
   const preguntaActual = preguntas[indice];
+
+  // Agrupación por Módulos (A1..L2) igual al diseño original
+  const modulos = useMemo(() => {
+    const order: string[] = [];
+    const byArea = new Map<string, Array<{ pregunta: Pregunta; globalIndex: number }>>();
+    preguntas.forEach((p, idx) => {
+      if (!byArea.has(p.area)) {
+        order.push(p.area);
+        byArea.set(p.area, []);
+      }
+      byArea.get(p.area)!.push({ pregunta: p, globalIndex: idx });
+    });
+    return order.map((areaId) => {
+      const items = byArea.get(areaId)!;
+      const answeredCount = items.filter((it) => respuestas[it.pregunta.id] !== undefined).length;
+      return {
+        areaId,
+        nombre: areaNombres[areaId] ?? `Área ${areaId}`,
+        items,
+        answeredCount,
+        totalCount: items.length,
+      };
+    });
+  }, [preguntas, respuestas, areaNombres]);
+
+  const moduloActual = useMemo(
+    () => modulos.find((m) => m.areaId === preguntaActual?.area) ?? modulos[0],
+    [modulos, preguntaActual]
+  );
 
   const stats = useMemo(() => {
     let aciertos = 0;
@@ -435,6 +422,7 @@ export function Simulator({
   );
 
   const finalizarSimulacion = async () => {
+    finishingRef.current = true;
     setLoading(true);
     try {
       if (user && intentoId) {
@@ -442,63 +430,50 @@ export function Simulator({
         if (res.preguntas && res.preguntas.length > 0) {
           setPreguntas(res.preguntas);
         }
-      } else {
-        saveLocalAttempt({
-          modo,
-          area_filtro: subarea !== 'todas' ? subarea : area,
-          banco_filtro: banco,
-          preguntas,
-          respuestas,
-        });
       }
-      writeSavedSession(null);
-      setHasPausedSession(false);
       onAttemptFinished();
       setPhase('summary');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Error al finalizar intento');
     } finally {
+      finishingRef.current = false;
       setLoading(false);
     }
   };
 
   const addHighlight = (field: string, range: HighlightRange) => {
     if (!preguntaActual) return;
+    const pid = preguntaActual.id;
     setSubrayados((prev) => {
-      const currentQ = prev[preguntaActual.id] ?? {};
+      const currentQ = prev[pid] ?? {};
       const list = currentQ[field] ?? [];
-      return {
-        ...prev,
-        [preguntaActual.id]: {
-          ...currentQ,
-          [field]: [...list, range],
-        },
-      };
+      const updatedQ = { ...currentQ, [field]: [...list, range] };
+      if (user) void api.saveSubrayados(pid, updatedQ).catch(() => {});
+      return { ...prev, [pid]: updatedQ };
     });
   };
 
   const removeHighlight = (field: string, idx: number) => {
     if (!preguntaActual) return;
+    const pid = preguntaActual.id;
     setSubrayados((prev) => {
-      const currentQ = prev[preguntaActual.id] ?? {};
+      const currentQ = prev[pid] ?? {};
       const list = currentQ[field] ?? [];
-      return {
-        ...prev,
-        [preguntaActual.id]: {
-          ...currentQ,
-          [field]: list.filter((_, i) => i !== idx),
-        },
-      };
+      const updatedQ = { ...currentQ, [field]: list.filter((_, i) => i !== idx) };
+      if (user) void api.saveSubrayados(pid, updatedQ).catch(() => {});
+      return { ...prev, [pid]: updatedQ };
     });
   };
 
   const clearCurrentHighlights = () => {
     if (!preguntaActual) return;
+    const pid = preguntaActual.id;
     setSubrayados((prev) => {
       const copy = { ...prev };
-      delete copy[preguntaActual.id];
+      delete copy[pid];
       return copy;
     });
+    if (user) void api.saveSubrayados(pid, {}).catch(() => {});
   };
 
   // ==================== FASE 1: CONFIGURACIÓN ====================
@@ -514,7 +489,7 @@ export function Simulator({
                   Inicia sesión para practicar en el simulador
                 </Text>
                 <Text className="mt-0.5 text-xs text-amber-900 dark:text-amber-300/90">
-                  Tu cuenta guarda automáticamente tu historial, métricas por subárea y simulaciones pausadas.
+                  Tu cuenta guarda en la base de datos tu historial, métricas por subárea y simulaciones pausadas entre dispositivos.
                 </Text>
               </View>
             </View>
@@ -528,26 +503,29 @@ export function Simulator({
           </View>
         )}
 
-        {hasPausedSession && (
+        {pendingIntento && (
           <View className="flex-row flex-wrap items-center justify-between gap-3 rounded-2xl border border-teal-700/25 dark:border-teal-600/40 bg-teal-50 dark:bg-teal-950/50 p-4">
             <View className="flex-1 min-w-[200px]">
               <Text className="text-sm font-bold text-teal-900 dark:text-teal-200">
-                Tienes una simulación pausada ({Object.keys(respuestas).length}/{preguntas.length} respondidas)
+                Tienes una simulación pausada ({pendingIntento.aciertos + pendingIntento.errores}/
+                {pendingIntento.total_preguntas} respondidas)
               </Text>
-              <Text className="text-xs text-teal-800 dark:text-teal-300 mt-0.5">
-                Tiempo acumulado: {formatSeconds(elapsedSeconds)}
+              <Text className="text-xs text-teal-800 dark:text-teal-300 mt-0.5 capitalize">
+                Modo {pendingIntento.modo} · {pendingIntento.area_filtro || 'Todas'} · Sincronizado en la nube
               </Text>
             </View>
             <View className="flex-row items-center gap-2">
               <Pressable
-                onPress={reanudarSimulacion}
+                onPress={() => cargarIntentoDesdeBD(pendingIntento.id)}
+                disabled={loading}
                 className="flex-row items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2 active:bg-teal-800"
               >
                 <Play size={14} color="#ffffff" />
                 <Text className="text-xs font-semibold text-white">Reanudar</Text>
               </Pressable>
               <Pressable
-                onPress={descartarSimulacion}
+                onPress={() => descartarSimulacion(pendingIntento.id)}
+                disabled={loading}
                 className="flex-row items-center gap-1 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 active:bg-stone-50"
               >
                 <Trash2 size={14} color="#dc2626" />
@@ -1122,6 +1100,124 @@ export function Simulator({
         </View>
       </View>
 
+      {/* Tabs de Módulos + Mapa colapsable (igual que antes) */}
+      {modulos.length > 0 && (
+        <View className="gap-2.5">
+          {modulos.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row items-center gap-2 pb-1">
+                {modulos.map((m) => {
+                  const active = moduloActual?.areaId === m.areaId;
+                  return (
+                    <Pressable
+                      key={m.areaId}
+                      onPress={() => {
+                        const firstPending = m.items.find(
+                          (it) => respuestas[it.pregunta.id] === undefined
+                        );
+                        setIndice((firstPending ?? m.items[0]).globalIndex);
+                      }}
+                      className={`rounded-full border px-3.5 py-2 ${
+                        active
+                          ? 'border-teal-700 bg-teal-700'
+                          : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-bold ${
+                          active ? 'text-white' : 'text-stone-700 dark:text-slate-300'
+                        }`}
+                      >
+                        Módulo {m.areaId}{' '}
+                        <Text
+                          className={`font-medium ${
+                            active ? 'text-teal-100' : 'text-stone-400 dark:text-slate-500'
+                          }`}
+                        >
+                          ({m.answeredCount}/{m.totalCount})
+                        </Text>
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          )}
+
+          {moduloActual && (
+            <Text className="text-xs font-semibold text-stone-600 dark:text-slate-400 px-1">
+              Módulo {moduloActual.areaId} · {moduloActual.nombre}
+            </Text>
+          )}
+
+          <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs">
+            <Pressable
+              onPress={() => setMapaAbierto((v) => !v)}
+              className="flex-row items-center gap-1.5"
+            >
+              {mapaAbierto ? (
+                <ChevronDown size={15} color="#64748b" />
+              ) : (
+                <ChevronRight size={15} color="#64748b" />
+              )}
+              <Text className="text-xs font-bold text-stone-700 dark:text-slate-200">
+                Mapa de preguntas · abrir para saltar a otra
+              </Text>
+            </Pressable>
+
+            {mapaAbierto && moduloActual && (
+              <View className="mt-3 flex-row flex-wrap gap-1.5">
+                {moduloActual.items.map(({ pregunta: p, globalIndex }) => {
+                  const sel = respuestas[p.id];
+                  const answered = sel !== undefined;
+                  const current = globalIndex === indice;
+                  const marked = Boolean(marcadas[p.id]);
+                  const isOk =
+                    modo === 'inmediato' && answered && p.correcta !== undefined && sel === p.correcta;
+                  const isBad =
+                    modo === 'inmediato' && answered && p.correcta !== undefined && sel !== p.correcta;
+
+                  let boxCls =
+                    'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800';
+                  let txtCls = 'text-stone-700 dark:text-slate-300';
+
+                  if (current) {
+                    boxCls = 'border-teal-700 bg-teal-700';
+                    txtCls = 'text-white';
+                  } else if (isOk) {
+                    boxCls =
+                      'border-emerald-400 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/50';
+                    txtCls = 'text-emerald-800 dark:text-emerald-300';
+                  } else if (isBad) {
+                    boxCls =
+                      'border-rose-400 dark:border-rose-600 bg-rose-50 dark:bg-rose-950/50';
+                    txtCls = 'text-rose-800 dark:text-rose-300';
+                  } else if (marked) {
+                    boxCls =
+                      'border-amber-400 dark:border-amber-600 bg-amber-100 dark:bg-amber-950/60';
+                    txtCls = 'text-amber-900 dark:text-amber-200';
+                  } else if (answered) {
+                    boxCls =
+                      'border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/50';
+                    txtCls = 'text-teal-800 dark:text-teal-300';
+                  }
+
+                  return (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => setIndice(globalIndex)}
+                      className={`h-8 w-9 rounded-lg items-center justify-center border ${boxCls}`}
+                    >
+                      <Text className={`text-xs font-bold ${txtCls}`}>{globalIndex + 1}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Tarjeta de pregunta */}
       <View className="overflow-hidden rounded-3xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <View className="h-1 w-full bg-teal-600" />
@@ -1365,47 +1461,6 @@ export function Simulator({
               </Pressable>
             )}
           </View>
-        </View>
-      </View>
-
-      {/* Navegador rápido de reactivos */}
-      <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-        <Text className="text-xs font-bold text-stone-600 dark:text-slate-400 mb-2.5">
-          Mapa de reactivos
-        </Text>
-        <View className="flex-row flex-wrap gap-1.5">
-          {preguntas.map((p, i) => {
-            const ans = respuestas[p.id] !== undefined;
-            const current = i === indice;
-            const marked = Boolean(marcadas[p.id]);
-            return (
-              <Pressable
-                key={p.id}
-                onPress={() => setIndice(i)}
-                className={`h-8 w-9 rounded-lg items-center justify-center border ${
-                  current
-                    ? 'border-teal-700 bg-teal-700'
-                    : marked
-                      ? 'border-amber-400 dark:border-amber-600 bg-amber-100 dark:bg-amber-950/60'
-                      : ans
-                        ? 'border-teal-200 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/50'
-                        : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800'
-                }`}
-              >
-                <Text
-                  className={`text-xs font-bold ${
-                    current
-                      ? 'text-white'
-                      : marked
-                        ? 'text-amber-900 dark:text-amber-200'
-                        : 'text-stone-700 dark:text-slate-300'
-                  }`}
-                >
-                  {i + 1}
-                </Text>
-              </Pressable>
-            );
-          })}
         </View>
       </View>
     </View>

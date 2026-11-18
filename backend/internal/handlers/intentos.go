@@ -18,6 +18,23 @@ import (
 type IntentoHandler struct {
 	DB     *gorm.DB
 	Loader *content.Loader
+	Hub    *WSHub
+}
+
+func (h *IntentoHandler) notifySync(userID uint64, action string, intentoID uint64, extra ...map[string]any) {
+	if h.Hub != nil {
+		msg := map[string]any{
+			"type":       "intento_sync",
+			"action":     action,
+			"intento_id": intentoID,
+		}
+		for _, e := range extra {
+			for k, v := range e {
+				msg[k] = v
+			}
+		}
+		h.Hub.BroadcastUser(userID, msg)
+	}
 }
 
 type areaStat struct {
@@ -192,6 +209,7 @@ func (h *IntentoHandler) Store(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.notifySync(user.ID, "created", intento.ID)
 	writeJSON(w, http.StatusCreated, map[string]any{"intento": intento})
 }
 
@@ -304,6 +322,10 @@ func (h *IntentoHandler) GuardarRespuesta(w http.ResponseWriter, r *http.Request
 	}
 
 	h.recalcularIntento(&intento)
+	h.notifySync(user.ID, "updated", intento.ID, map[string]any{
+		"pregunta_id":  req.PreguntaID,
+		"seleccionada": req.Seleccionada,
+	})
 	writeJSON(w, http.StatusOK, map[string]any{"intento": intento})
 }
 
@@ -341,6 +363,7 @@ func (h *IntentoHandler) Finalizar(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	h.notifySync(user.ID, "finished", intento.ID)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"intento":   intento,
 		"preguntas": preguntasOut,
@@ -356,6 +379,7 @@ func (h *IntentoHandler) Destroy(w http.ResponseWriter, r *http.Request) {
 
 	h.DB.Where("intento_id = ?", intento.ID).Delete(&models.Respuesta{})
 	h.DB.Delete(&intento)
+	h.notifySync(user.ID, "deleted", intento.ID)
 
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Intento eliminado."})
 }

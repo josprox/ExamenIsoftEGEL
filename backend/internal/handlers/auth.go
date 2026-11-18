@@ -147,6 +147,68 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Sesión cerrada correctamente."})
 }
 
+func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.UserFromContext(r.Context())
+	if !ok {
+		writeErr(w, http.StatusUnauthorized, "No autenticado.")
+		return
+	}
+
+	var req struct {
+		Name                 string `json:"name"`
+		Email                string `json:"email"`
+		Password             string `json:"password"`
+		PasswordConfirmation string `json:"password_confirmation"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErr(w, http.StatusUnprocessableEntity, "Datos inválidos.")
+		return
+	}
+
+	name := strings.TrimSpace(req.Name)
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	if name == "" || email == "" || !strings.Contains(email, "@") {
+		writeErr(w, http.StatusUnprocessableEntity, "Nombre y correo válidos son requeridos.")
+		return
+	}
+
+	if email != user.Email {
+		var existing int64
+		h.DB.Model(&models.User{}).Where("email = ? AND id <> ?", email, user.ID).Count(&existing)
+		if existing > 0 {
+			writeErr(w, http.StatusUnprocessableEntity, "Ese correo ya está en uso.")
+			return
+		}
+	}
+
+	user.Name = name
+	user.Email = email
+
+	if req.Password != "" {
+		if len(req.Password) < 6 {
+			writeErr(w, http.StatusUnprocessableEntity, "La nueva contraseña debe tener al menos 6 caracteres.")
+			return
+		}
+		if req.Password != req.PasswordConfirmation {
+			writeErr(w, http.StatusUnprocessableEntity, "La confirmación de contraseña no coincide.")
+			return
+		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
+		if err != nil {
+			writeErr(w, http.StatusInternalServerError, "No se pudo actualizar la contraseña.")
+			return
+		}
+		user.Password = string(hash)
+	}
+
+	if err := h.DB.Save(&user).Error; err != nil {
+		writeErr(w, http.StatusInternalServerError, "No se pudo actualizar el perfil.")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"user": user})
+}
+
 func createTokenForUser(db *gorm.DB, userID uint64) (string, error) {
 	buf := make([]byte, 30)
 	if _, err := rand.Read(buf); err != nil {

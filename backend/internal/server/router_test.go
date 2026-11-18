@@ -36,6 +36,7 @@ func setupTestRouter(t *testing.T, web *handlers.WebSearchHandler) http.Handler 
 		&models.Recurso{},
 		&models.Intento{},
 		&models.Respuesta{},
+		&models.PreguntaSubrayado{},
 	); err != nil {
 		t.Fatalf("automigrate: %v", err)
 	}

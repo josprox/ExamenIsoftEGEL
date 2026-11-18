@@ -106,7 +106,7 @@ func (h *WebSearchHandler) BuscarWeb(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.RUnlock()
 
-	items := h.fetchSources(r.Context(), q, fuente)
+	items := h.fetchSources(r.Context(), q, fuente, nil)
 
 	h.mu.Lock()
 	if len(h.cache) > 500 {
@@ -123,7 +123,38 @@ func (h *WebSearchHandler) BuscarWeb(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"conceptos": items})
 }
 
-func (h *WebSearchHandler) fetchSources(ctx context.Context, q, fuente string) []ConceptoWeb {
+func (h *WebSearchHandler) StreamBuscarWeb(ctx context.Context, q, fuente string, onChunk func(source string, items []ConceptoWeb)) {
+	q = strings.TrimSpace(q)
+	fuente = strings.TrimSpace(fuente)
+	if fuente == "" {
+		fuente = "todos"
+	}
+	if len([]rune(q)) < 2 {
+		return
+	}
+
+	sum := sha1.Sum([]byte(fuente + "|" + strings.ToLower(q)))
+	cacheKey := hex.EncodeToString(sum[:])
+
+	h.mu.RLock()
+	if entry, ok := h.cache[cacheKey]; ok && time.Now().Before(entry.expiresAt) {
+		h.mu.RUnlock()
+		if len(entry.items) > 0 {
+			onChunk("cache", entry.items)
+		}
+		return
+	}
+	h.mu.RUnlock()
+
+	items := h.fetchSources(ctx, q, fuente, onChunk)
+	if ctx.Err() == nil && len(items) > 0 {
+		h.mu.Lock()
+		h.cache[cacheKey] = webCacheEntry{items: items, expiresAt: time.Now().Add(time.Hour)}
+		h.mu.Unlock()
+	}
+}
+
+func (h *WebSearchHandler) fetchSources(ctx context.Context, q, fuente string, onChunk func(source string, items []ConceptoWeb)) []ConceptoWeb {
 	rapidas := map[string]bool{"wikipedia": true, "wikidata": true, "mdn": true, "hackernews": true, "github": true, "stackoverflow": true}
 	academicas := map[string]bool{"semanticscholar": true, "openalex": true, "openlibrary": true, "crossref": true, "arxiv": true, "reddit": true}
 
@@ -154,7 +185,11 @@ func (h *WebSearchHandler) fetchSources(ctx context.Context, q, fuente string) [
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			buckets[idx] = fn()
+			res := fn()
+			buckets[idx] = res
+			if onChunk != nil && len(res) > 0 && ctx.Err() == nil {
+				onChunk(name, res)
+			}
 		}()
 	}
 

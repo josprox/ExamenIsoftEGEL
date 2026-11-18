@@ -70,7 +70,7 @@ export function parseLocation(): RouteState {
     };
   }
 
-  if (first === 'progreso') {
+  if (first === 'progreso' || first === 'perfil') {
     return {
       tab: 'progreso',
       area: 'todas',
@@ -128,7 +128,7 @@ export function buildPath(
     case 'guias':
       return opts?.guiaClave ? `/guias/${encodeURIComponent(opts.guiaClave)}` : '/guias';
     case 'progreso':
-      return '/progreso';
+      return '/perfil';
     case 'biblioteca': {
       if (opts?.bibliotecaMode === 'web') {
         const q = opts.bibliotecaWebQuery?.trim();

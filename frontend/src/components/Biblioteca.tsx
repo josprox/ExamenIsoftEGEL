@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -64,7 +64,12 @@ interface BibliotecaProps {
   temario: Temario | null;
   initialMode?: 'catalogo' | 'web';
   initialWebQuery?: string;
-  scrollBottomTick?: number;
+  wsConnected?: boolean;
+  onSubscribeReachBottom?: (fn: () => void) => () => void;
+  onSendWsSearch?: (q: string, fuente: string, requestId: string) => boolean;
+  onSubscribeWsSearch?: (
+    fn: (msg: { type: string; request_id?: string; conceptos?: unknown[] }) => void
+  ) => () => void;
   onModeChange?: (mode: 'catalogo' | 'web', webQuery?: string) => void;
 }
 
@@ -72,7 +77,10 @@ export function Biblioteca({
   temario,
   initialMode = 'catalogo',
   initialWebQuery = '',
-  scrollBottomTick = 0,
+  wsConnected = false,
+  onSubscribeReachBottom,
+  onSendWsSearch,
+  onSubscribeWsSearch,
   onModeChange,
 }: BibliotecaProps) {
   const [alcance, setAlcance] = useState<AlcanceFiltro>(initialMode === 'web' ? 'web' : 'todos');
@@ -97,17 +105,26 @@ export function Biblioteca({
   const [webStatus, setWebStatus] = useState<'idle' | 'rapidas' | 'academicas'>('idle');
   const [visibleWebCount, setVisibleWebCount] = useState(12);
 
+  const wsConnectedRef = useRef(wsConnected);
+  wsConnectedRef.current = wsConnected;
+  const sendWsRef = useRef(onSendWsSearch);
+  sendWsRef.current = onSendWsSearch;
+  const subWsRef = useRef(onSubscribeWsSearch);
+  subWsRef.current = onSubscribeWsSearch;
+
   useEffect(() => {
     if (initialMode === 'web') setAlcance('web');
     if (initialWebQuery) setQ(initialWebQuery);
   }, [initialMode, initialWebQuery]);
 
-  // Lazy loading automático al acercarse al final del scroll (Web y Android)
+  // Lazy loading automático al acercarse al final del scroll (sin re-disparar la búsqueda)
   useEffect(() => {
-    if (scrollBottomTick === 0) return;
-    setVisibleLocalCount((v) => v + 24);
-    setVisibleWebCount((v) => v + 12);
-  }, [scrollBottomTick]);
+    if (!onSubscribeReachBottom) return;
+    return onSubscribeReachBottom(() => {
+      setVisibleLocalCount((v) => v + 24);
+      setVisibleWebCount((v) => v + 12);
+    });
+  }, [onSubscribeReachBottom]);
 
   useEffect(() => {
     let active = true;
@@ -156,6 +173,7 @@ export function Biblioteca({
     return filtrados;
   }, [catalogoCompleto, area, tipo, idioma, q, soloArchivo, soloOficial, soloGratuito, orden]);
 
+  // Streaming en tiempo real por WebSocket cuando está conectado, con fallback a 2 lotes HTTP
   useEffect(() => {
     const trimmed = q.trim();
     if (alcance === 'catalogo' || trimmed.length < 2) {
@@ -165,11 +183,35 @@ export function Biblioteca({
     }
 
     let active = true;
+    let unsubscribe: (() => void) | undefined;
     setVisibleWebCount(12);
 
     const timer = setTimeout(async () => {
       if (!active) return;
       setWebResults([]);
+
+      if (wsConnectedRef.current && sendWsRef.current && subWsRef.current) {
+        const reqId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        setWebStatus('rapidas');
+
+        unsubscribe = subWsRef.current((msg) => {
+          if (!active || msg.request_id !== reqId) return;
+          if (msg.type === 'web_search_chunk' && Array.isArray(msg.conceptos)) {
+            const incoming = msg.conceptos as ConceptoWeb[];
+            setWebResults((prev) => {
+              const seen = new Set(prev.map((x) => x.url));
+              return [...prev, ...incoming.filter((x) => !seen.has(x.url))];
+            });
+          } else if (msg.type === 'web_search_done') {
+            setWebStatus('idle');
+          }
+        });
+
+        const sent = sendWsRef.current(trimmed, webFuente, reqId);
+        if (sent) return;
+        unsubscribe();
+        unsubscribe = undefined;
+      }
 
       if (webFuente !== 'todos') {
         setWebStatus('rapidas');
@@ -210,11 +252,12 @@ export function Biblioteca({
       } finally {
         if (active) setWebStatus('idle');
       }
-    }, 260);
+    }, 240);
 
     return () => {
       active = false;
       clearTimeout(timer);
+      if (unsubscribe) unsubscribe();
     };
   }, [q, webFuente, alcance]);
 

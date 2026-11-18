@@ -12,29 +12,30 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import {
   ArrowUp,
-  BarChart3,
   BookOpen,
   Home,
   Library,
   LogIn,
-  LogOut,
-  Monitor,
-  Moon,
   PlayCircle,
   Search,
-  Sun,
+  Settings,
   Terminal,
   User as UserIcon,
 } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
-import { api, getStoredToken, setStoredToken, TOKEN_KEY } from './src/lib/api';
+import {
+  api,
+  getStoredToken,
+  getWebSocketUrl,
+  setStoredToken,
+  TOKEN_KEY,
+} from './src/lib/api';
 import { getLocalProgress, PROGRESS_STORAGE_KEY } from './src/lib/localProgress';
 import { buildPath, parseLocation, type AppTab } from './src/lib/router';
 import { hydrateStorage, isStorageHydrated } from './src/lib/storage';
 import {
   applyThemePreference,
   getStoredTheme,
-  nextThemePreference,
   THEME_STORAGE_KEY,
   type ThemePreference,
 } from './src/lib/theme';
@@ -45,9 +46,10 @@ import { BrandLogo } from './src/components/BrandLogo';
 import { Comandos } from './src/components/Comandos';
 import { Guias } from './src/components/Guias';
 import { Inicio } from './src/components/Inicio';
-import { Progreso } from './src/components/Progreso';
+import { Perfil } from './src/components/Perfil';
 import { SearchModal } from './src/components/SearchModal';
-import { ACTIVE_SESSION_KEY, Simulator } from './src/components/Simulator';
+import { SettingsModal } from './src/components/SettingsModal';
+import { Simulator } from './src/components/Simulator';
 
 export default function App() {
   const [ready, setReady] = useState<boolean>(isStorageHydrated());
@@ -63,6 +65,7 @@ export default function App() {
   const [estadisticas, setEstadisticas] = useState<EstadisticasUsuario | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [simArea, setSimArea] = useState<string>(initialRoute.area);
   const [simSubarea, setSimSubarea] = useState<string>(initialRoute.subarea);
@@ -75,18 +78,54 @@ export default function App() {
     initialRoute.bibliotecaWebQuery
   );
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [scrollBottomTick, setScrollBottomTick] = useState(0);
+  const reachBottomListenersRef = useRef<Set<() => void>>(new Set());
   const lastBottomTriggerRef = useRef(0);
+  const [wsConnected, setWsConnected] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
+  const wsSearchListenersRef = useRef<
+    Set<(msg: { type: string; request_id?: string; conceptos?: unknown[] }) => void>
+  >(new Set());
+  const [lastWsEvent, setLastWsEvent] = useState<{
+    action: string;
+    intento_id: number;
+    pregunta_id?: string;
+    seleccionada?: number;
+    ts: number;
+  } | null>(null);
+  const [lastSubrayadoSync, setLastSubrayadoSync] = useState<{
+    pregunta_id: string;
+    subrayados: Record<string, Array<{ start: number; end: number; color: 'amber' | 'emerald' | 'rose' }>>;
+    ts: number;
+  } | null>(null);
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView> | null>(null);
+
+  const sendWsSearch = useCallback((q: string, fuente: string, requestId: string) => {
+    const sock = wsRef.current;
+    if (!sock || sock.readyState !== 1) return false;
+    sock.send(JSON.stringify({ type: 'buscar_web', q, fuente, request_id: requestId }));
+    return true;
+  }, []);
+
+  const subscribeWsSearch = useCallback(
+    (fn: (msg: { type: string; request_id?: string; conceptos?: unknown[] }) => void) => {
+      wsSearchListenersRef.current.add(fn);
+      return () => {
+        wsSearchListenersRef.current.delete(fn);
+      };
+    },
+    []
+  );
+
+  const subscribeReachBottom = useCallback((fn: () => void) => {
+    reachBottomListenersRef.current.add(fn);
+    return () => {
+      reachBottomListenersRef.current.delete(fn);
+    };
+  }, []);
 
   useEffect(() => {
     if (!ready) {
-      hydrateStorage([
-        TOKEN_KEY,
-        PROGRESS_STORAGE_KEY,
-        ACTIVE_SESSION_KEY,
-        THEME_STORAGE_KEY,
-      ]).then(() => {
+      hydrateStorage([TOKEN_KEY, PROGRESS_STORAGE_KEY, THEME_STORAGE_KEY]).then(() => {
         const pref = getStoredTheme();
         setThemePref(pref);
         applyThemePreference(pref);
@@ -99,11 +138,47 @@ export default function App() {
     }
   }, [ready]);
 
-  const handleCycleTheme = () => {
-    const next = nextThemePreference(themePref);
-    setThemePref(next);
-    applyThemePreference(next);
+  // Favicon SVG en <head> para Web
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/svg+xml';
+    link.href = '/favicon.svg';
+  }, []);
+
+  const handleSelectTheme = (pref: ThemePreference) => {
+    setThemePref(pref);
+    applyThemePreference(pref);
   };
+
+  useEffect(() => {
+    if (
+      Platform.OS !== 'web' ||
+      themePref !== 'system' ||
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function'
+    ) {
+      return;
+    }
+
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncSystemTheme = () => {
+      applyThemePreference('system');
+    };
+
+    syncSystemTheme();
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', syncSystemTheme);
+      return () => mq.removeEventListener('change', syncSystemTheme);
+    }
+    mq.addListener(syncSystemTheme);
+    return () => mq.removeListener(syncSystemTheme);
+  }, [themePref]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
@@ -111,7 +186,7 @@ export default function App() {
       inicio: 'EGEL Plus ISOFT 2026 — Simulador, Guías y Banco de Reactivos',
       simulador: 'Simulador de Examen — EGEL Plus ISOFT 2026',
       guias: 'Guías de Estudio — EGEL Plus ISOFT 2026',
-      progreso: 'Mi Progreso — EGEL Plus ISOFT 2026',
+      progreso: 'Mi Perfil y Progreso — EGEL Plus ISOFT 2026',
       biblioteca: 'Biblioteca de Recursos — EGEL Plus ISOFT 2026',
       comandos: 'Comandos Técnicos — EGEL Plus ISOFT 2026',
     };
@@ -158,6 +233,75 @@ export default function App() {
       cargarProgreso();
     }
   }, [ready, cargarProgreso]);
+
+  // WebSocket en tiempo real para sincronizar simulaciones entre PC y celular
+  useEffect(() => {
+    if (!ready || !user) return;
+    const token = getStoredToken();
+    if (!token) return;
+
+    let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let closedByEffect = false;
+
+    const connect = () => {
+      if (closedByEffect) return;
+      try {
+        ws = new WebSocket(getWebSocketUrl(token));
+        wsRef.current = ws;
+        ws.onopen = () => {
+          if (!closedByEffect) setWsConnected(true);
+        };
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(String(event.data));
+            if (msg?.type === 'intento_sync') {
+              setLastWsEvent({
+                action: String(msg.action ?? ''),
+                intento_id: Number(msg.intento_id ?? 0),
+                pregunta_id: msg.pregunta_id ? String(msg.pregunta_id) : undefined,
+                seleccionada:
+                  typeof msg.seleccionada === 'number' ? msg.seleccionada : undefined,
+                ts: Date.now(),
+              });
+              void cargarProgreso();
+            } else if (msg?.type === 'web_search_chunk' || msg?.type === 'web_search_done') {
+              wsSearchListenersRef.current.forEach((fn) => fn(msg));
+            } else if (msg?.type === 'subrayado_sync' && msg.pregunta_id) {
+              setLastSubrayadoSync({
+                pregunta_id: String(msg.pregunta_id),
+                subrayados: msg.subrayados ?? {},
+                ts: Date.now(),
+              });
+            }
+          } catch {
+            // ignore malformed ws payload
+          }
+        };
+        ws.onclose = () => {
+          if (wsRef.current === ws) wsRef.current = null;
+          if (!closedByEffect) {
+            setWsConnected(false);
+            reconnectTimer = setTimeout(connect, 3000);
+          }
+        };
+      } catch {
+        if (!closedByEffect) {
+          setWsConnected(false);
+          reconnectTimer = setTimeout(connect, 5000);
+        }
+      }
+    };
+
+    connect();
+    return () => {
+      closedByEffect = true;
+      setWsConnected(false);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws) ws.close();
+      wsRef.current = null;
+    };
+  }, [ready, user, cargarProgreso]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -257,32 +401,32 @@ export default function App() {
     {
       id: 'inicio',
       label: 'Inicio',
-      renderIcon: (a) => <Home size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+      renderIcon: (a) => <Home size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
     },
     {
       id: 'simulador',
       label: 'Practicar',
-      renderIcon: (a) => <PlayCircle size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+      renderIcon: (a) => <PlayCircle size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
     },
     {
       id: 'guias',
       label: 'Guías',
-      renderIcon: (a) => <BookOpen size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
-    },
-    {
-      id: 'progreso',
-      label: 'Progreso',
-      renderIcon: (a) => <BarChart3 size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+      renderIcon: (a) => <BookOpen size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
     },
     {
       id: 'biblioteca',
       label: 'Biblioteca',
-      renderIcon: (a) => <Library size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+      renderIcon: (a) => <Library size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
     },
     {
       id: 'comandos',
       label: 'Comandos',
-      renderIcon: (a) => <Terminal size={17} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+      renderIcon: (a) => <Terminal size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
+    },
+    {
+      id: 'progreso',
+      label: 'Perfil',
+      renderIcon: (a) => <UserIcon size={16} color={a ? (isDark ? '#2dd4bf' : '#0f766e') : (isDark ? '#94a3b8' : '#57534e')} />,
     },
   ];
 
@@ -300,76 +444,26 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <SafeAreaView className="flex-1 bg-stone-100/70 dark:bg-slate-950" edges={['top', 'left', 'right']}>
-        {/* Header superior */}
-        <View className="border-b border-stone-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-4 py-2.5 shadow-xs">
-          <View className="mx-auto w-full max-w-6xl flex-row items-center justify-between gap-3">
+        {/* Header compacto + pestañas */}
+        <View className="border-b border-stone-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-xs">
+          <View className="mx-auto w-full max-w-6xl px-4 py-2 flex-row items-center justify-between gap-3">
             <Pressable
               onPress={() => handleNavigate('inicio')}
               className="flex-row items-center gap-2.5"
             >
-              <BrandLogo size={34} />
-              <View>
-                <Text className="text-sm font-extrabold text-stone-900 dark:text-slate-100">
-                  EGEL Plus ISOFT
-                </Text>
-                <Text className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
-                  Portal de Estudio 2026
-                </Text>
-              </View>
+              <BrandLogo size={30} />
+              <Text className="text-sm font-extrabold text-stone-900 dark:text-slate-100">
+                EGEL Plus ISOFT
+              </Text>
             </Pressable>
 
-            {/* Navegación desktop / tablet */}
-            <View className="hidden md:flex flex-row items-center gap-1">
-              {navItems.map((item) => {
-                const active = tab === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => handleNavigate(item.id)}
-                    className={`flex-row items-center gap-1.5 rounded-xl px-3 py-2 ${
-                      active
-                        ? 'bg-teal-50 dark:bg-teal-950/70 border border-teal-700/20 dark:border-teal-500/30'
-                        : 'active:bg-stone-100 dark:active:bg-slate-800'
-                    }`}
-                  >
-                    {item.renderIcon(active)}
-                    <Text
-                      className={`text-xs font-semibold ${
-                        active
-                          ? 'text-teal-800 dark:text-teal-300'
-                          : 'text-stone-600 dark:text-slate-300'
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* Acciones derecha */}
+            {/* Acciones derecha compactas */}
             <View className="flex-row items-center gap-2">
               <Pressable
-                onPress={handleCycleTheme}
-                className="flex-row items-center gap-1.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-2.5 py-2 active:bg-stone-100 dark:active:bg-slate-700"
-              >
-                {themePref === 'system' ? (
-                  <Monitor size={15} color={isDark ? '#94a3b8' : '#57534e'} />
-                ) : themePref === 'dark' ? (
-                  <Moon size={15} color="#fbbf24" />
-                ) : (
-                  <Sun size={15} color="#d97706" />
-                )}
-                <Text className="text-[11px] font-semibold text-stone-700 dark:text-slate-200 hidden lg:flex">
-                  {themePref === 'system' ? 'Sistema' : themePref === 'dark' ? 'Oscuro' : 'Claro'}
-                </Text>
-              </Pressable>
-
-              <Pressable
                 onPress={() => setSearchOpen(true)}
-                className="flex-row items-center gap-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3 py-1.5 active:bg-stone-100 dark:active:bg-slate-700"
+                className="flex-row items-center gap-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-2.5 py-1.5 active:bg-stone-100 dark:active:bg-slate-700"
               >
-                <Search size={15} color={isDark ? '#2dd4bf' : '#0f766e'} />
+                <Search size={14} color={isDark ? '#2dd4bf' : '#0f766e'} />
                 <Text className="text-xs font-semibold text-stone-700 dark:text-slate-200 hidden sm:flex">
                   Buscar
                 </Text>
@@ -382,33 +476,63 @@ export default function App() {
                 )}
               </Pressable>
 
+              <Pressable
+                onPress={() => setSettingsOpen(true)}
+                className="flex-row items-center gap-1.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 p-2 active:bg-stone-100 dark:active:bg-slate-700"
+              >
+                <Settings size={15} color={isDark ? '#cbd5e1' : '#57534e'} />
+              </Pressable>
+
               {user ? (
-                <View className="flex-row items-center gap-1.5">
-                  <View className="hidden sm:flex flex-row items-center gap-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/70 px-3 py-2 border border-teal-700/15 dark:border-teal-500/25">
-                    <UserIcon size={14} color={isDark ? '#2dd4bf' : '#0f766e'} />
-                    <Text className="text-xs font-semibold text-teal-900 dark:text-teal-200">
-                      {user.name}
-                    </Text>
-                  </View>
-                  <Pressable
-                    onPress={handleLogout}
-                    className="flex-row items-center gap-1 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 active:bg-stone-100 dark:active:bg-slate-700"
-                  >
-                    <LogOut size={14} color={isDark ? '#cbd5e1' : '#57534e'} />
-                    <Text className="text-xs font-semibold text-stone-700 dark:text-slate-200 hidden sm:flex">
-                      Salir
-                    </Text>
-                  </Pressable>
-                </View>
+                <Pressable
+                  onPress={() => handleNavigate('progreso')}
+                  className="flex-row items-center gap-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/70 px-3 py-1.5 border border-teal-700/15 dark:border-teal-500/25 active:bg-teal-100"
+                >
+                  <UserIcon size={14} color={isDark ? '#2dd4bf' : '#0f766e'} />
+                  <Text className="text-xs font-semibold text-teal-900 dark:text-teal-200 hidden sm:flex">
+                    {user.name}
+                  </Text>
+                </Pressable>
               ) : (
                 <Pressable
                   onPress={() => setAuthOpen(true)}
-                  className="flex-row items-center gap-1.5 rounded-xl bg-teal-700 px-3.5 py-2 active:bg-teal-800"
+                  className="flex-row items-center gap-1.5 rounded-xl bg-teal-700 px-3 py-1.5 active:bg-teal-800"
                 >
                   <LogIn size={14} color="#ffffff" />
                   <Text className="text-xs font-semibold text-white">Entrar</Text>
                 </Pressable>
               )}
+            </View>
+          </View>
+
+          {/* Barra de pestañas desktop/tablet */}
+          <View className="hidden md:flex border-t border-stone-100 dark:border-slate-800/80">
+            <View className="mx-auto w-full max-w-6xl px-4 flex-row items-center gap-1">
+              {navItems.map((item) => {
+                const active = tab === item.id;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => handleNavigate(item.id)}
+                    className={`flex-row items-center gap-1.5 px-3.5 py-2 border-b-2 ${
+                      active
+                        ? 'border-teal-600'
+                        : 'border-transparent active:bg-stone-50 dark:active:bg-slate-800/50'
+                    }`}
+                  >
+                    {item.renderIcon(active)}
+                    <Text
+                      className={`text-xs font-semibold ${
+                        active
+                          ? 'text-teal-800 dark:text-teal-300'
+                          : 'text-stone-600 dark:text-slate-400'
+                      }`}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         </View>
@@ -426,7 +550,7 @@ export default function App() {
               const now = Date.now();
               if (now - lastBottomTriggerRef.current > 250) {
                 lastBottomTriggerRef.current = now;
-                setScrollBottomTick((t) => t + 1);
+                reachBottomListenersRef.current.forEach((fn) => fn());
               }
             }
           }}
@@ -441,6 +565,9 @@ export default function App() {
               <Simulator
                 temario={temario}
                 user={user}
+                intentos={intentos}
+                lastWsEvent={lastWsEvent}
+                lastSubrayadoSync={lastSubrayadoSync}
                 erroresRecientes={estadisticas?.errores_recientes ?? []}
                 initialArea={simArea}
                 initialSubarea={simSubarea}
@@ -463,11 +590,15 @@ export default function App() {
             )}
 
             {tab === 'progreso' && (
-              <Progreso
+              <Perfil
                 user={user}
+                wsConnected={wsConnected}
                 intentos={intentos}
                 estadisticas={estadisticas}
+                onUserUpdated={(updatedUser) => setUser(updatedUser)}
                 onOpenAuth={() => setAuthOpen(true)}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onLogout={handleLogout}
                 onAttemptDeleted={cargarProgreso}
                 onResumeAttempt={(id) => {
                   setResumeIntentoId(id);
@@ -481,7 +612,10 @@ export default function App() {
                 temario={temario}
                 initialMode={bibliotecaMode}
                 initialWebQuery={bibliotecaWebQuery}
-                scrollBottomTick={scrollBottomTick}
+                wsConnected={wsConnected}
+                onSubscribeReachBottom={subscribeReachBottom}
+                onSendWsSearch={sendWsSearch}
+                onSubscribeWsSearch={subscribeWsSearch}
                 onModeChange={(mode, query) =>
                   handleNavigate('biblioteca', {
                     bibliotecaMode: mode,
@@ -566,6 +700,17 @@ export default function App() {
               bibliotecaWebQuery: q,
             })
           }
+        />
+
+        <SettingsModal
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          themePref={themePref}
+          onSelectTheme={handleSelectTheme}
+          user={user}
+          wsConnected={wsConnected}
+          onOpenProfile={() => handleNavigate('progreso')}
+          onOpenAuth={() => setAuthOpen(true)}
         />
       </SafeAreaView>
     </SafeAreaProvider>

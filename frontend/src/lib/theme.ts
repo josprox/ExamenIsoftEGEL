@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { colorScheme } from 'nativewind';
 import { getSyncItem, setSyncItem } from './storage';
 
@@ -13,8 +14,23 @@ export function getStoredTheme(): ThemePreference {
   return 'system';
 }
 
+export function resolveWebSystemDark(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
 export function applyThemePreference(pref: ThemePreference): void {
   setSyncItem(THEME_STORAGE_KEY, pref);
+  if (Platform.OS === 'web') {
+    const dark = pref === 'dark' || (pref === 'system' && resolveWebSystemDark());
+    colorScheme.set(dark ? 'dark' : 'light');
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', dark);
+    }
+    return;
+  }
   colorScheme.set(pref);
 }
 

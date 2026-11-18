@@ -42,6 +42,19 @@ export function resolveBackendUrl(path: string): string {
   return base ? `${base}${normalized}` : normalized;
 }
 
+export function getWebSocketUrl(token: string): string {
+  const base = getApiBaseUrl();
+  if (base) {
+    const wsBase = base.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+    return `${wsBase}/api/ws?token=${encodeURIComponent(token)}`;
+  }
+  if (typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}/api/ws?token=${encodeURIComponent(token)}`;
+  }
+  return `wss://egelsoftback.astriom.org/api/ws?token=${encodeURIComponent(token)}`;
+}
+
 export function getStoredToken(): string | null {
   return getSyncItem(TOKEN_KEY);
 }
@@ -98,6 +111,17 @@ export const api = {
     }),
 
   me: () => request<{ user: User }>('/auth/me'),
+
+  updateProfile: (payload: {
+    name: string;
+    email: string;
+    password?: string;
+    password_confirmation?: string;
+  }) =>
+    request<{ user: User }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
 
   logout: () => request<{ message: string }>('/auth/logout', { method: 'POST' }),
 
@@ -174,6 +198,8 @@ export const api = {
       status: number;
       title: string;
       description: string;
+      markdown?: string;
+      is_readme?: boolean;
       blocks: Array<{ tag: string; text: string }>;
     }>(`/leer?url=${encodeURIComponent(url)}`),
 
@@ -216,5 +242,22 @@ export const api = {
   eliminarIntento: (intentoId: number) =>
     request<{ message: string }>(`/intentos/${intentoId}`, {
       method: 'DELETE',
+    }),
+
+  getSubrayados: (ids?: string[]) =>
+    request<{
+      subrayados: Record<
+        string,
+        Record<string, Array<{ start: number; end: number; color: 'amber' | 'emerald' | 'rose' }>>
+      >;
+    }>(`/subrayados${ids?.length ? `?ids=${encodeURIComponent(ids.join(','))}` : ''}`),
+
+  saveSubrayados: (
+    preguntaId: string,
+    subrayados: Record<string, Array<{ start: number; end: number; color: 'amber' | 'emerald' | 'rose' }>>
+  ) =>
+    request<{ pregunta_id: string }>(`/subrayados/${encodeURIComponent(preguntaId)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ subrayados }),
     }),
 };

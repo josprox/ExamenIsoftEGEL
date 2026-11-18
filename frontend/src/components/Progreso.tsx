@@ -25,6 +25,7 @@ import type { EstadisticasUsuario, Intento, Pregunta, User } from '../types/egel
 
 interface ProgresoProps {
   user: User | null;
+  wsConnected?: boolean;
   intentos: Intento[];
   estadisticas: EstadisticasUsuario | null;
   onOpenAuth: () => void;
@@ -43,6 +44,7 @@ function formatDuracion(seg?: number): string {
 
 export function Progreso({
   user,
+  wsConnected = false,
   intentos,
   estadisticas,
   onOpenAuth,
@@ -101,6 +103,14 @@ export function Progreso({
 
   return (
     <View className="gap-5">
+      {user && wsConnected && (
+        <View className="self-end flex-row items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1">
+          <View className="h-2 w-2 rounded-full bg-emerald-500" />
+          <Text className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+            Sincronización en vivo activa
+          </Text>
+        </View>
+      )}
       {!user && (
         <View className="flex-row flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3.5 shadow-sm">
           <View className="flex-1 flex-row items-center gap-2.5 min-w-[220px]">

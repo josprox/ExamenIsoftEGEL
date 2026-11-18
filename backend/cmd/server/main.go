@@ -68,6 +68,7 @@ func main() {
 		&models.Recurso{},
 		&models.Intento{},
 		&models.Respuesta{},
+		&models.PreguntaSubrayado{},
 	); err != nil {
 		log.Fatalf("[egel-go] Error en AutoMigrate: %v", err)
 	}

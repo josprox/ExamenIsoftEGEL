@@ -22,9 +22,11 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 	r.Use(corsMiddleware)
 	r.Use(chimw.Compress(5))
 
+	wsHub := handlers.NewWSHub()
 	authH := &handlers.AuthHandler{DB: db}
 	egelH := &handlers.EgelHandler{DB: db, Loader: loader}
-	intentoH := &handlers.IntentoHandler{DB: db, Loader: loader}
+	intentoH := &handlers.IntentoHandler{DB: db, Loader: loader, Hub: wsHub}
+	subrayadoH := &handlers.SubrayadoHandler{DB: db, Hub: wsHub}
 	readerH := handlers.NewReaderHandler()
 	if webHandler == nil {
 		webHandler = handlers.NewWebSearchHandler()
@@ -44,6 +46,7 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 			auth.Group(func(priv chi.Router) {
 				priv.Use(middleware.AuthenticateToken(db))
 				priv.Get("/me", authH.Me)
+				priv.Put("/profile", authH.UpdateProfile)
 				priv.Post("/logout", authH.Logout)
 			})
 		})
@@ -56,6 +59,7 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 		api.Get("/buscar", egelH.Buscar)
 		api.With(middleware.RateLimit(120, 40)).Get("/buscar-web", webHandler.BuscarWeb)
 		api.With(middleware.RateLimit(120, 40)).Get("/leer", readerH.Leer)
+		api.Get("/ws", wsHub.ServeWS(db, webHandler))
 
 		// Simulador, progreso e intentos (requiere login)
 		api.Group(func(priv chi.Router) {
@@ -67,6 +71,8 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 			priv.Post("/intentos/{intento}/respuestas", intentoH.GuardarRespuesta)
 			priv.Post("/intentos/{intento}/finalizar", intentoH.Finalizar)
 			priv.Delete("/intentos/{intento}", intentoH.Destroy)
+			priv.Get("/subrayados", subrayadoH.Index)
+			priv.Put("/subrayados/{pregunta}", subrayadoH.Upsert)
 		})
 	})
 

@@ -2337,6 +2337,332 @@
       "url": "https://martinfowler.com/articles/microservices.html",
       "gratuito": true,
       "idioma": "en"
+    },
+    {
+      "id": "video-todocode-sql",
+      "titulo": "Curso completo de SQL y Bases de Datos desde cero (8 horas)",
+      "autores": "TodoCode",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=8N4M994IDt8",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Modelado relacional, consultas SQL, JOINs y normalización paso a paso."
+    },
+    {
+      "id": "video-todocode-poo-herencia",
+      "titulo": "Programación Orientada a Objetos con Java: Herencia y pilares POO",
+      "autores": "TodoCode",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.1"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=2hYhpRZFuns",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Explicación práctica de herencia, clases padre/hija y reutilización en POO."
+    },
+    {
+      "id": "video-todocode-singleton",
+      "titulo": "Patrón de diseño Singleton en Java",
+      "autores": "TodoCode",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.1"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=UekxC1hvurk",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Patrón creacional Singleton: cuándo aplicarlo y cómo implementarlo."
+    },
+    {
+      "id": "video-todocode-git-ramas",
+      "titulo": "Git: Diff, Merge y trabajo con ramas (Branches)",
+      "autores": "TodoCode",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.3"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=W8rwULnu9nA",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Flujo con ramas, comparación de cambios y resolución de fusiones en Git."
+    },
+    {
+      "id": "video-todocode-spring-security",
+      "titulo": "Arquitectura de Spring Security y seguridad informática",
+      "autores": "TodoCode",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.4"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=2eWunG4z4jo",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Filtros de seguridad, autenticación y autorización en aplicaciones web."
+    },
+    {
+      "id": "video-edteam-bd",
+      "titulo": "¿Qué son las bases de datos? Fundamentos relacionales",
+      "autores": "EDteam",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=knVwokXITGI",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Introducción clara a tablas, llaves primarias, foráneas e integridad."
+    },
+    {
+      "id": "video-edteam-sql-nosql",
+      "titulo": "¿SQL o NoSQL? Comparativa y criterios de elección",
+      "autores": "EDteam",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=8K1PKSqHFRQ",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Diferencias entre bases relacionales y no relacionales según el caso de uso."
+    },
+    {
+      "id": "video-edteam-scrum-roles",
+      "titulo": "Curso de Scrum: Roles en Scrum",
+      "autores": "EDteam",
+      "tipo": "video",
+      "areas": [
+        "A4"
+      ],
+      "subareas": [
+        "4.3"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=lSYZ1sZWvbQ",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Responsabilidades de Product Owner, Scrum Master y equipo de desarrollo."
+    },
+    {
+      "id": "video-edteam-git",
+      "titulo": "¿Qué es Git y cómo funciona?",
+      "autores": "EDteam",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.3"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/live/jGehuhFhtnE",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Control de versiones distribuido, commits, áreas de trabajo y repositorios."
+    },
+    {
+      "id": "video-holamundo-sql",
+      "titulo": "Aprende SQL ahora: curso completo desde cero",
+      "autores": "HolaMundo",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=uUdKAYl-F7g",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Consultas SELECT, filtros, agregaciones, JOINs y modelado práctico."
+    },
+    {
+      "id": "video-holamundo-docker",
+      "titulo": "Aprende Docker ahora: curso completo desde cero",
+      "autores": "HolaMundo",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.5"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=4Dko5W96WHg",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Contenedores, imágenes, Dockerfile, volúmenes y Docker Compose."
+    },
+    {
+      "id": "video-mouredev-git",
+      "titulo": "Curso completo de Git y GitHub desde cero",
+      "autores": "MoureDev by Brais Moure",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.3"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=3GymExBkKjE",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Flujo completo de Git, ramas, pull requests y trabajo colaborativo."
+    },
+    {
+      "id": "video-fazt-rest-api",
+      "titulo": "¿Qué es una REST API? Tu primera API REST con Node.js",
+      "autores": "Fazt Code",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=bK3AJfs7qNY",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Principios HTTP, métodos GET/POST/PUT/DELETE y diseño de endpoints REST."
+    },
+    {
+      "id": "video-fazt-jwt",
+      "titulo": "REST API con JWT, roles, autenticación y autorización",
+      "autores": "Fazt Code",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.2",
+        "3.4"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=lV7mxivGX_I",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Tokens JWT, control de acceso por roles y protección de rutas."
+    },
+    {
+      "id": "video-fazt-docker-compose",
+      "titulo": "Docker Compose con Node.js y MySQL",
+      "autores": "Fazt Code",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.5"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=Aj8E-Vhs1VM",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Orquestación multicontenedor para aplicación y base de datos."
+    },
+    {
+      "id": "video-bettatech-arquitectura",
+      "titulo": "Patrones de arquitectura de software explicados",
+      "autores": "BettaTech",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.1"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=q3YQy1lJutw",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Monolito, arquitectura en capas, microservicios y arquitectura orientada a eventos."
+    },
+    {
+      "id": "video-bettatech-solid",
+      "titulo": "Los principios SOLID explicados",
+      "autores": "BettaTech",
+      "tipo": "video",
+      "areas": [
+        "A2",
+        "A3"
+      ],
+      "subareas": [
+        "2.1",
+        "3.1"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=2X50sKeBAcQ",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Los cinco principios de diseño orientado a objetos con ejemplos claros."
+    },
+    {
+      "id": "video-codely-testing-arq",
+      "titulo": "Testing de arquitectura en tu aplicación",
+      "autores": "CodelyTV",
+      "tipo": "video",
+      "areas": [
+        "A3"
+      ],
+      "subareas": [
+        "3.3"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=9djTZtwGNLo",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Pruebas automatizadas para validar reglas y dependencias arquitectónicas."
+    },
+    {
+      "id": "video-atl-mysql",
+      "titulo": "Curso completo de bases de datos con MySQL",
+      "autores": "ATL Academy (Lucas Moy)",
+      "tipo": "video",
+      "areas": [
+        "A2"
+      ],
+      "subareas": [
+        "2.2"
+      ],
+      "oficial": false,
+      "url": "https://www.youtube.com/watch?v=_8MjEhfKRbI",
+      "gratuito": true,
+      "idioma": "es",
+      "nota": "Diseño de tablas, relaciones, consultas SQL y buenas prácticas en MySQL."
     }
   ]
 }

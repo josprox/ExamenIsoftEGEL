@@ -157,3 +157,20 @@ type Respuesta struct {
 }
 
 func (Respuesta) TableName() string { return "respuestas" }
+
+type HighlightRange struct {
+	Start int    `json:"start"`
+	End   int    `json:"end"`
+	Color string `json:"color"`
+}
+
+type PreguntaSubrayado struct {
+	ID         uint64                      `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID     uint64                      `gorm:"not null;uniqueIndex:idx_user_preg_subrayado" json:"user_id"`
+	PreguntaID string                      `gorm:"size:40;not null;uniqueIndex:idx_user_preg_subrayado" json:"pregunta_id"`
+	Subrayados map[string][]HighlightRange `gorm:"serializer:json;type:json;not null" json:"subrayados"`
+	CreatedAt  time.Time                   `json:"created_at"`
+	UpdatedAt  time.Time                   `json:"updated_at"`
+}
+
+func (PreguntaSubrayado) TableName() string { return "pregunta_subrayados" }
