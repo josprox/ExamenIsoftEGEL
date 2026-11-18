@@ -19,13 +19,9 @@ jobs:
       - name: Compilar React
         working-directory: frontend
         run: bun install --frozen-lockfile && bun run build
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/setup-go@v5
         with:
-          php-version: '8.4'
-          extensions: mbstring, sqlite3, pdo_sqlite
-      - name: Instalar Laravel
+          go-version: '1.25'
+      - name: Probar API en Go
         working-directory: backend
-        run: composer install --no-interaction --prefer-dist
-      - name: Probar API
-        working-directory: backend
-        run: php artisan test
+        run: go test -v ./...
