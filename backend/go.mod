@@ -1,6 +1,6 @@
 module github.com/josprox/examen-isoft-egel/backend
 
-go 1.27.1
+go 1.27
 
 require (
 	github.com/glebarez/sqlite v1.11.0
