@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 export type AppTab =
   | 'inicio'
   | 'simulador'
@@ -15,7 +17,19 @@ export interface RouteState {
   bibliotecaWebQuery: string;
 }
 
+const DEFAULT_ROUTE: RouteState = {
+  tab: 'inicio',
+  area: 'todas',
+  subarea: 'todas',
+  bibliotecaMode: 'catalogo',
+  bibliotecaWebQuery: '',
+};
+
 export function parseLocation(): RouteState {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return DEFAULT_ROUTE;
+  }
+
   const rawPath = window.location.pathname.replace(/\/+$/, '') || '/';
   const parts = rawPath.split('/').filter(Boolean);
   const qs = new URLSearchParams(window.location.search);
@@ -88,13 +102,7 @@ export function parseLocation(): RouteState {
     };
   }
 
-  return {
-    tab: 'inicio',
-    area: 'todas',
-    subarea: 'todas',
-    bibliotecaMode: 'catalogo',
-    bibliotecaWebQuery: '',
-  };
+  return DEFAULT_ROUTE;
 }
 
 export function buildPath(

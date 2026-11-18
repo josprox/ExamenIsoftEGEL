@@ -172,4 +172,3 @@ export interface ResultadoBusqueda {
   recursos: Recurso[];
   total?: number;
 }
-

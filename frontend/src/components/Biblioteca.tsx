@@ -1,22 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Search,
-  FileText,
-  ExternalLink,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import {
   BookOpen,
-  Filter,
-  FolderOpen,
-  Star,
+  ExternalLink,
   Eye,
-  X,
-  Download,
-  RotateCcw,
+  FolderOpen,
   Globe,
-  Sparkles,
-  Loader2,
+  RotateCcw,
+  Search,
   SlidersHorizontal,
-} from 'lucide-react';
-import { api } from '../lib/api';
+  Sparkles,
+  Star,
+} from 'lucide-react-native';
+import { api, resolveBackendUrl } from '../lib/api';
+import { ResourceViewerModal, type ViewerItem } from './ResourceViewerModal';
 import type {
   BibliotecaResumen,
   ConceptoWeb,
@@ -31,41 +35,36 @@ type WebFuente = 'todos' | WebFuenteId;
 const WEB_SOURCES: Array<{
   id: WebFuenteId;
   label: string;
-  badgeCls: string;
+  bgCls: string;
+  textCls: string;
   accentCls: string;
 }> = [
-  { id: 'wikipedia', label: 'Wikipedia', badgeCls: 'bg-sky-50 text-sky-700', accentCls: 'border-l-sky-500' },
-  { id: 'wikidata', label: 'Wikidata', badgeCls: 'bg-cyan-50 text-cyan-800', accentCls: 'border-l-cyan-600' },
-  { id: 'mdn', label: 'MDN Web Docs', badgeCls: 'bg-indigo-50 text-indigo-700', accentCls: 'border-l-indigo-500' },
-  { id: 'github', label: 'GitHub', badgeCls: 'bg-stone-200 text-stone-800', accentCls: 'border-l-stone-700' },
-  { id: 'stackoverflow', label: 'Stack Overflow', badgeCls: 'bg-orange-50 text-orange-700', accentCls: 'border-l-orange-500' },
-  { id: 'hackernews', label: 'Hacker News', badgeCls: 'bg-amber-100 text-amber-900', accentCls: 'border-l-amber-600' },
-  { id: 'reddit', label: 'Reddit', badgeCls: 'bg-red-50 text-red-700', accentCls: 'border-l-red-500' },
-  { id: 'semanticscholar', label: 'Semantic Scholar', badgeCls: 'bg-blue-50 text-blue-800', accentCls: 'border-l-blue-600' },
-  { id: 'openalex', label: 'OpenAlex', badgeCls: 'bg-violet-50 text-violet-700', accentCls: 'border-l-violet-500' },
-  { id: 'openlibrary', label: 'Open Library', badgeCls: 'bg-emerald-50 text-emerald-700', accentCls: 'border-l-emerald-500' },
-  { id: 'crossref', label: 'Crossref', badgeCls: 'bg-amber-50 text-amber-800', accentCls: 'border-l-amber-500' },
-  { id: 'arxiv', label: 'arXiv', badgeCls: 'bg-rose-50 text-rose-700', accentCls: 'border-l-rose-500' },
+  { id: 'wikipedia', label: 'Wikipedia', bgCls: 'bg-sky-50', textCls: 'text-sky-700', accentCls: 'border-l-sky-500' },
+  { id: 'wikidata', label: 'Wikidata', bgCls: 'bg-cyan-50', textCls: 'text-cyan-800', accentCls: 'border-l-cyan-600' },
+  { id: 'mdn', label: 'MDN Web Docs', bgCls: 'bg-indigo-50', textCls: 'text-indigo-700', accentCls: 'border-l-indigo-500' },
+  { id: 'github', label: 'GitHub', bgCls: 'bg-stone-200', textCls: 'text-stone-800', accentCls: 'border-l-stone-700' },
+  { id: 'stackoverflow', label: 'Stack Overflow', bgCls: 'bg-orange-50', textCls: 'text-orange-700', accentCls: 'border-l-orange-500' },
+  { id: 'hackernews', label: 'Hacker News', bgCls: 'bg-amber-100', textCls: 'text-amber-900', accentCls: 'border-l-amber-600' },
+  { id: 'reddit', label: 'Reddit', bgCls: 'bg-red-50', textCls: 'text-red-700', accentCls: 'border-l-red-500' },
+  { id: 'semanticscholar', label: 'Semantic Scholar', bgCls: 'bg-blue-50', textCls: 'text-blue-800', accentCls: 'border-l-blue-600' },
+  { id: 'openalex', label: 'OpenAlex', bgCls: 'bg-violet-50', textCls: 'text-violet-700', accentCls: 'border-l-violet-500' },
+  { id: 'openlibrary', label: 'Open Library', bgCls: 'bg-emerald-50', textCls: 'text-emerald-700', accentCls: 'border-l-emerald-500' },
+  { id: 'crossref', label: 'Crossref', bgCls: 'bg-amber-50', textCls: 'text-amber-800', accentCls: 'border-l-amber-500' },
+  { id: 'arxiv', label: 'arXiv', bgCls: 'bg-rose-50', textCls: 'text-rose-700', accentCls: 'border-l-rose-500' },
 ];
 
-const SOURCE_BADGES: Record<string, { label: string; cls: string; accentCls: string }> =
+const SOURCE_BADGES: Record<string, { label: string; bgCls: string; textCls: string; accentCls: string }> =
   Object.fromEntries(
-    WEB_SOURCES.map((s) => [s.id, { label: s.label, cls: s.badgeCls, accentCls: s.accentCls }])
+    WEB_SOURCES.map((s) => [s.id, { label: s.label, bgCls: s.bgCls, textCls: s.textCls, accentCls: s.accentCls }])
   );
 
-const SUGGESTIONS = [
-  'ISO/IEC 25010',
-  'Patrón Strategy',
-  'Normalización',
-  'PHP',
-  'Scrum',
-  'Docker',
-];
+const SUGGESTIONS = ['ISO/IEC 25010', 'Patrón Strategy', 'Normalización', 'PHP', 'Scrum', 'Docker'];
 
 interface BibliotecaProps {
   temario: Temario | null;
   initialMode?: 'catalogo' | 'web';
   initialWebQuery?: string;
+  scrollBottomTick?: number;
   onModeChange?: (mode: 'catalogo' | 'web', webQuery?: string) => void;
 }
 
@@ -73,15 +72,13 @@ export function Biblioteca({
   temario,
   initialMode = 'catalogo',
   initialWebQuery = '',
+  scrollBottomTick = 0,
   onModeChange,
 }: BibliotecaProps) {
-  const [alcance, setAlcance] = useState<AlcanceFiltro>(
-    initialMode === 'web' ? 'web' : 'todos'
-  );
+  const [alcance, setAlcance] = useState<AlcanceFiltro>(initialMode === 'web' ? 'web' : 'todos');
   const [q, setQ] = useState(initialWebQuery);
   const [mostrarFiltrosLocales, setMostrarFiltrosLocales] = useState(false);
 
-  // Catálogo local (se carga una sola vez y se filtra en 0ms en el cliente)
   const [catalogoCompleto, setCatalogoCompleto] = useState<Recurso[]>([]);
   const [resumen, setResumen] = useState<BibliotecaResumen | null>(null);
   const [loadingLocal, setLoadingLocal] = useState(true);
@@ -92,44 +89,26 @@ export function Biblioteca({
   const [soloArchivo, setSoloArchivo] = useState(false);
   const [soloOficial, setSoloOficial] = useState(false);
   const [soloGratuito, setSoloGratuito] = useState(false);
-  const [previewRecurso, setPreviewRecurso] = useState<Recurso | null>(null);
+  const [viewerItem, setViewerItem] = useState<ViewerItem | null>(null);
+  const [visibleLocalCount, setVisibleLocalCount] = useState(24);
 
-  // Web (2 lotes progresivos: fuentes rápidas primero, luego académicas + scroll infinito)
   const [webFuente, setWebFuente] = useState<WebFuente>('todos');
   const [webResults, setWebResults] = useState<ConceptoWeb[]>([]);
   const [webStatus, setWebStatus] = useState<'idle' | 'rapidas' | 'academicas'>('idle');
   const [visibleWebCount, setVisibleWebCount] = useState(12);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (initialMode === 'web') {
-      setAlcance('web');
-    }
-    if (initialWebQuery) {
-      setQ(initialWebQuery);
-    }
+    if (initialMode === 'web') setAlcance('web');
+    if (initialWebQuery) setQ(initialWebQuery);
   }, [initialMode, initialWebQuery]);
 
-  // Infinite scroll automático para resultados web
+  // Lazy loading automático al acercarse al final del scroll (Web y Android)
   useEffect(() => {
-    if (webResults.length <= visibleWebCount) return;
-    const target = loadMoreRef.current;
-    if (!target) return;
+    if (scrollBottomTick === 0) return;
+    setVisibleLocalCount((v) => v + 24);
+    setVisibleWebCount((v) => v + 12);
+  }, [scrollBottomTick]);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisibleWebCount((v) => Math.min(webResults.length, v + 12));
-        }
-      },
-      { rootMargin: '250px' }
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [webResults.length, visibleWebCount]);
-
-  // Carga del catálogo local una sola vez desde caché
   useEffect(() => {
     let active = true;
     setLoadingLocal(true);
@@ -152,7 +131,6 @@ export function Biblioteca({
     };
   }, []);
 
-  // Filtrado instantáneo en cliente (0ms al escribir)
   const recursos = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const filtrados = catalogoCompleto.filter((r) => {
@@ -178,7 +156,6 @@ export function Biblioteca({
     return filtrados;
   }, [catalogoCompleto, area, tipo, idioma, q, soloArchivo, soloOficial, soloGratuito, orden]);
 
-  // Carga progresiva en 2 lotes: primero fuentes rápidas (Wikipedia, Wikidata, MDN, HN, GitHub, SO), luego académicas
   useEffect(() => {
     const trimmed = q.trim();
     if (alcance === 'catalogo' || trimmed.length < 2) {
@@ -213,7 +190,7 @@ export function Biblioteca({
         if (!active) return;
         setWebResults(res1.conceptos ?? []);
       } catch {
-        // continuar con el segundo lote aunque falle el primero
+        // continuar con el lote académico
       }
 
       if (!active) return;
@@ -229,7 +206,7 @@ export function Biblioteca({
           });
         }
       } catch {
-        // ignorar
+        // ignore
       } finally {
         if (active) setWebStatus('idle');
       }
@@ -256,7 +233,7 @@ export function Biblioteca({
   };
 
   const fileUrl = (archivo: string) =>
-    `/biblioteca-files/${archivo.replace(/^biblioteca\//, '')}`;
+    resolveBackendUrl(`/biblioteca-files/${archivo.replace(/^biblioteca\//, '')}`);
 
   const hayFiltrosActivos =
     q !== '' ||
@@ -282,552 +259,524 @@ export function Biblioteca({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera unificada responsiva */}
-      <div className="rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 shadow-sm space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2.5">
-              <FolderOpen className="h-6 w-6 text-teal-700 shrink-0" />
-              Biblioteca y Explorador Web
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-stone-600">
+    <View className="gap-5">
+      {/* Cabecera */}
+      <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm gap-4">
+        <View className="flex-row flex-wrap items-center justify-between gap-3">
+          <View className="flex-1 min-w-[220px]">
+            <View className="flex-row items-center gap-2">
+              <FolderOpen size={22} color="#0d9488" />
+              <Text className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-slate-100">
+                Biblioteca y Explorador Web
+              </Text>
+            </View>
+            <Text className="mt-1 text-xs sm:text-sm text-stone-600 dark:text-slate-400">
               Busca en un solo lugar dentro de los {resumen?.total_catalogo ?? 140} recursos del portal y en 12 fuentes web confiables.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            </Text>
+          </View>
+
+          <View className="flex-row flex-wrap items-center gap-2">
             {resumen && (
-              <span className="rounded-lg bg-teal-50 border border-teal-700/15 px-2.5 py-1 text-teal-800">
-                {resumen.con_archivo} PDFs locales
-              </span>
+              <View className="rounded-lg bg-teal-50 dark:bg-teal-950/70 border border-teal-700/15 dark:border-teal-500/30 px-2.5 py-1">
+                <Text className="text-xs font-semibold text-teal-800 dark:text-teal-300">
+                  {resumen.con_archivo} PDFs locales
+                </Text>
+              </View>
             )}
-            <span className="rounded-lg bg-stone-100 border border-stone-200 px-2.5 py-1 text-stone-700">
-              {recursos.length} locales
-            </span>
-          </div>
-        </div>
+            <View className="rounded-lg bg-stone-100 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 px-2.5 py-1">
+              <Text className="text-xs font-semibold text-stone-700 dark:text-slate-300">
+                {recursos.length} locales
+              </Text>
+            </View>
+          </View>
+        </View>
 
-        {/* Barra de búsqueda unificada */}
-        <div className="flex flex-col sm:flex-row gap-2.5">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-700" />
-            <input
-              type="text"
+        {/* Barra de búsqueda */}
+        <View className="flex-col sm:flex-row gap-2.5">
+          <View className="flex-1 flex-row items-center rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2 gap-2">
+            <Search size={17} color="#0d9488" />
+            <TextInput
               value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Busca guías, libros, normas o conceptos web (ej. ISO 25010, PHP, Scrum)..."
-              className="w-full rounded-xl border border-stone-300 bg-stone-50 pl-10 pr-20 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
+              onChangeText={setQ}
+              placeholder="Busca guías, libros, normas o conceptos web (ej. ISO 25010, Scrum)..."
+              placeholderTextColor="#94a3b8"
+              className="flex-1 text-sm text-stone-900 dark:text-slate-100"
             />
-            {q && (
-              <button
-                type="button"
-                onClick={() => setQ('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-medium text-stone-500 hover:bg-stone-200/70 cursor-pointer"
-              >
-                Limpiar
-              </button>
+            {q.length > 0 && (
+              <Pressable onPress={() => setQ('')} className="rounded-lg px-2 py-1 active:bg-stone-200 dark:active:bg-slate-700">
+                <Text className="text-xs font-medium text-stone-500 dark:text-slate-400">
+                  Limpiar
+                </Text>
+              </Pressable>
             )}
-          </div>
+          </View>
 
-          {alcance !== 'web' && (
-            <button
-              type="button"
-              onClick={() => setMostrarFiltrosLocales((v) => !v)}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold transition cursor-pointer shrink-0 ${
+          <Pressable
+            onPress={() => setMostrarFiltrosLocales((v) => !v)}
+            className={`flex-row items-center justify-center gap-2 rounded-xl border px-4 py-2.5 ${
+              mostrarFiltrosLocales
+                ? 'border-teal-700 bg-teal-50 dark:bg-teal-950/60'
+                : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+            }`}
+          >
+            <SlidersHorizontal size={16} color={mostrarFiltrosLocales ? '#0d9488' : '#94a3b8'} />
+            <Text
+              className={`text-xs font-semibold ${
                 mostrarFiltrosLocales
-                  ? 'border-teal-600 bg-teal-50 text-teal-800'
-                  : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+                  ? 'text-teal-800 dark:text-teal-300'
+                  : 'text-stone-700 dark:text-slate-200'
               }`}
             >
-              <SlidersHorizontal className="h-4 w-4" />
               Filtros locales
-            </button>
-          )}
-        </div>
+            </Text>
+          </Pressable>
+        </View>
 
-        {/* Selector de alcance + sugerencias */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        {/* Alcance */}
+        <View className="flex-row flex-wrap items-center justify-between gap-2">
+          <View className="flex-row flex-wrap items-center gap-1.5">
             {(
               [
-                { id: 'todos', label: 'Todo (Catálogo + Web)' },
-                { id: 'catalogo', label: 'Solo Catálogo local' },
-                { id: 'web', label: 'Solo Web (12 fuentes)' },
+                { id: 'todos', label: 'Todo (Catálogo + Web)', web: false },
+                { id: 'catalogo', label: 'Solo Catálogo local', web: false },
+                { id: 'web', label: 'Solo Web (12 fuentes)', web: true },
               ] as const
-            ).map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => cambiarAlcance(opt.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer shrink-0 ${
-                  alcance === opt.id
-                    ? 'bg-teal-700 text-white shadow-sm'
-                    : 'border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-                }`}
-              >
-                {opt.id === 'web' && <Globe className="h-3.5 w-3.5" />}
-                {opt.label}
-              </button>
-            ))}
-          </div>
+            ).map((opt) => {
+              const active = alcance === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => cambiarAlcance(opt.id)}
+                  className={`flex-row items-center gap-1.5 rounded-full px-3.5 py-1.5 ${
+                    active ? 'bg-teal-700' : 'bg-stone-100 dark:bg-slate-800'
+                  }`}
+                >
+                  {opt.web && <Globe size={13} color={active ? '#ffffff' : '#94a3b8'} />}
+                  <Text
+                    className={`text-xs font-semibold ${
+                      active ? 'text-white' : 'text-stone-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           {hayFiltrosActivos && (
-            <button
-              type="button"
-              onClick={limpiarFiltros}
-              className="inline-flex items-center gap-1 self-start rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600 hover:bg-stone-200 cursor-pointer"
+            <Pressable
+              onPress={limpiarFiltros}
+              className="flex-row items-center gap-1 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 active:bg-stone-50"
             >
-              <RotateCcw className="h-3 w-3" /> Restablecer
-            </button>
+              <RotateCcw size={13} color="#94a3b8" />
+              <Text className="text-xs font-medium text-stone-600 dark:text-slate-300">
+                Restablecer
+              </Text>
+            </Pressable>
           )}
-        </div>
+        </View>
 
-        {/* Filtros locales desplegables */}
-        {alcance !== 'web' && mostrarFiltrosLocales && (
-          <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-4 space-y-3">
-            <div className="grid gap-2.5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              <select
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-teal-600 focus:outline-none"
-              >
-                <option value="todas">Todas las áreas</option>
-                {areas.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.id} · {a.nombre}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value)}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-teal-600 focus:outline-none"
-              >
-                <option value="todos">Todos los tipos</option>
-                <option value="guia">Guías</option>
-                <option value="libro">Libros</option>
-                <option value="norma">Normas</option>
-                <option value="articulo">Artículos</option>
-                <option value="banco-preguntas">Bancos de preguntas</option>
-                <option value="apuntes">Apuntes</option>
-                <option value="web">Sitios web</option>
-                <option value="video">Videos</option>
-              </select>
-
-              <select
-                value={idioma}
-                onChange={(e) => setIdioma(e.target.value)}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-teal-600 focus:outline-none"
-              >
-                <option value="todos">Idioma: Todos</option>
-                <option value="es">Español</option>
-                <option value="en">Inglés</option>
-              </select>
-
-              <select
-                value={orden}
-                onChange={(e) => setOrden(e.target.value as 'prioridad' | 'anio_desc' | 'titulo')}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-teal-600 focus:outline-none"
-              >
-                <option value="prioridad">Orden: Relevancia</option>
-                <option value="anio_desc">Más recientes</option>
-                <option value="titulo">Alfabético A–Z</option>
-              </select>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs text-stone-700">
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={soloArchivo}
-                  onChange={(e) => setSoloArchivo(e.target.checked)}
-                  className="rounded border-stone-300 text-teal-700 focus:ring-teal-600"
-                />
-                <Filter className="h-3.5 w-3.5 text-teal-700" />
-                Solo descargables locales
-              </label>
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={soloOficial}
-                  onChange={(e) => setSoloOficial(e.target.checked)}
-                  className="rounded border-stone-300 text-amber-600 focus:ring-amber-500"
-                />
-                <Star className="h-3.5 w-3.5 text-amber-500" />
-                Solo oficiales
-              </label>
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={soloGratuito}
-                  onChange={(e) => setSoloGratuito(e.target.checked)}
-                  className="rounded border-stone-300 text-emerald-700 focus:ring-emerald-600"
-                />
-                Solo gratuitos
-              </label>
-            </div>
-          </div>
-        )}
-
-        {/* Sugerencias rápidas cuando no hay texto */}
-        {!q && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
-            <span className="text-[11px] font-medium text-stone-400 shrink-0 mr-1">
-              Sugerencias:
-            </span>
+        {/* Sugerencias rápidas */}
+        {q.trim().length === 0 && (
+          <View className="flex-row flex-wrap items-center gap-1.5">
+            <Text className="text-[11px] font-medium text-stone-400 mr-1">Sugerencias:</Text>
             {SUGGESTIONS.map((s) => (
-              <button
+              <Pressable
                 key={s}
-                type="button"
-                onClick={() => setQ(s)}
-                className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700 hover:border-teal-600 hover:bg-teal-50 hover:text-teal-800 transition cursor-pointer shrink-0"
+                onPress={() => setQ(s)}
+                className="rounded-full border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-2.5 py-1 active:border-teal-600"
               >
-                {s}
-              </button>
+                <Text className="text-[11px] font-medium text-stone-700 dark:text-slate-300">
+                  {s}
+                </Text>
+              </Pressable>
             ))}
-          </div>
+          </View>
         )}
-      </div>
 
-      {/* Ficha rápida de Wikipedia cuando hay búsqueda web */}
-      {tieneConsultaWeb && wikiKnowledge && (
-        <div className="rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50/70 to-white p-4 sm:p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-sky-700">
-                <Sparkles className="h-3.5 w-3.5" />
-                Ficha rápida · Wikipedia
-              </div>
-              <h2 className="text-base font-bold text-stone-900">{wikiKnowledge.title}</h2>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                {wikiKnowledge.extract}
-              </p>
-            </div>
-            <a
-              href={wikiKnowledge.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 self-start shrink-0 rounded-xl border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 hover:bg-sky-50"
-            >
-              Leer más <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </div>
-        </div>
+        {/* Panel de filtros locales */}
+        {mostrarFiltrosLocales && (
+          <View className="border-t border-stone-100 pt-3.5 gap-3">
+            <View className="flex-row flex-wrap gap-2">
+              {[
+                { label: 'Área:', value: area, options: ['todas', ...areas.map((a) => a.id)], onChange: setArea },
+                {
+                  label: 'Tipo:',
+                  value: tipo,
+                  options: ['todos', 'oficial', 'guia', 'libro', 'norma', 'documentacion', 'articulo', 'plataforma', 'video'],
+                  onChange: setTipo,
+                },
+                { label: 'Idioma:', value: idioma, options: ['todos', 'es', 'en'], onChange: setIdioma },
+              ].map((grp) => (
+                <ScrollView
+                  key={grp.label}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="w-full"
+                >
+                  <View className="flex-row items-center gap-1.5 py-0.5">
+                    <Text className="text-xs font-semibold text-stone-500 mr-1">{grp.label}</Text>
+                    {grp.options.map((opt) => (
+                      <Pressable
+                        key={opt}
+                        onPress={() => grp.onChange(opt)}
+                        className={`rounded-lg px-2.5 py-1 ${
+                          grp.value === opt ? 'bg-teal-700' : 'bg-stone-100'
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-medium ${
+                            grp.value === opt ? 'text-white' : 'text-stone-700'
+                          }`}
+                        >
+                          {opt}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              ))}
+            </View>
+
+            <View className="flex-row flex-wrap gap-2">
+              {[
+                { label: 'Solo con PDF local', val: soloArchivo, set: setSoloArchivo },
+                { label: 'Solo oficiales Ceneval', val: soloOficial, set: setSoloOficial },
+                { label: 'Solo acceso gratuito', val: soloGratuito, set: setSoloGratuito },
+              ].map((chk) => (
+                <Pressable
+                  key={chk.label}
+                  onPress={() => chk.set(!chk.val)}
+                  className={`rounded-lg border px-3 py-1.5 ${
+                    chk.val ? 'border-teal-600 bg-teal-50' : 'border-stone-200 bg-white'
+                  }`}
+                >
+                  <Text
+                    className={`text-xs font-medium ${
+                      chk.val ? 'text-teal-800' : 'text-stone-700'
+                    }`}
+                  >
+                    {chk.val ? '✓ ' : ''}
+                    {chk.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Resumen rápido Wikipedia arriba */}
+      {alcance !== 'catalogo' && q.trim().length >= 2 && wikiKnowledge && webFuente === 'todos' && (
+        <View className="rounded-2xl border border-sky-200 dark:border-sky-800/60 bg-sky-50/70 dark:bg-sky-950/40 p-5 shadow-sm">
+          <View className="flex-row items-center gap-2 mb-2">
+            <Sparkles size={16} color="#0284c7" />
+            <Text className="text-[11px] font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300">
+              Resumen rápido · Wikipedia
+            </Text>
+          </View>
+          <Text className="text-lg font-bold text-stone-900 dark:text-slate-100">
+            {wikiKnowledge.title}
+          </Text>
+          {wikiKnowledge.extract ? (
+            <Text className="mt-2 text-sm leading-relaxed text-stone-700 dark:text-slate-300">
+              {wikiKnowledge.extract}
+            </Text>
+          ) : null}
+          <Pressable
+            onPress={() =>
+              setViewerItem({
+                title: wikiKnowledge.title,
+                url: wikiKnowledge.url,
+                sourceLabel: 'Wikipedia',
+                summary: wikiKnowledge.extract,
+              })
+            }
+            className="mt-3 self-start flex-row items-center gap-1.5 rounded-xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-700 px-3.5 py-2 active:bg-sky-50"
+          >
+            <BookOpen size={14} color="#0284c7" />
+            <Text className="text-xs font-semibold text-sky-700 dark:text-sky-300">
+              Leer artículo completo
+            </Text>
+            <ExternalLink size={12} color="#0284c7" />
+          </Pressable>
+        </View>
       )}
 
-      {/* Sección 1: Catálogo local EGEL */}
+      {/* Sección Catálogo Local */}
       {alcance !== 'web' && (
-        <section className="space-y-3">
-          {q.trim().length >= 2 && (
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-bold text-stone-800 flex items-center gap-2">
-                <FolderOpen className="h-4 w-4 text-teal-700" />
+        <View className="gap-3">
+          {tieneConsultaWeb && (
+            <View className="flex-row items-center gap-2">
+              <FolderOpen size={16} color="#0f766e" />
+              <Text className="text-sm font-bold text-stone-800">
                 En el Catálogo EGEL ({recursos.length})
-              </h2>
-            </div>
+              </Text>
+            </View>
           )}
 
           {loadingLocal ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((n) => (
-                <div
-                  key={n}
-                  className="h-40 animate-pulse rounded-2xl border border-stone-200 bg-white p-5 space-y-3"
-                >
-                  <div className="h-3 w-24 rounded bg-stone-200" />
-                  <div className="h-4 w-3/4 rounded bg-stone-200" />
-                  <div className="h-3 w-full rounded bg-stone-100" />
-                </div>
-              ))}
-            </div>
+            <View className="py-12 items-center justify-center rounded-2xl border border-stone-200 bg-white">
+              <ActivityIndicator size="large" color="#0f766e" />
+            </View>
           ) : recursos.length === 0 ? (
-            alcance === 'catalogo' || !tieneConsultaWeb ? (
-              <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center">
-                <p className="text-sm text-stone-600">
-                  No se encontraron recursos locales con esos filtros.
-                </p>
-                {hayFiltrosActivos && (
-                  <button
-                    type="button"
-                    onClick={limpiarFiltros}
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Restablecer filtros
-                  </button>
-                )}
-              </div>
-            ) : null
+            <View className="rounded-2xl border border-stone-200 bg-white p-6 items-center gap-2">
+              <Text className="text-sm text-stone-500 text-center">
+                No se encontraron recursos locales con esos filtros.
+              </Text>
+              {alcance === 'todos' && q.trim().length >= 2 && (
+                <Text className="text-xs text-teal-700 text-center">
+                  Revisa los resultados web de abajo para «{q.trim()}».
+                </Text>
+              )}
+            </View>
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {recursos.map((r) => {
-                const esPdf = Boolean(r.archivo && r.archivo.toLowerCase().endsWith('.pdf'));
-                return (
-                  <div
+            <View className="gap-3">
+              <View className="flex-row flex-wrap gap-3">
+                {recursos.slice(0, visibleLocalCount).map((r) => (
+                  <View
                     key={r.id}
-                    className="flex flex-col justify-between rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 hover:border-teal-600/50 hover:shadow-md transition"
+                    className="w-full md:w-[48.5%] lg:w-[32%] rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm justify-between"
                   >
-                    <div>
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] mb-2.5">
-                        <span className="rounded-md bg-teal-50 px-2 py-0.5 font-semibold text-teal-800 uppercase">
-                          {r.tipo}
-                        </span>
-                        {r.oficial && (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 font-semibold text-amber-800">
-                            <Star className="h-3 w-3" /> Oficial
-                          </span>
-                        )}
-                        {r.gratuito && (
-                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
-                            Gratis
-                          </span>
-                        )}
-                        {r.idioma && (
-                          <span className="rounded-md bg-stone-100 px-1.5 py-0.5 uppercase text-stone-500">
-                            {r.idioma}
-                          </span>
-                        )}
-                        {r.areas.map((a) => (
-                          <span
-                            key={a}
-                            className="rounded-md bg-stone-100 px-1.5 py-0.5 text-stone-600"
-                          >
-                            {a}
-                          </span>
-                        ))}
-                      </div>
+                    <View>
+                      <View className="flex-row flex-wrap items-center justify-between gap-2 mb-2">
+                        <View className="flex-row flex-wrap items-center gap-1.5">
+                          <View className="rounded bg-stone-100 dark:bg-slate-800 px-2 py-0.5">
+                            <Text className="text-[10px] font-bold uppercase text-stone-600 dark:text-slate-300">
+                              {r.tipo}
+                            </Text>
+                          </View>
+                          {r.oficial && (
+                            <View className="flex-row items-center gap-1 rounded bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5">
+                              <Star size={10} color="#d97706" />
+                              <Text className="text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                                Oficial
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text className="text-xs text-stone-400">
+                          {r.anio || ''} {r.idioma ? `· ${r.idioma.toUpperCase()}` : ''}
+                        </Text>
+                      </View>
 
-                      <h3 className="text-sm font-bold text-stone-900 leading-snug">{r.titulo}</h3>
-                      {(r.autores || r.anio) && (
-                        <p className="mt-1 text-xs text-stone-500">
+                      <Text className="text-sm font-bold text-stone-900 dark:text-slate-100 leading-snug">
+                        {r.titulo}
+                      </Text>
+                      {r.autores && (
+                        <Text className="mt-1 text-xs text-stone-500 dark:text-slate-400">
                           {r.autores}
-                          {r.anio ? ` (${r.anio})` : ''}
-                        </p>
+                        </Text>
                       )}
                       {r.nota && (
-                        <p className="mt-2 text-xs text-stone-600 line-clamp-3">{r.nota}</p>
+                        <Text numberOfLines={3} className="mt-2 text-xs text-stone-600 dark:text-slate-300 leading-relaxed">
+                          {r.nota}
+                        </Text>
                       )}
-                    </div>
+                    </View>
 
-                    <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-stone-100">
-                      {r.archivo && esPdf && (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewRecurso(r)}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800 transition cursor-pointer"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                          Vista previa
-                        </button>
-                      )}
-                      {r.archivo && (
-                        <a
-                          href={fileUrl(r.archivo)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                          {esPdf ? 'Abrir' : 'Descargar'}
-                        </a>
-                      )}
-                      {r.url && (
-                        <a
-                          href={r.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Enlace
-                        </a>
-                      )}
-                      {!r.archivo && !r.url && (
-                        <span className="inline-flex items-center gap-1 text-xs text-stone-400">
-                          <BookOpen className="h-3.5 w-3.5" />
-                          Referencia bibliográfica
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    <View className="mt-4 pt-3 border-t border-stone-100 dark:border-slate-800 gap-2.5">
+                      <View className="flex-row flex-wrap gap-1">
+                        {r.areas.map((a) => (
+                          <View key={a} className="rounded bg-teal-50 dark:bg-teal-950/70 px-1.5 py-0.5">
+                            <Text className="text-[11px] font-semibold text-teal-800 dark:text-teal-300">
+                              {a}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+
+                      <View className="flex-row flex-wrap gap-2">
+                        {r.archivo && (
+                          <Pressable
+                            onPress={() =>
+                              setViewerItem({
+                                title: r.titulo,
+                                url: fileUrl(r.archivo!),
+                                sourceLabel: r.tipo.toUpperCase(),
+                                summary: r.nota,
+                                meta: [r.autores, r.anio].filter(Boolean).join(' · '),
+                                isPdf: true,
+                              })
+                            }
+                            className="flex-row items-center gap-1 rounded-lg bg-teal-700 px-3 py-1.5 active:bg-teal-800"
+                          >
+                            <Eye size={13} color="#ffffff" />
+                            <Text className="text-xs font-semibold text-white">Ver PDF</Text>
+                          </Pressable>
+                        )}
+                        {r.url && (
+                          <Pressable
+                            onPress={() =>
+                              setViewerItem({
+                                title: r.titulo,
+                                url: r.url!,
+                                sourceLabel: r.tipo.toUpperCase(),
+                                summary: r.nota,
+                                meta: [r.autores, r.anio].filter(Boolean).join(' · '),
+                              })
+                            }
+                            className="flex-row items-center gap-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3 py-1.5 active:bg-stone-100"
+                          >
+                            <ExternalLink size={13} color="#94a3b8" />
+                            <Text className="text-xs font-semibold text-stone-700 dark:text-slate-200">
+                              Abrir recurso
+                            </Text>
+                          </Pressable>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {recursos.length > visibleLocalCount && (
+                <View className="py-3 flex-row items-center justify-center gap-2">
+                  <ActivityIndicator size="small" color="#0f766e" />
+                  <Text className="text-xs text-stone-500">
+                    Cargando más recursos ({recursos.length - visibleLocalCount} restantes)...
+                  </Text>
+                </View>
+              )}
+            </View>
           )}
-        </section>
+        </View>
       )}
 
-      {/* Sección 2: Resultados Web progresivos con scroll infinito */}
-      {tieneConsultaWeb && (
-        <section className="space-y-3">
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between px-1">
-            <h2 className="text-sm font-bold text-stone-800 flex items-center gap-2">
-              <Globe className="h-4 w-4 text-sky-600" />
-              Resultados en la web ({webResults.length})
-            </h2>
+      {/* Sección Explorador Web */}
+      {alcance !== 'catalogo' && (
+        <View className="gap-4">
+          <View className="flex-row flex-wrap items-center justify-between gap-2">
+            <View className="flex-row items-center gap-2">
+              <Globe size={16} color="#0369a1" />
+              <Text className="text-sm font-bold text-stone-800">
+                Resultados en la web ({webResults.length})
+              </Text>
+            </View>
 
             {webBusy && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-sky-700 font-medium">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {webStatus === 'rapidas'
-                  ? 'Consultando Wikipedia, Wikidata, MDN, GitHub, Stack Overflow y Hacker News...'
-                  : 'Cargando fuentes académicas y comunidad (Semantic Scholar, OpenAlex, arXiv, Reddit)...'}
-              </span>
+              <View className="flex-row items-center gap-1.5">
+                <ActivityIndicator size="small" color="#0369a1" />
+                <Text className="text-xs font-medium text-sky-700">
+                  {webStatus === 'rapidas'
+                    ? 'Consultando fuentes rápidas...'
+                    : 'Ampliando con fuentes académicas...'}
+                </Text>
+              </View>
             )}
-          </div>
+          </View>
 
-          {/* Chips de filtro por fuente web */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
-            <button
-              type="button"
-              onClick={() => setWebFuente('todos')}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shrink-0 ${
-                webFuente === 'todos'
-                  ? 'bg-sky-700 text-white shadow-sm'
-                  : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
-              }`}
-            >
-              Todas (12)
-            </button>
-            {WEB_SOURCES.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setWebFuente(f.id)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shrink-0 ${
-                  webFuente === f.id
-                    ? 'bg-sky-700 text-white shadow-sm'
-                    : 'border border-stone-200 bg-white text-stone-700 hover:bg-stone-100'
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row items-center gap-1.5 pb-1">
+              <Pressable
+                onPress={() => setWebFuente('todos')}
+                className={`rounded-full px-3 py-1.5 ${
+                  webFuente === 'todos' ? 'bg-sky-700' : 'border border-stone-200 bg-white'
                 }`}
               >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid gap-3.5 grid-cols-1 md:grid-cols-2">
-            {webResults.slice(0, visibleWebCount).map((item) => {
-              const badge = item.category ? SOURCE_BADGES[item.category] : null;
-              return (
-                <a
-                  key={`${item.source}-${item.url}`}
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`flex flex-col justify-between rounded-2xl border border-stone-200 border-l-4 ${
-                    badge?.accentCls ?? 'border-l-sky-500'
-                  } bg-white p-4 sm:p-5 hover:border-sky-400 hover:shadow-md transition group`}
+                <Text
+                  className={`text-xs font-semibold ${
+                    webFuente === 'todos' ? 'text-white' : 'text-stone-600'
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 text-xs text-stone-500 mb-2">
-                      {badge && (
-                        <span
-                          className={`rounded-md px-2 py-0.5 text-[11px] font-semibold shrink-0 ${badge.cls}`}
-                        >
-                          {badge.label}
-                        </span>
-                      )}
-                      <span className="truncate text-[11px] text-emerald-700 font-medium">
-                        {item.source}
-                      </span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-bold text-stone-900 group-hover:text-sky-800 group-hover:underline flex items-start justify-between gap-2 leading-snug">
-                      <span className="break-words">{item.title}</span>
-                      <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-1 text-stone-400 group-hover:text-sky-700" />
-                    </h3>
-                    {item.extract && (
-                      <p className="mt-2 text-xs text-stone-600 leading-relaxed line-clamp-3">
-                        {item.extract}
-                      </p>
-                    )}
-                  </div>
-                </a>
-              );
-            })}
-
-            {webBusy &&
-              [1, 2, 3, 4].map((n) => (
-                <div
-                  key={`skel-${n}`}
-                  className="animate-pulse rounded-2xl border border-stone-200 bg-white p-5 space-y-2.5"
+                  Todas (12)
+                </Text>
+              </Pressable>
+              {WEB_SOURCES.map((f) => (
+                <Pressable
+                  key={f.id}
+                  onPress={() => setWebFuente(f.id)}
+                  className={`rounded-full px-3 py-1.5 ${
+                    webFuente === f.id ? 'bg-sky-700' : 'border border-stone-200 bg-white'
+                  }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="h-4 w-20 rounded bg-sky-100" />
-                    <div className="h-3 w-24 rounded bg-stone-100" />
-                  </div>
-                  <div className="h-5 w-3/4 rounded bg-stone-200" />
-                  <div className="h-3.5 w-full rounded bg-stone-100" />
-                  <div className="h-3.5 w-5/6 rounded bg-stone-100" />
-                </div>
+                  <Text
+                    className={`text-xs font-semibold ${
+                      webFuente === f.id ? 'text-white' : 'text-stone-600'
+                    }`}
+                  >
+                    {f.label}
+                  </Text>
+                </Pressable>
               ))}
-          </div>
+            </View>
+          </ScrollView>
 
-          {!webBusy && webResults.length === 0 && (
-            <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
-              No se encontraron resultados web para «{q.trim()}».
-            </div>
-          )}
+          {q.trim().length < 2 ? (
+            <View className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/40 p-6 items-center gap-2">
+              <Globe size={28} color="#0284c7" />
+              <Text className="text-sm font-semibold text-stone-800 text-center">
+                Consulta conceptos en 12 fuentes abiertas y académicas
+              </Text>
+              <Text className="text-xs text-stone-600 text-center max-w-lg">
+                Escribe un tema arriba (ej. <Text className="font-bold">ISO 25010</Text>,{' '}
+                <Text className="font-bold">Docker</Text>, <Text className="font-bold">ATAM</Text>)
+                para consultar Wikipedia, Wikidata, MDN, GitHub, Stack Overflow, Hacker News, Reddit y repositorios científicos.
+              </Text>
+            </View>
+          ) : !webBusy && webResults.length === 0 ? (
+            <View className="rounded-2xl border border-stone-200 bg-white p-6 items-center">
+              <Text className="text-sm text-stone-500 text-center">
+                No se encontraron resultados web para «{q.trim()}».
+              </Text>
+            </View>
+          ) : (
+            <View className="gap-4">
+              <View className="flex-row flex-wrap gap-3">
+                {webResults.slice(0, visibleWebCount).map((item) => {
+                  const badge = item.category ? SOURCE_BADGES[item.category] : null;
+                  return (
+                    <Pressable
+                      key={`${item.source}-${item.url}`}
+                      onPress={() =>
+                        setViewerItem({
+                          title: item.title,
+                          url: item.url,
+                          sourceLabel: badge?.label ?? item.source,
+                          summary: item.extract,
+                        })
+                      }
+                      className={`w-full md:w-[48.5%] rounded-2xl border border-stone-200 dark:border-slate-800 border-l-4 ${
+                        badge?.accentCls ?? 'border-l-sky-500'
+                      } bg-white dark:bg-slate-900 p-4 shadow-sm active:bg-sky-50/30`}
+                    >
+                      <View className="flex-row items-center justify-between gap-2 mb-1.5">
+                        <View className={`rounded px-2 py-0.5 ${badge?.bgCls ?? 'bg-sky-50'}`}>
+                          <Text className={`text-[10px] font-bold ${badge?.textCls ?? 'text-sky-700'}`}>
+                            {badge?.label ?? item.source}
+                          </Text>
+                        </View>
+                        <ExternalLink size={13} color="#0284c7" />
+                      </View>
+                      <Text className="text-sm font-bold text-stone-900 dark:text-slate-100">
+                        {item.title}
+                      </Text>
+                      {item.extract ? (
+                        <Text numberOfLines={3} className="mt-1.5 text-xs text-stone-600 dark:text-slate-300 leading-relaxed">
+                          {item.extract}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
 
-          {webResults.length > visibleWebCount && (
-            <div
-              ref={loadMoreRef}
-              className="flex items-center justify-center gap-2 py-4 text-xs font-medium text-sky-700"
-            >
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Cargando más resultados ({webResults.length - visibleWebCount} restantes)...
-            </div>
+              {webResults.length > visibleWebCount && (
+                <View className="py-3 flex-row items-center justify-center gap-2">
+                  <ActivityIndicator size="small" color="#0369a1" />
+                  <Text className="text-xs text-sky-700">
+                    Cargando más resultados ({webResults.length - visibleWebCount} restantes)...
+                  </Text>
+                </View>
+              )}
+            </View>
           )}
-        </section>
+        </View>
       )}
 
-      {/* Modal de vista previa PDF */}
-      {previewRecurso && previewRecurso.archivo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 backdrop-blur-sm p-2 sm:p-6">
-          <div className="flex h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-stone-200 bg-white shadow-2xl">
-            <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-4 sm:px-5 py-3">
-              <div className="min-w-0">
-                <h4 className="truncate text-sm font-bold text-stone-900">
-                  {previewRecurso.titulo}
-                </h4>
-                <p className="truncate text-xs text-stone-500">
-                  {previewRecurso.autores || 'Documento de biblioteca EGEL'}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={fileUrl(previewRecurso.archivo)}
-                  download
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Descargar</span>
-                </a>
-                <a
-                  href={fileUrl(previewRecurso.archivo)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Nueva pestaña</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setPreviewRecurso(null)}
-                  className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-            <iframe
-              src={fileUrl(previewRecurso.archivo)}
-              title={previewRecurso.titulo}
-              className="h-full w-full flex-1 bg-stone-100"
-            />
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Ventana integrada para ver contenido sin salir */}
+      <ResourceViewerModal item={viewerItem} onClose={() => setViewerItem(null)} />
+    </View>
   );
 }

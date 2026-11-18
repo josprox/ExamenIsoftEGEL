@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Terminal, Search, Copy, Check } from 'lucide-react';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Check, Copy, Search, Terminal } from 'lucide-react-native';
 import { api } from '../lib/api';
+import { copyText } from '../lib/clipboard';
 import type { RamaComandos } from '../types/egel';
 
 export function Comandos() {
@@ -17,10 +19,14 @@ export function Comandos() {
       .finally(() => setLoading(false));
   }, []);
 
-  const copiar = (texto: string) => {
-    navigator.clipboard.writeText(texto);
-    setCopiado(texto);
-    setTimeout(() => setCopiado(null), 1500);
+  const copiar = async (texto: string) => {
+    try {
+      await copyText(texto);
+      setCopiado(texto);
+      setTimeout(() => setCopiado(null), 1500);
+    } catch {
+      // ignore
+    }
   };
 
   const ramasVisibles = ramas
@@ -39,119 +45,143 @@ export function Comandos() {
     .filter((r) => r.comandos.length > 0);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-stone-900 flex items-center gap-2.5">
-              <Terminal className="h-6 w-6 text-teal-700" />
-              Chuletario de Comandos Técnicos
-            </h1>
-            <p className="mt-1 text-sm text-stone-600">
-              Comandos esenciales de SQL, Git, HTTP/REST, Pruebas/CI, Docker, Linux, MongoDB, Python, Java y Node para repaso rápido.
-            </p>
-          </div>
-        </div>
+    <View className="gap-5">
+      <View className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm">
+        <View className="flex-row items-center gap-2.5">
+          <Terminal size={22} color="#0d9488" />
+          <Text className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-slate-100">
+            Chuletario de Comandos Técnicos
+          </Text>
+        </View>
+        <Text className="mt-1.5 text-sm text-stone-600 dark:text-slate-400">
+          Comandos esenciales de SQL, Git, HTTP/REST, Pruebas/CI, Docker, Linux, MongoDB, Python, Java y Node para repaso rápido.
+        </Text>
 
-        <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
-          <button
-            type="button"
-            onClick={() => setRamaActiva('todas')}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              ramaActiva === 'todas'
-                ? 'bg-teal-700 text-white'
-                : 'border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-            }`}
-          >
-            Todas
-          </button>
-          {ramas.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => setRamaActiva(r.id)}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                ramaActiva === r.id
-                  ? 'bg-teal-700 text-white'
-                  : 'border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-4">
+          <View className="flex-row gap-2 pb-1">
+            <Pressable
+              onPress={() => setRamaActiva('todas')}
+              className={`rounded-xl px-3.5 py-2 ${
+                ramaActiva === 'todas'
+                  ? 'bg-teal-700'
+                  : 'border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800'
               }`}
             >
-              {r.icono} {r.nombre}
-            </button>
-          ))}
-        </div>
+              <Text
+                className={`text-xs font-semibold ${
+                  ramaActiva === 'todas' ? 'text-white' : 'text-stone-700 dark:text-slate-300'
+                }`}
+              >
+                Todas
+              </Text>
+            </Pressable>
+            {ramas.map((r) => (
+              <Pressable
+                key={r.id}
+                onPress={() => setRamaActiva(r.id)}
+                className={`rounded-xl px-3.5 py-2 ${
+                  ramaActiva === r.id
+                    ? 'bg-teal-700'
+                    : 'border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800'
+                }`}
+              >
+                <Text
+                  className={`text-xs font-semibold ${
+                    ramaActiva === r.id ? 'text-white' : 'text-stone-700 dark:text-slate-300'
+                  }`}
+                >
+                  {r.icono} {r.nombre}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
 
-        <div className="relative mt-4 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
-          <input
-            type="text"
+        <View className="mt-4 flex-row items-center rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2 gap-2.5 max-w-md">
+          <Search size={16} color="#94a3b8" />
+          <TextInput
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChangeText={setQ}
             placeholder="Buscar comando o descripción (ej. JOIN, rebase, compose)..."
-            className="w-full rounded-xl border border-stone-300 bg-stone-50 pl-10 pr-4 py-2 text-sm text-stone-900 focus:border-teal-600 focus:bg-white focus:outline-none"
+            placeholderTextColor="#94a3b8"
+            className="flex-1 text-sm text-stone-900 dark:text-slate-100"
           />
-        </div>
-      </div>
+        </View>
+      </View>
 
       {loading ? (
-        <div className="h-48 animate-pulse rounded-2xl border border-stone-200 bg-white" />
+        <View className="h-44 items-center justify-center rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <ActivityIndicator size="large" color="#0d9488" />
+        </View>
       ) : (
-        <div className="space-y-6">
+        <View className="gap-5">
           {ramasVisibles.map((r) => (
-            <div
+            <View
               key={r.id}
-              className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"
+              className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-stone-900">
+              <View className="flex-row flex-wrap items-center justify-between gap-2 mb-4">
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-stone-900 dark:text-slate-100">
                     {r.icono} {r.nombre}
-                  </h2>
-                  <p className="text-xs text-stone-500">{r.descripcion}</p>
-                </div>
+                  </Text>
+                  <Text className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                    {r.descripcion}
+                  </Text>
+                </View>
                 {r.subareas && r.subareas.length > 0 && (
-                  <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600">
-                    Subáreas: {r.subareas.join(', ')}
-                  </span>
+                  <View className="rounded-lg bg-stone-100 dark:bg-slate-800 px-2.5 py-1">
+                    <Text className="text-xs font-medium text-stone-600 dark:text-slate-300">
+                      Subáreas: {r.subareas.join(', ')}
+                    </Text>
+                  </View>
                 )}
-              </div>
+              </View>
 
-              <div className="divide-y divide-stone-100">
+              <View className="divide-y divide-stone-100 dark:divide-slate-800">
                 {r.comandos.map((c, idx) => (
-                  <div
-                    key={idx}
-                    className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                  >
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <code className="block max-w-full overflow-x-auto rounded-lg bg-stone-900 px-3 py-1.5 font-mono text-xs text-emerald-300">
-                        {c.comando}
-                      </code>
-                      <p className="text-xs text-stone-600">{c.descripcion}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copiar(c.comando)}
-                      className="inline-flex items-center gap-1 self-start sm:self-center shrink-0 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-100 transition cursor-pointer"
-                    >
-                      {copiado === c.comando ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 text-emerald-600" />
-                          Copiado
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5" />
-                          Copiar
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <View key={idx} className="py-3 gap-2">
+                    <View className="flex-row items-center justify-between gap-2">
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        className="flex-1 rounded-lg bg-stone-900 dark:bg-slate-950 border border-stone-800 px-3 py-2"
+                      >
+                        <Text selectable className="font-mono text-xs text-emerald-300">
+                          {c.comando}
+                        </Text>
+                      </ScrollView>
+                      <Pressable
+                        onPress={() => copiar(c.comando)}
+                        className="flex-row items-center gap-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-2.5 py-2 active:bg-stone-100"
+                      >
+                        {copiado === c.comando ? (
+                          <>
+                            <Check size={14} color="#059669" />
+                            <Text className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                              Copiado
+                            </Text>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={14} color="#64748b" />
+                            <Text className="text-xs font-medium text-stone-700 dark:text-slate-200">
+                              Copiar
+                            </Text>
+                          </>
+                        )}
+                      </Pressable>
+                    </View>
+                    <Text className="text-xs text-stone-600 dark:text-slate-400">
+                      {c.descripcion}
+                    </Text>
+                  </View>
                 ))}
-              </div>
-            </div>
+              </View>
+            </View>
           ))}
-        </div>
+        </View>
       )}
-    </div>
+    </View>
   );
 }

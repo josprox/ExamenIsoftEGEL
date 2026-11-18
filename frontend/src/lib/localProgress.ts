@@ -1,6 +1,7 @@
+import { getSyncItem, setSyncItem } from './storage';
 import type { EstadisticasUsuario, Intento, Pregunta } from '../types/egel';
 
-const STORAGE_KEY = 'egel_local_progress_v1';
+export const PROGRESS_STORAGE_KEY = 'egel_local_progress_v1';
 
 interface LocalStore {
   intentos: Intento[];
@@ -12,7 +13,7 @@ interface LocalStore {
 
 function readStore(): LocalStore {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = getSyncItem(PROGRESS_STORAGE_KEY);
     if (!raw) {
       return {
         intentos: [],
@@ -85,7 +86,7 @@ export function saveLocalAttempt(params: {
     new Set([...nuevosErrores, ...store.errores_recientes])
   ).slice(0, 30);
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  setSyncItem(PROGRESS_STORAGE_KEY, JSON.stringify(store));
 }
 
 export function getLocalProgress(): {

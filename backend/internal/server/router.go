@@ -19,11 +19,13 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 	r := chi.NewRouter()
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
+	r.Use(corsMiddleware)
 	r.Use(chimw.Compress(5))
 
 	authH := &handlers.AuthHandler{DB: db}
 	egelH := &handlers.EgelHandler{DB: db, Loader: loader}
 	intentoH := &handlers.IntentoHandler{DB: db, Loader: loader}
+	readerH := handlers.NewReaderHandler()
 	if webHandler == nil {
 		webHandler = handlers.NewWebSearchHandler()
 	}
@@ -53,6 +55,7 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 		api.Get("/comandos", egelH.Comandos)
 		api.Get("/buscar", egelH.Buscar)
 		api.With(middleware.RateLimit(120, 40)).Get("/buscar-web", webHandler.BuscarWeb)
+		api.With(middleware.RateLimit(120, 40)).Get("/leer", readerH.Leer)
 
 		// Simulador, progreso e intentos (requiere login)
 		api.Group(func(priv chi.Router) {
@@ -102,7 +105,7 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 			clean := filepath.Clean(filepath.FromSlash(r.URL.Path))
 			candidate := filepath.Join(cfg.DistDir, clean)
 			if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
-				if strings.HasPrefix(r.URL.Path, "/assets/") {
+				if strings.HasPrefix(r.URL.Path, "/assets/") || strings.HasPrefix(r.URL.Path, "/_expo/static/") {
 					w.Header().Set("Cache-Control", "public, max-age=2592000, immutable")
 				}
 				http.ServeFile(w, r, candidate)
@@ -120,4 +123,30 @@ func NewRouter(db *gorm.DB, cfg config.Config, loader *content.Loader, webHandle
 	})
 
 	return r
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin != "" {
+			if strings.HasSuffix(origin, ".astriom.org") ||
+				strings.HasPrefix(origin, "http://localhost") ||
+				strings.HasPrefix(origin, "http://127.0.0.1") ||
+				strings.HasPrefix(origin, "https://localhost") {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Vary", "Origin")
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			}
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-Requested-With")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

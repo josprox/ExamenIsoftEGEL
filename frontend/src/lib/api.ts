@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+import { getSyncItem, setSyncItem } from './storage';
 import type {
   AuthResponse,
   BibliotecaResumen,
@@ -15,18 +17,37 @@ import type {
   WebFuenteId,
 } from '../types/egel';
 
-const TOKEN_KEY = 'egel_auth_token';
+export const TOKEN_KEY = 'egel_auth_token';
+const DEFAULT_BACKEND_URL = 'https://egelsoftback.astriom.org';
+
+export function getApiBaseUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, '');
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined') {
+      const port = window.location.port;
+      if (port === '8081' || port === '19006') {
+        return configured || 'http://localhost:8000';
+      }
+    }
+    return '';
+  }
+  return configured || DEFAULT_BACKEND_URL;
+}
+
+export function resolveBackendUrl(path: string): string {
+  if (!path) return path;
+  if (/^https?:\/\//i.test(path)) return path;
+  const base = getApiBaseUrl();
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return base ? `${base}${normalized}` : normalized;
+}
 
 export function getStoredToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  return getSyncItem(TOKEN_KEY);
 }
 
 export function setStoredToken(token: string | null): void {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
-  }
+  setSyncItem(TOKEN_KEY, token);
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -41,7 +62,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`/api${path}`, {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/api${path}`, {
     ...options,
     headers,
   });
@@ -63,7 +85,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  // Auth
   register: (name: string, email: string, password: string, password_confirmation: string) =>
     request<AuthResponse>('/auth/register', {
       method: 'POST',
@@ -80,7 +101,6 @@ export const api = {
 
   logout: () => request<{ message: string }>('/auth/logout', { method: 'POST' }),
 
-  // Catálogos y preguntas
   getTemario: () => request<{ temario: Temario }>('/temario'),
 
   getPreguntas: (params: {
@@ -147,7 +167,16 @@ export const api = {
       `/buscar-web?q=${encodeURIComponent(q)}&fuente=${encodeURIComponent(fuente)}`
     ),
 
-  // Intentos y progreso (requiere login)
+  leerUrl: (url: string) =>
+    request<{
+      url: string;
+      host: string;
+      status: number;
+      title: string;
+      description: string;
+      blocks: Array<{ tag: string; text: string }>;
+    }>(`/leer?url=${encodeURIComponent(url)}`),
+
   getIntentos: () =>
     request<{ intentos: Intento[]; estadisticas: EstadisticasUsuario }>('/intentos'),
 

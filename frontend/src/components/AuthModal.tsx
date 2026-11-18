@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { X, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { LogIn, UserPlus, X } from 'lucide-react-native';
 import { api, setStoredToken } from '../lib/api';
 import type { User } from '../types/egel';
 
@@ -24,17 +35,14 @@ export function AuthModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError(null);
     setLoading(true);
     try {
       const res =
         mode === 'login'
-          ? await api.login(email, password)
-          : await api.register(name, email, password, passwordConfirmation);
+          ? await api.login(email.trim(), password)
+          : await api.register(name.trim(), email.trim(), password, passwordConfirmation);
       setStoredToken(res.token);
       onSuccess(res.user);
       onClose();
@@ -46,134 +54,141 @@ export function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex gap-1 rounded-xl bg-stone-100 p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setMode('login');
-                setError(null);
-              }}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer ${
-                mode === 'login'
-                  ? 'bg-teal-700 text-white shadow-sm'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <LogIn className="h-4 w-4" />
-              Iniciar sesión
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('register');
-                setError(null);
-              }}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer ${
-                mode === 'register'
-                  ? 'bg-teal-700 text-white shadow-sm'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <UserPlus className="h-4 w-4" />
-              Registrarse
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 cursor-pointer"
-            aria-label="Cerrar"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1 items-center justify-center bg-stone-950/60 p-4"
+      >
+        <Pressable onPress={onClose} className="absolute inset-0" />
+        <View className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+          <View className="flex-row items-center justify-between mb-6">
+            <View className="flex-row gap-1 rounded-xl bg-stone-100 dark:bg-slate-800 p-1">
+              <Pressable
+                onPress={() => {
+                  setMode('login');
+                  setError(null);
+                }}
+                className={`flex-row items-center gap-2 rounded-lg px-3.5 py-2 ${
+                  mode === 'login' ? 'bg-teal-700' : ''
+                }`}
+              >
+                <LogIn size={15} color={mode === 'login' ? '#ffffff' : '#94a3b8'} />
+                <Text
+                  className={`text-sm font-semibold ${
+                    mode === 'login' ? 'text-white' : 'text-stone-600 dark:text-slate-300'
+                  }`}
+                >
+                  Iniciar sesión
+                </Text>
+              </Pressable>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'register' && (
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                Nombre completo
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Ana García"
-                className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
-              />
-            </div>
-          )}
+              <Pressable
+                onPress={() => {
+                  setMode('register');
+                  setError(null);
+                }}
+                className={`flex-row items-center gap-2 rounded-lg px-3.5 py-2 ${
+                  mode === 'register' ? 'bg-teal-700' : ''
+                }`}
+              >
+                <UserPlus size={15} color={mode === 'register' ? '#ffffff' : '#94a3b8'} />
+                <Text
+                  className={`text-sm font-semibold ${
+                    mode === 'register' ? 'text-white' : 'text-stone-600 dark:text-slate-300'
+                  }`}
+                >
+                  Registrarse
+                </Text>
+              </Pressable>
+            </View>
 
-          <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-              className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
-            />
-          </div>
+            <Pressable onPress={onClose} className="rounded-lg p-1.5 active:bg-stone-100 dark:active:bg-slate-800">
+              <X size={20} color="#94a3b8" />
+            </Pressable>
+          </View>
 
-          <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
-            />
-          </div>
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <View className="gap-4">
+              {mode === 'register' && (
+                <View>
+                  <Text className="text-xs font-semibold text-stone-700 dark:text-slate-300 mb-1.5">
+                    Nombre completo
+                  </Text>
+                  <TextInput
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Ej. Ana García"
+                    placeholderTextColor="#94a3b8"
+                    className="w-full rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-stone-900 dark:text-slate-100"
+                  />
+                </View>
+              )}
 
-          {mode === 'register' && (
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                Confirmar contraseña
-              </label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                placeholder="Repite tu contraseña"
-                className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-teal-600 focus:bg-white focus:outline-none"
-              />
-            </div>
-          )}
+              <View>
+                <Text className="text-xs font-semibold text-stone-700 dark:text-slate-300 mb-1.5">
+                  Correo electrónico
+                </Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="correo@ejemplo.com"
+                  placeholderTextColor="#94a3b8"
+                  className="w-full rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-stone-900 dark:text-slate-100"
+                />
+              </View>
 
-          {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-700">
-              {error}
-            </div>
-          )}
+              <View>
+                <Text className="text-xs font-semibold text-stone-700 dark:text-slate-300 mb-1.5">
+                  Contraseña
+                </Text>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  placeholder="Mínimo 6 caracteres"
+                  placeholderTextColor="#94a3b8"
+                  className="w-full rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-stone-900 dark:text-slate-100"
+                />
+              </View>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60 transition cursor-pointer"
-          >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {mode === 'login' ? 'Entrar a mi cuenta' : 'Crear cuenta gratis'}
-          </button>
-        </form>
+              {mode === 'register' && (
+                <View>
+                  <Text className="text-xs font-semibold text-stone-700 dark:text-slate-300 mb-1.5">
+                    Confirmar contraseña
+                  </Text>
+                  <TextInput
+                    value={passwordConfirmation}
+                    onChangeText={setPasswordConfirmation}
+                    secureTextEntry
+                    placeholder="Repite tu contraseña"
+                    placeholderTextColor="#94a3b8"
+                    className="w-full rounded-xl border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm text-stone-900 dark:text-slate-100"
+                  />
+                </View>
+              )}
 
-        <p className="mt-4 text-center text-xs text-stone-500">
-          Guarda tus intentos, repasa errores y consulta tu avance por área.
-        </p>
-      </div>
-    </div>
+              {error && (
+                <View className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5">
+                  <Text className="text-xs text-rose-700">{error}</Text>
+                </View>
+              )}
+
+              <Pressable
+                onPress={handleSubmit}
+                disabled={loading}
+                className="mt-1 flex-row items-center justify-center gap-2 rounded-xl bg-teal-700 py-3 active:bg-teal-800 disabled:opacity-60"
+              >
+                {loading && <ActivityIndicator size="small" color="#ffffff" />}
+                <Text className="text-sm font-semibold text-white">
+                  {mode === 'login' ? 'Entrar a mi cuenta' : 'Crear cuenta'}
+                </Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
